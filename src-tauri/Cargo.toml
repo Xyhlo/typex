@@ -1,6 +1,6 @@
 [package]
 name = "typex"
-version = "0.1.0"
+version = "0.1.1"
 description = "TypeX — a beautifully crafted Markdown editor"
 authors = ["Amptis <hello@amptis.com>"]
 license = "MIT"
