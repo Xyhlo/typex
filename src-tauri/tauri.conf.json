@@ -158,7 +158,9 @@
     ],
     "windows": {
       "wix": {
-        "language": "en-US"
+        "language": "en-US",
+        "bannerPath": "installer/banner.bmp",
+        "dialogImagePath": "installer/dialog.bmp"
       },
       "webviewInstallMode": {
         "type": "embedBootstrapper",

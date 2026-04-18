@@ -22,6 +22,12 @@ src-tauri/binaries
 # Pandoc --extract-media artifact from manual imports
 src-tauri/media
 
+# Release notes staged for publishing (regenerate per version)
+.release-notes-*.md
+
+# Scratch files
+color_test.py
+
 # OS
 .DS_Store
 Thumbs.db

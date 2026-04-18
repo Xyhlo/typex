@@ -1271,15 +1271,30 @@ const bootstrap = async (): Promise<void> => {
   document.getElementById("btn-theme")?.addEventListener("click", toggleTheme);
   document.getElementById("btn-new-tab")?.addEventListener("click", () => void createNew());
 
+  // The MutationObserver below fires every time the file-tree re-renders
+  // (which happens on every state change via setActive). Without a one-shot
+  // guard, each run stacks another click listener on the persistent header
+  // buttons — a single click then creates as many tabs as times this has run.
+  // The data-wired attribute lives on the DOM node, so re-rendered empty-state
+  // buttons (new DOM nodes) still get their fresh binding.
   const wireSidebarButtons = (): void => {
-    document.getElementById("btn-open-folder")?.addEventListener("click", openFolder);
-    document.getElementById("btn-open-folder-empty")?.addEventListener("click", openFolder);
-    document.getElementById("btn-open-file-sidebar")?.addEventListener("click", openFile);
-    document.getElementById("btn-new-file")?.addEventListener("click", () => void createNew());
-    document.getElementById("btn-new-file-empty")?.addEventListener("click", () => void createNew());
+    const bindings: Array<[string, () => void | Promise<void>]> = [
+      ["btn-open-folder", openFolder],
+      ["btn-open-folder-empty", openFolder],
+      ["btn-open-file-sidebar", openFile],
+      ["btn-new-file", () => void createNew()],
+      ["btn-new-file-empty", () => void createNew()],
+    ];
+    for (const [id, fn] of bindings) {
+      const btn = document.getElementById(id);
+      if (!btn || btn.dataset.wired === "1") continue;
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", () => {
+        void fn();
+      });
+    }
   };
   wireSidebarButtons();
-  // Re-bind when the file tree re-renders the empty state
   new MutationObserver(wireSidebarButtons).observe(fileTreeEl, {
     childList: true,
     subtree: true,
