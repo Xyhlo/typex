@@ -115,16 +115,28 @@ const insertSlice = (view: EditorView, slice: Slice): void => {
 
 const handle = (ctx: Ctx, view: EditorView, event: ClipboardEvent): boolean => {
   const data = event.clipboardData;
-  if (!data) return false;
+  if (!data) {
+    console.info("[typex paste] no clipboardData");
+    return false;
+  }
 
+  const types = Array.from(data.types ?? []);
   let text = data.getData("text/plain");
+  const hasHtml = !!data.getData("text/html");
+
+  console.info(
+    `[typex paste] fire — types=${JSON.stringify(types)} plainLen=${text.length} hasHtml=${hasHtml}`,
+  );
+
   if (!text) return false;
 
-  // If it's clearly source code and not markdown, wrap with a fenced
-  // block so it parses as a single code_block with a language — that's
-  // what unlocks syntax highlighting.
-  if (!looksLikeMarkdown(text) && looksLikeCode(text)) {
+  const md = looksLikeMarkdown(text);
+  const code = looksLikeCode(text);
+  console.info(`[typex paste] detection — markdown=${md} code=${code}`);
+
+  if (!md && code) {
     const lang = detectLanguage(text);
+    console.info(`[typex paste] wrapping — language=${JSON.stringify(lang)}`);
     const trimmed = text.replace(/\s+$/, "");
     text = "```" + lang + "\n" + trimmed + "\n```";
   }
@@ -132,7 +144,16 @@ const handle = (ctx: Ctx, view: EditorView, event: ClipboardEvent): boolean => {
   try {
     const parser = ctx.get(parserCtx);
     const doc = parser(text);
-    if (!doc || doc.content.size === 0) return false;
+    if (!doc || doc.content.size === 0) {
+      console.warn("[typex paste] parser produced empty doc");
+      return false;
+    }
+
+    const firstChildName = doc.firstChild?.type.name ?? "(none)";
+    const firstChildAttrs = JSON.stringify(doc.firstChild?.attrs ?? {});
+    console.info(
+      `[typex paste] parsed — childCount=${doc.childCount} first=${firstChildName} attrs=${firstChildAttrs}`,
+    );
 
     const openStart = shouldMergeAtBoundary(doc.firstChild) ? 1 : 0;
     const openEnd = shouldMergeAtBoundary(doc.lastChild) ? 1 : 0;
@@ -141,9 +162,10 @@ const handle = (ctx: Ctx, view: EditorView, event: ClipboardEvent): boolean => {
     event.preventDefault();
     event.stopPropagation();
     insertSlice(view, slice);
+    console.info("[typex paste] dispatched slice");
     return true;
   } catch (err) {
-    console.error("[typex] markdown paste failed:", err);
+    console.error("[typex paste] failed:", err);
     return false;
   }
 };
