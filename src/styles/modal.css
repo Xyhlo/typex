@@ -1,0 +1,253 @@
+/* ============================================================
+   Modal — generic dialog (About, Preferences, Input prompts).
+   ============================================================ */
+
+.modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: modal-in var(--dur-md) var(--ease-out);
+}
+
+.modal-root__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+}
+
+[data-theme="light"] .modal-root__backdrop {
+  background: rgba(28, 26, 32, 0.22);
+}
+
+.modal {
+  position: relative;
+  width: min(520px, 92vw);
+  max-height: 80vh;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: modal-dialog-in var(--dur-md) var(--ease-out);
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal__title {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-semibold);
+  color: var(--fg-heading);
+}
+
+.modal__close {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg-muted);
+  transition: background var(--dur-sm) var(--ease-standard),
+              color var(--dur-sm) var(--ease-standard);
+}
+.modal__close:hover { background: var(--bg-overlay); color: var(--fg); }
+
+.modal__body {
+  padding: var(--sp-5);
+  overflow: auto;
+  font-size: var(--fs-md);
+  color: var(--fg);
+  line-height: var(--lh-normal);
+}
+
+.modal__body p { margin: 0 0 var(--sp-3); }
+.modal__body p:last-child { margin-bottom: 0; }
+
+.modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-5);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-app);
+}
+
+.modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+.modal__label {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
+.modal__input {
+  padding: 8px 10px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--fg);
+  font-size: var(--fs-md);
+}
+.modal__input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+  outline: 0;
+}
+
+.prefs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+.prefs__section { display: flex; flex-direction: column; gap: var(--sp-3); }
+.prefs__section-title {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--ls-micro);
+  color: var(--fg-subtle);
+  font-weight: var(--fw-semibold);
+  margin: 0;
+}
+.prefs__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.prefs__row:last-child { border-bottom: 0; }
+.prefs__row-text { display: flex; flex-direction: column; gap: 2px; }
+.prefs__row-title { color: var(--fg); font-size: var(--fs-md); }
+.prefs__row-desc { color: var(--fg-muted); font-size: var(--fs-sm); max-width: 40ch; }
+.prefs__row-control { flex-shrink: 0; }
+
+.toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background var(--dur-sm) var(--ease-standard),
+              border-color var(--dur-sm) var(--ease-standard);
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 16px;
+  height: 16px;
+  background: var(--fg-muted);
+  border-radius: 50%;
+  transition: transform var(--dur-sm) var(--ease-standard),
+              background var(--dur-sm) var(--ease-standard);
+}
+.toggle:checked {
+  background: var(--accent);
+  border-color: var(--accent-active);
+}
+.toggle:checked::after {
+  transform: translateX(16px);
+  background: var(--fg-on-accent);
+}
+
+.segmented {
+  display: inline-flex;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+.segmented__btn {
+  padding: 4px 10px;
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-sm) var(--ease-standard),
+              color var(--dur-sm) var(--ease-standard);
+}
+.segmented__btn:hover { color: var(--fg); }
+.segmented__btn.is-active {
+  background: var(--bg-elevated);
+  color: var(--fg);
+  box-shadow: var(--shadow-xs);
+}
+
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  align-items: center;
+  text-align: center;
+}
+.about__logo {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at 30% 30%, var(--accent-hover), var(--accent) 45%, var(--accent-active) 100%);
+  box-shadow: var(--shadow-md), inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+.about__name {
+  font-size: 1.3rem;
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.01em;
+  color: var(--fg-heading);
+}
+.about__version { color: var(--fg-muted); font-size: var(--fs-sm); }
+.about__tag { color: var(--fg-muted); }
+.about__links {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+.shortcuts-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.shortcuts-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--fs-sm);
+}
+.shortcuts-table td:first-child { color: var(--fg); }
+.shortcuts-table td:last-child { text-align: right; }
+.shortcuts-table kbd {
+  padding: 1px 6px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+  margin-left: 2px;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes modal-dialog-in {
+  from { opacity: 0; transform: scale(0.98) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}

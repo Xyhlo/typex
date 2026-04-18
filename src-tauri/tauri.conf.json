@@ -1,0 +1,169 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "TypeX",
+  "version": "0.1.0",
+  "identifier": "com.amptis.typex",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "TypeX",
+        "width": 1240,
+        "height": 820,
+        "minWidth": 720,
+        "minHeight": 480,
+        "decorations": false,
+        "transparent": false,
+        "fullscreen": false,
+        "resizable": true,
+        "center": true,
+        "shadow": true,
+        "theme": null
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi"],
+    "publisher": "Amptis",
+    "copyright": "© 2026 Amptis",
+    "category": "Productivity",
+    "shortDescription": "A beautifully crafted Markdown editor.",
+    "longDescription": "TypeX is a WYSIWYG Markdown editor with two hand-tuned themes, a real menu bar, tabs, find-and-replace, and Pandoc-powered import/export for Microsoft Word, OpenDocument, EPUB, HTML, LaTeX, and more.",
+    "homepage": "https://amptis.com",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "externalBin": [
+      "binaries/pandoc"
+    ],
+    "fileAssociations": [
+      {
+        "ext": ["md", "markdown", "mdx"],
+        "name": "Markdown",
+        "description": "Markdown document",
+        "role": "Editor",
+        "mimeType": "text/markdown"
+      },
+      {
+        "ext": ["txt"],
+        "name": "PlainText",
+        "description": "Plain text document",
+        "role": "Editor",
+        "mimeType": "text/plain"
+      },
+      {
+        "ext": ["docx"],
+        "name": "WordDocument",
+        "description": "Microsoft Word document",
+        "role": "Editor",
+        "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      },
+      {
+        "ext": ["odt"],
+        "name": "OpenDocumentText",
+        "description": "OpenDocument text",
+        "role": "Editor",
+        "mimeType": "application/vnd.oasis.opendocument.text"
+      },
+      {
+        "ext": ["rtf"],
+        "name": "RichText",
+        "description": "Rich Text Format",
+        "role": "Editor",
+        "mimeType": "application/rtf"
+      },
+      {
+        "ext": ["html", "htm"],
+        "name": "HTMLDocument",
+        "description": "HTML document",
+        "role": "Editor",
+        "mimeType": "text/html"
+      },
+      {
+        "ext": ["epub"],
+        "name": "EPUB",
+        "description": "EPUB book",
+        "role": "Editor",
+        "mimeType": "application/epub+zip"
+      },
+      {
+        "ext": ["rst"],
+        "name": "reStructuredText",
+        "description": "reStructuredText document",
+        "role": "Editor"
+      },
+      {
+        "ext": ["adoc", "asciidoc"],
+        "name": "AsciiDoc",
+        "description": "AsciiDoc document",
+        "role": "Editor"
+      },
+      {
+        "ext": ["tex", "latex"],
+        "name": "LaTeX",
+        "description": "LaTeX document",
+        "role": "Editor",
+        "mimeType": "application/x-latex"
+      },
+      {
+        "ext": ["org"],
+        "name": "OrgMode",
+        "description": "Org mode document",
+        "role": "Editor"
+      },
+      {
+        "ext": ["textile"],
+        "name": "Textile",
+        "description": "Textile document",
+        "role": "Editor"
+      },
+      {
+        "ext": ["wiki", "mediawiki"],
+        "name": "MediaWiki",
+        "description": "MediaWiki markup",
+        "role": "Editor"
+      },
+      {
+        "ext": ["ipynb"],
+        "name": "JupyterNotebook",
+        "description": "Jupyter Notebook",
+        "role": "Editor",
+        "mimeType": "application/x-ipynb+json"
+      },
+      {
+        "ext": ["fb2"],
+        "name": "FictionBook",
+        "description": "FictionBook ebook",
+        "role": "Editor"
+      },
+      {
+        "ext": ["opml"],
+        "name": "OPML",
+        "description": "OPML outline",
+        "role": "Editor"
+      }
+    ],
+    "windows": {
+      "wix": {
+        "language": "en-US"
+      },
+      "webviewInstallMode": {
+        "type": "embedBootstrapper",
+        "silent": false
+      }
+    }
+  }
+}

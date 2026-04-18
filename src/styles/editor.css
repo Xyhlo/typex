@@ -1,0 +1,343 @@
+/* ============================================================
+   Editor — the heart of the experience.
+   This targets Milkdown's .milkdown / .ProseMirror output.
+   ============================================================ */
+
+.editor {
+  width: 100%;
+  max-width: var(--content-max);
+  padding-bottom: var(--sp-10);
+  transition: max-width var(--dur-md) var(--ease-standard);
+}
+
+/* Reading-mode: "horizontal" widens the content column for wide-screen users.
+   "vertical" (default) keeps the narrow 72ch rhythm for focused writing. */
+.app[data-reading-mode="horizontal"] .editor {
+  max-width: var(--content-max-wide);
+}
+
+/* Milkdown root + ProseMirror editable */
+.milkdown,
+.ProseMirror {
+  font-family: var(--font-editor);
+  font-size: calc(var(--fs-editor) * var(--editor-scale, 1));
+  line-height: var(--lh-editor);
+  color: var(--fg);
+  caret-color: var(--accent);
+  outline: 0;
+}
+
+.ProseMirror { min-height: 60vh; }
+.ProseMirror:focus { outline: 0; }
+
+/* Editor serif mode */
+[data-editor-font="serif"] .ProseMirror {
+  font-family: var(--font-serif);
+  line-height: 1.72;
+}
+
+/* Placeholder for empty doc */
+.ProseMirror p.is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--fg-subtle);
+  float: left;
+  pointer-events: none;
+  height: 0;
+}
+
+/* Paragraph rhythm */
+.ProseMirror > * + * { margin-top: var(--sp-4); }
+.ProseMirror > p { margin: 0; }
+.ProseMirror > p + p { margin-top: var(--sp-3); }
+
+/* ---------- Headings ---------- */
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  color: var(--fg-heading);
+  font-family: var(--font-ui);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-heading);
+  line-height: 1.25;
+  margin: 0;
+  scroll-margin-top: calc(var(--titlebar-h) + var(--sp-4));
+}
+
+/* Heading sizes in em so they scale with the editor font size + zoom. */
+.ProseMirror > h1 { margin-top: var(--sp-5); font-size: 2em;    font-weight: 700; letter-spacing: -0.02em; }
+.ProseMirror > h2 { margin-top: var(--sp-7); font-size: 1.6em; }
+.ProseMirror > h3 { margin-top: var(--sp-6); font-size: 1.3em; }
+.ProseMirror > h4 { margin-top: var(--sp-5); font-size: 1.1em; }
+.ProseMirror > h5 { margin-top: var(--sp-4); font-size: 1em;   color: var(--fg); }
+.ProseMirror > h6 {
+  margin-top: var(--sp-4);
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-micro);
+  color: var(--fg-muted);
+}
+
+.ProseMirror h1::after {
+  content: "";
+  display: block;
+  margin-top: var(--sp-2);
+  width: 2rem;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  border-radius: 2px;
+}
+
+/* ---------- Links ---------- */
+.ProseMirror a {
+  color: var(--accent);
+  text-decoration: none;
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size var(--dur-sm) var(--ease-standard),
+              color var(--dur-sm) var(--ease-standard);
+}
+.ProseMirror a:hover {
+  color: var(--accent-hover);
+  background-size: 100% 2px;
+}
+
+/* ---------- Strong / em / strike / mark ---------- */
+.ProseMirror strong { color: var(--fg-heading); font-weight: var(--fw-semibold); }
+.ProseMirror em { font-style: italic; }
+.ProseMirror s { color: var(--fg-muted); text-decoration-color: var(--fg-subtle); }
+
+.ProseMirror mark {
+  background: linear-gradient(180deg, transparent 62%, var(--accent-muted) 62%);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* ---------- Inline code ---------- */
+.ProseMirror code,
+.ProseMirror :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 0.15em 0.42em;
+  background: var(--code-bg-inline);
+  color: var(--fg);
+  border-radius: var(--radius-xs);
+  font-feature-settings: "calt" 0;
+}
+
+/* ---------- Code blocks ---------- */
+.ProseMirror pre {
+  position: relative;
+  margin: 0;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4) var(--sp-5);
+  overflow: auto;
+  font-size: 0.92em;
+  line-height: 1.6;
+  box-shadow: var(--shadow-xs);
+  font-family: var(--font-mono);
+}
+.ProseMirror pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+  font-family: inherit;
+}
+
+/* Language label — appears top-right when set */
+.ProseMirror pre[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--ls-micro);
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  font-family: var(--font-ui);
+  pointer-events: none;
+}
+
+/* Highlight.js token colors mapped to our tokens */
+.hljs-keyword, .hljs-built_in, .hljs-literal { color: var(--hl-keyword); }
+.hljs-string, .hljs-regexp, .hljs-template-tag, .hljs-template-variable { color: var(--hl-string); }
+.hljs-number, .hljs-symbol, .hljs-bullet { color: var(--hl-number); }
+.hljs-comment, .hljs-quote, .hljs-deletion { color: var(--hl-comment); font-style: italic; }
+.hljs-title, .hljs-title.function_, .hljs-section { color: var(--hl-func); }
+.hljs-class .hljs-title, .hljs-type { color: var(--hl-type); }
+.hljs-params, .hljs-variable, .hljs-attribute { color: var(--fg); }
+.hljs-tag, .hljs-name, .hljs-selector-id, .hljs-selector-class { color: var(--hl-tag); }
+.hljs-attr { color: var(--hl-attr); }
+.hljs-meta, .hljs-meta .hljs-string { color: var(--hl-meta); }
+.hljs-punctuation { color: var(--hl-punc); }
+
+/* ---------- Blockquote ---------- */
+.ProseMirror blockquote {
+  margin: 0;
+  padding: var(--sp-3) var(--sp-5);
+  border-left: 3px solid var(--quote-bar);
+  background: var(--quote-bg);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--quote-fg);
+  font-style: italic;
+}
+.ProseMirror blockquote > * { margin-top: var(--sp-3); }
+.ProseMirror blockquote > *:first-child { margin-top: 0; }
+.ProseMirror blockquote em { font-style: normal; }
+
+/* ---------- Lists ---------- */
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.6em;
+  margin: 0;
+}
+.ProseMirror li { margin-top: var(--sp-1); }
+.ProseMirror li > p { margin: 0; }
+.ProseMirror li > ul,
+.ProseMirror li > ol { margin-top: var(--sp-1); }
+
+.ProseMirror ul li::marker { color: var(--accent); }
+.ProseMirror ol li::marker { color: var(--fg-muted); font-weight: var(--fw-medium); }
+
+/* Task lists */
+.ProseMirror ul[data-task-list],
+.ProseMirror li[data-task-item] {
+  list-style: none;
+  padding-left: 0;
+}
+.ProseMirror li[data-task-item] {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-left: 0;
+}
+.ProseMirror li[data-task-item] > input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--bg-inset);
+  cursor: pointer;
+  position: relative;
+  top: 3px;
+  transition: border-color var(--dur-sm) var(--ease-standard),
+              background var(--dur-sm) var(--ease-standard);
+}
+.ProseMirror li[data-task-item] > input[type="checkbox"]:hover {
+  border-color: var(--accent);
+}
+.ProseMirror li[data-task-item] > input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.ProseMirror li[data-task-item] > input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.ProseMirror li[data-task-item][data-checked="true"] { color: var(--fg-muted); }
+.ProseMirror li[data-task-item][data-checked="true"] > p { text-decoration: line-through; text-decoration-color: var(--fg-faint); }
+
+/* ---------- Horizontal rule ---------- */
+.ProseMirror hr {
+  border: 0;
+  margin: var(--sp-7) auto;
+  height: 1px;
+  width: 50%;
+  background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+}
+
+/* ---------- Tables ---------- */
+.ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.94em;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--border);
+}
+.ProseMirror th,
+.ProseMirror td {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ProseMirror th {
+  background: var(--bg-overlay);
+  color: var(--fg-heading);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-micro);
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+}
+.ProseMirror tbody tr:hover td { background: var(--bg-overlay); }
+.ProseMirror tbody tr:last-child td { border-bottom: 0; }
+
+/* ---------- Images ---------- */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- KaTeX math ---------- */
+.ProseMirror .math-node {
+  color: var(--fg-heading);
+}
+.ProseMirror .math-display {
+  display: block;
+  padding: var(--sp-3) 0;
+  text-align: center;
+}
+
+/* ---------- Keyboard ---------- */
+.ProseMirror kbd {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  padding: 1px 6px;
+  background: var(--bg-overlay);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-xs);
+  color: var(--fg);
+}
+
+/* ---------- Drop cursor & gap cursor ---------- */
+.ProseMirror-dropcursor,
+.ProseMirror-gapcursor::after {
+  background-color: var(--accent);
+}
+
+/* ---------- Typewriter mode (optional future feature) ---------- */
+[data-typewriter="true"] .editor-host {
+  padding-top: 40vh;
+  padding-bottom: 40vh;
+}
+
+/* ---------- Focus mode ---------- */
+[data-focus-mode="true"] .ProseMirror > * {
+  opacity: 0.3;
+  transition: opacity var(--dur-md) var(--ease-standard);
+}
+[data-focus-mode="true"] .ProseMirror > .is-current,
+[data-focus-mode="true"] .ProseMirror > *:hover {
+  opacity: 1;
+}
