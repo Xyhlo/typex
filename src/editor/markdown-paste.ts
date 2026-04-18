@@ -28,17 +28,34 @@ import { createLowlight, common } from "lowlight";
 
 const lowlight = createLowlight(common);
 
-/** Any of these markers → almost certainly intended as markdown. */
-const looksLikeMarkdown = (s: string): boolean => {
-  if (/^[ \t]*#{1,6}\s+\S/m.test(s)) return true; // heading
+/**
+ * STRONG markdown signals — syntax that isn't used as comments or statements
+ * in any common programming language. If we see these, it's markdown, full
+ * stop.
+ */
+const hasStrongMarkdown = (s: string): boolean => {
+  if (/^[ \t]*(```|~~~)/m.test(s)) return true; // fenced code block
   if (/^[ \t]*>\s/m.test(s)) return true; // blockquote
-  if (/^[ \t]*[-*+]\s+\S/m.test(s)) return true; // bullet list
-  if (/^[ \t]*\d+\.\s+\S/m.test(s)) return true; // ordered list
-  if (/^[ \t]*(```|~~~)/m.test(s)) return true; // already-fenced block
   if (/^[ \t]*\|[^|\n]+\|/m.test(s)) return true; // table row
-  if (/\[[^\]\n]+\]\([^)\n]+\)/.test(s)) return true; // link
+  if (/^[ \t]*[-*+]\s+\[[ xX]\]\s/m.test(s)) return true; // task list
   if (/!\[[^\]\n]*\]\([^)\n]+\)/.test(s)) return true; // image
-  if (/^[ \t]*\[\s*[xX ]\s*\]\s/m.test(s)) return true; // task list
+  return false;
+};
+
+/**
+ * WEAK markdown signals — syntax that overlaps with code:
+ *   - `#` headings collide with Python/shell/Ruby/YAML comments
+ *   - `- item` lists collide with `-x` flags and prose dashes
+ *   - `[link](url)` collides with things like `List[str](...)`
+ *   - `**bold**` collides with Python exponent operator
+ * These only win when there's no strong code signal present.
+ */
+const hasWeakMarkdown = (s: string): boolean => {
+  if (/^[ \t]*#{1,6}\s+\S/m.test(s)) return true;
+  if (/^[ \t]*[-*+]\s+\S/m.test(s)) return true;
+  if (/^[ \t]*\d+\.\s+\S/m.test(s)) return true;
+  if (/\*\*[^*\n]+\*\*/.test(s)) return true;
+  if (/\[[^\]\n]+\]\([^)\n]+\)/.test(s)) return true;
   return false;
 };
 
@@ -130,11 +147,17 @@ const handle = (ctx: Ctx, view: EditorView, event: ClipboardEvent): boolean => {
 
   if (!text) return false;
 
-  const md = looksLikeMarkdown(text);
+  const strongMd = hasStrongMarkdown(text);
+  const weakMd = hasWeakMarkdown(text);
   const code = looksLikeCode(text);
-  console.info(`[typex paste] detection — markdown=${md} code=${code}`);
+  console.info(
+    `[typex paste] detection — strongMd=${strongMd} weakMd=${weakMd} code=${code}`,
+  );
 
-  if (!md && code) {
+  // Strong markdown (fence / quote / table / task / image) always wins.
+  // Otherwise, code beats weak markdown — that's what prevents a Python
+  // `# comment` line from being mistaken for a heading.
+  if (!strongMd && code) {
     const lang = detectLanguage(text);
     console.info(`[typex paste] wrapping — language=${JSON.stringify(lang)}`);
     const trimmed = text.replace(/\s+$/, "");

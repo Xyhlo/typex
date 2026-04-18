@@ -10,16 +10,21 @@ const lowlight = createLowlight(common);
 
 // ------------------ Copied verbatim from markdown-paste.ts ------------------
 
-const looksLikeMarkdown = (s) => {
-  if (/^[ \t]*#{1,6}\s+\S/m.test(s)) return true;
+const hasStrongMarkdown = (s) => {
+  if (/^[ \t]*(```|~~~)/m.test(s)) return true;
   if (/^[ \t]*>\s/m.test(s)) return true;
+  if (/^[ \t]*\|[^|\n]+\|/m.test(s)) return true;
+  if (/^[ \t]*[-*+]\s+\[[ xX]\]\s/m.test(s)) return true;
+  if (/!\[[^\]\n]*\]\([^)\n]+\)/.test(s)) return true;
+  return false;
+};
+
+const hasWeakMarkdown = (s) => {
+  if (/^[ \t]*#{1,6}\s+\S/m.test(s)) return true;
   if (/^[ \t]*[-*+]\s+\S/m.test(s)) return true;
   if (/^[ \t]*\d+\.\s+\S/m.test(s)) return true;
-  if (/^[ \t]*(```|~~~)/m.test(s)) return true;
-  if (/^[ \t]*\|[^|\n]+\|/m.test(s)) return true;
+  if (/\*\*[^*\n]+\*\*/.test(s)) return true;
   if (/\[[^\]\n]+\]\([^)\n]+\)/.test(s)) return true;
-  if (/!\[[^\]\n]*\]\([^)\n]+\)/.test(s)) return true;
-  if (/^[ \t]*\[\s*[xX ]\s*\]\s/m.test(s)) return true;
   return false;
 };
 
@@ -70,24 +75,25 @@ const detectLanguage = (text) => {
   return "";
 };
 
-// ------------------ Real input from the user's screenshot ------------------
+// ------------------ Test cases ------------------
 
-const pythonSource = `#!/usr/bin/env python3
+const pythonWithComments = `#!/usr/bin/env python3
 """Test module for color highlighting verification."""
+
+# This is a simple Python comment
+# Another comment explaining what's next
 
 import os
 import sys
 from typing import List, Dict, Optional
-from dataclasses import dataclass
-from enum import Enum, auto
 
 
 class Priority(Enum):
     """Task priority levels."""
+    # Levels defined in ascending order
     LOW = auto()
     MEDIUM = auto()
     HIGH = auto()
-    CRITICAL = auto()
 
 
 @dataclass
@@ -95,79 +101,90 @@ class Task:
     """Represents a task with various attributes."""
     name: str
     priority: Priority
-    completed: bool = False
-    tags: List[str] = None
-    metadata: Dict[str, str] = None
 
     def __post_init__(self):
+        # Initialize defaults
         if self.tags is None:
             self.tags = []
-        if self.metadata is None:
-            self.metadata = {}
 
     def mark_complete(self) -> None:
-        """Mark the task as completed."""
+        """Mark as completed."""
         self.completed = True
         print(f"Task '{self.name}' marked as complete!")
+`;
 
-    def add_tag(self, tag: str) -> None:
-        """Add a tag to the task."""
-        if tag not in self.tags:
-            self.tags.append(tag)
+const realMarkdown = `# Hello
 
+This is a doc with real markdown.
 
-class TaskManager:
-    """Manages a collection of tasks."""
+> A quote here.
 
-    def __init__(self, name: str):
-        self.name = name
-        self.tasks: List[Task] = []
-        self._task_counter = 0
+- bullet one
+- bullet two
 
-    def add_task(
-        self,
-        name: str,
-        priority: Priority = Priority.MEDIUM,
-        tags: Optional[List[str]] = None,
-    ) -> Task:
-        """Add a new task to the manager."""
-        task = Task(
-            name=name,
-            priority=priority,
-            tags=tags or [],
-        )
-        self.tasks.append(task)
-        self._task_counter += 1
-        return task
+\`\`\`python
+print("hi")
+\`\`\`
+`;
 
-    def get_tasks_by_priority(self, priority: Priority) -> List[Task]:
-        """Get all tasks with a specific priority."""
-        return [t for t in self.tasks if t.priority == priority]
+const typescriptSnippet = `export const greet = (name: string): string => {
+  return \`Hello, \${name}!\`;
+};
+
+const mood = "flowing";
+console.log(greet(mood));
 `;
 
 // ------------------ Run the checks ------------------
 
-console.log("== Input ==");
-console.log(`  first line: ${JSON.stringify(pythonSource.split("\\n")[0])}`);
-console.log(`  length: ${pythonSource.length} chars, ${pythonSource.split("\\n").length} lines`);
-console.log();
+const cases = [
+  {
+    name: "Python with # comments (the user's case)",
+    input: pythonWithComments,
+    expect: { strongMd: false, weakMd: true, code: true, lang: "python" },
+    shouldWrap: true, // because strongMd=false AND code=true
+  },
+  {
+    name: "Real markdown with fence + quote + list",
+    input: realMarkdown,
+    expect: { strongMd: true, weakMd: true, code: false, lang: "" },
+    shouldWrap: false, // because strongMd=true
+  },
+  {
+    name: "TypeScript snippet, no shebang, no comments",
+    input: typescriptSnippet,
+    expect: { strongMd: false, weakMd: false, code: true, lang: "typescript" },
+    shouldWrap: true,
+  },
+];
 
-const md = looksLikeMarkdown(pythonSource);
-const code = looksLikeCode(pythonSource);
-const lang = detectLanguage(pythonSource);
+let failed = 0;
+for (const c of cases) {
+  const strongMd = hasStrongMarkdown(c.input);
+  const weakMd = hasWeakMarkdown(c.input);
+  const code = looksLikeCode(c.input);
+  const lang = detectLanguage(c.input);
+  const wrap = !strongMd && code;
 
-console.log("== Detection ==");
-console.log(`  looksLikeMarkdown: ${md}`);
-console.log(`  looksLikeCode:     ${code}`);
-console.log(`  detectLanguage:    ${JSON.stringify(lang)}`);
-console.log();
+  const langOk = c.expect.lang === "" ? true : lang === c.expect.lang;
+  const ok =
+    strongMd === c.expect.strongMd &&
+    weakMd === c.expect.weakMd &&
+    code === c.expect.code &&
+    langOk &&
+    wrap === c.shouldWrap;
 
-console.log("== Expected ==");
-console.log(`  looksLikeMarkdown: false`);
-console.log(`  looksLikeCode:     true`);
-console.log(`  detectLanguage:    "python"`);
-console.log();
+  const mark = ok ? "\x1b[32m✓\x1b[0m" : "\x1b[31m✗\x1b[0m";
+  console.log(`${mark} ${c.name}`);
+  console.log(
+    `    strongMd=${strongMd} weakMd=${weakMd} code=${code} lang=${JSON.stringify(lang)} wrap=${wrap}`,
+  );
+  if (!ok) {
+    console.log(
+      `    EXPECTED strongMd=${c.expect.strongMd} weakMd=${c.expect.weakMd} code=${c.expect.code} lang=${JSON.stringify(c.expect.lang)} wrap=${c.shouldWrap}`,
+    );
+    failed++;
+  }
+}
 
-const ok = md === false && code === true && lang === "python";
-console.log(ok ? "\x1b[32m✓ All checks pass\x1b[0m" : "\x1b[31m✗ FAIL — one or more checks wrong\x1b[0m");
-process.exit(ok ? 0 : 1);
+process.exit(failed === 0 ? 0 : 1);
