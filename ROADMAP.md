@@ -1,341 +1,582 @@
 # TypeX — Roadmap
 
-_Last updated: 2026-04-18._
+> Your writing stays as plain files in a git repo. The editor is fast enough that you forget it's there.
 
-## Shipping in v0.1.0 Beta (Windows)
+That's the whole thing. Everything below is what falls out of that decision.
 
-- Markdown editor (Milkdown) with WYSIWYG editing
-- Two hand-tuned themes: **Obsidian Ink** (dark), **Ivory Paper** (light)
-- Menu bar (File / Edit / View / Insert / Format / Tools / Help) with
-  submenus, access keys, keyboard shortcuts
-- Tabs with dirty indicator, close-others/close-all, session restore
-- File tree sidebar with "Open folder"
-- Outline sidebar generated from headings
-- Command palette (Ctrl+K)
-- Find + Replace (Ctrl+F / Ctrl+H)
-- Autosave (opt-in)
-- Pandoc-powered import/export (40+ formats) when Pandoc is on PATH
-- Reading width toggle (vertical/horizontal), editor font (sans/serif),
-  focus mode, typewriter mode, zoom
-- **Syntax highlighting in code blocks** (this release)
-- File associations: Windows "Open with TypeX" for .md, .docx, .odt, .rtf,
-  .html, .epub, .tex, .rst, .adoc, .org, and more
-- MSI installer with single-instance behavior (double-clicking another
-  file routes into the running window)
+## Current state — v0.4.0 (shipped)
 
-## Not in v0.1.0
+- **v0.1.x** — beta: WYSIWYG editor, tabs, session restore, themes, Pandoc export, MSI installer, Windows file associations.
+- **v0.3.0** — editor craft + git-native + live streams. Phases 1 and 2 shipped together: tri-mode, outline, tags, backlinks, properties, smart paste, status pill, gutter marks, blame, autocommit/autopush/autopull, clone dialog, 3-way external-change handling, multi-root workspaces.
+- **v0.4.0** — AI for writing, without the chatbot. Phase 4 shipped as one release: seven AI adapters (Ollama, Anthropic / OpenAI / Gemini APIs, Claude Code / Codex / Gemini CLI agents) behind one interface; OS keychain for keys; inline ghost-text autocomplete with custom prompts; in-place Rewrite / Fix / Translate / Continue with accent glow + streaming caret; Summarize to clipboard; right-click menu; per-provider dynamic model lists + custom model IDs. Off by default, zero telemetry.
+- **Phase 3 (cross-device)** — deferred. TypeX stays Windows-first desktop; users sync via their own git remote.
 
-**Reminders** and **JSX rendering** are planned future pillars — designs
-in sections 2 and 3 below — but they do **not** ship in this beta.
+***
 
+## Table of contents
+
+1. [Positioning](#positioning)
+2. [Feature pillars](#feature-pillars)
+3. [Cross-device + sync architecture](#cross-device--sync-architecture)
+4. [GitHub as a first-class surface](#github-as-a-first-class-surface)
+5. [A day with TypeX — user flow](#a-day-with-typex--user-flow)
+6. [Competitive: TypeX vs Obsidian](#competitive-typex-vs-obsidian)
+7. [Phased delivery plan](#phased-delivery-plan)
+8. [Cross-cutting work](#cross-cutting-work)
+9. [Calendar](#calendar)
+10. [The discipline test](#the-discipline-test)
+
+***
+
+## Positioning
+
+**Obsidian is a second brain. TypeX is a better pen.**
+
+Obsidian is a personal-knowledge-management tool that happens to edit markdown. TypeX is a markdown *editor* that happens to organize files. Different users. Different centers of gravity. Trying to out-Obsidian Obsidian is how we die.
+
+The audience we serve:
+
+* Developers writing READMEs, design docs, blog posts.
+
+* Academics writing papers with citations and LaTeX exports.
+
+* Technical writers writing product docs.
+
+* Bloggers writing posts.
+
+* Anyone who left Typora and regretted where they landed.
+
+What they want: WYSIWYG that actually is WYSIWYG, fast native feel, git as a first-class citizen, painless export, free sync. What they don't want: a graph view, a canvas, or a daily-notes workflow. We build the first list and decline the second.
+
+***
+
+## Feature pillars
+
+### The 5 editor moves
+
+1. **Tri-mode that earns its keep.** WYSIWYG ↔ raw source (CodeMirror 6 over the same buffer) ↔ side-by-side with cursor sync. The gap isn't *having* the modes — it's making a flip feel instant and keeping the caret in the same paragraph across modes. Most editors fumble this.
+2. **Git as context, not a client.** Gutter marks vs HEAD, hover-blame with GitHub avatars, "stage this hunk" from the editor. Skip the full branch/merge UI — that's what `git` is for. Ship a "Changes" panel per folder, not a whole VCS.
+3. **Watch + reload with diff review.** External change → toast with a 3-way diff, not a silent overwrite. Typora and Obsidian both get this wrong.
+4. **Plugin surface before a plugin store.** Capability-scoped manifest (`on-load`, `on-save`, `on-render`, `on-command`), sandboxed JS, filesystem-scoped to the current vault. markdownlint and Prettier ship as first-party plugins so the API is proven before third parties touch it.
+5. **AI as a provider, not a feature.** One interface (`rewrite / continue / critique / summarize`), multiple backends (Ollama local, Anthropic, OpenAI). Users pick. Keeps us out of the "AI editor" trap where the AI *is* the product.
+
+### Borrowed from Obsidian, without copying the app
+
+* `[[Backlinks]]` — useful even in a doc vault. Add them.
+
+* Frontmatter / properties panel — useful for any markdown workflow.
+
+* Tags with a tag index — cheap to ship.
+
+* Outline / table of contents side panel — every writer wants this.
+
+### Declined, on purpose
+
+* Graph view.
+
+* Canvas.
+
+* Daily notes / periodic notes workflow.
+
+If a user asks, the answer is: *Obsidian is better at that and it's free for personal use.* Discipline is the feature.
+
+***
+
+## Cross-device + sync architecture
+
+**Local-first files + Git as the sync fabric + GitHub OAuth as the account.** One decision that answers every cross-device requirement at once.
+
+* Vault = a folder. A folder can be plain, or it can be a git repo.
+
+* If it's a git repo, TypeX handles push/pull/merge in the background with visible status.
+
+* Sign-in = "Sign in with GitHub." That's the account. No custom auth surface, no password resets, no billing plumbing, no PII we have to guard.
+
+* Anonymous users keep 100% local, no degradation — just no sync.
+
+* Cross-device = clone the same repo on the next device. Windows, macOS, web, iOS all speak git.
+
+This is the only approach where we don't end up running a CRDT relay, an object store, an auth service, *and* a billing layer before we ship v2.
+
+### Architecture moves
+
+1. **Git-aware sync, not "upload my folder."** Autocommit with configurable cadence (on save / on idle / manual), autopush if online, autopull on focus. Merge conflicts get a real 3-way diff UI — the one thing Obsidian Sync and iCloud both fumble. Doubles as the git/diff feature from the pillars.
+2. **Provider abstraction from day one.** `GitProvider` interface; GitHub first, GitLab / Gitea / self-hosted second. Don't hardcode `api.github.com` anywhere outside that layer or we'll regret it in 6 months.
+3. **Web build = same bundle, no Tauri.** Editor runs in the browser. Vault = a GitHub repo via isomorphic-git in a Worker, or a local folder via File System Access API where supported. This is the *realistic* iOS story for v1 — Safari users get a working editor without a native app shipping.
+4. **Native iOS as a year-2 bet, not a blocker.** SwiftUI shell + WKWebView hosting the same editor bundle + a Swift bridge for filesystem/git (libgit2). Not a rewrite; a port of the shell.
+5. **Real-time co-editing isn't on this roadmap.** Git can't do it. If it becomes a top-ten user request, layer Yjs on top for active-session-only, flush to git on commit. Don't front-load the CRDT.
+
+### Honest tradeoffs
+
+* **Git handles text beautifully, binaries terribly.** Image-heavy vaults need LFS, and LFS on iOS Safari is grim. Ship "sync works best for text-heavy vaults" as an honest caveat in the UI, not a footnote.
+
+* **GitHub lock-in risk.** Routing sync + auth + projects through one provider is leverage they can revoke. The provider abstraction is non-negotiable for that reason.
+
+* **"Anonymous can't sync" is a feature if we signpost it well.** A "Sign in to sync across devices" affordance has to live somewhere the unsigned user sees it without nagging.
+
+* **Conflict UI is the make-or-break.** If merge conflicts dump the user into raw `<<<<<<<` markers the way Obsidian does, we've lost. Budget real engineering weeks for the 3-way diff, not a weekend.
+
+* **Web build means CSP + CORS headaches** around GitHub's API, isomorphic-git's bundle size (\~500KB gz), and the File System Access API's patchy support. Budget that, too.
+
+***
+
+## GitHub as a first-class surface
+
+Not a sync afterthought. A surface.
+
+* **Repo picker replaces "Open folder" when signed in.**
+
+* **Tree view of every markdown file in the repo** — default to README.md on open.
+
+* **Inline** **`#412`** **issue references** with open / closed / merged status and hover preview.
+
+* **"Create PR from branch"** + **"Publish as Gist"** from the command palette.
+
+* **`git blame`** **side-rail** with GitHub avatars on each line.
+
+* **GitHub Actions status** for docs-build workflows in the status bar.
+
+* **Recent projects = recent repos.**
+
+***
+
+## A day with TypeX — user flow
+
+**Morning, at the desktop.** You double-click `design-doc.md` in Explorer. TypeX's branded icon told you which file it was before you clicked. The app opens with the sidebar collapsed — you asked to see one file, you get the file, full width. The titlebar shows a quiet "synced 2m ago" pill.
+
+**You type.** WYSIWYG by default. A code fence appears as you type ` ```python ` — it highlights inline, colors match the theme. You hit `Ctrl+/` to drop into raw source because you want to tweak a YAML block; same file, same cursor paragraph, instant flip. `Ctrl+\` gives you the split view with synced scroll. You flip back.
+
+**The gutter has opinions.** Three lines have a green bar (added vs HEAD), one has a blue bar (modified). You hover the modified line — avatar of the teammate who last touched it, commit message on a tooltip. No separate git tool. No context switch.
+
+**You paste a log snippet from Slack.** It's Python. TypeX recognizes it's code, not prose, wraps it in a fenced block, highlights it. The earlier "# comment becomes heading" bug is dead.
+
+**An AI call, not an AI takeover.** Select an awkward paragraph → palette → "Rewrite clearer." A side-panel shows the suggestion diffed against your text. Accept or discard. The backend is Ollama on your box by default; switch to Claude for a heavier lift. The editor doesn't suddenly become a chatbot.
+
+**Save.** Autocommit 3 seconds after your last keystroke. Autopush if online. The pill now reads "synced."
+
+**Afternoon, coffee shop, iPad.** Safari → `app.typex.so` → sign in with GitHub → pick the same repo. isomorphic-git clones it in a worker. You fix a typo from the couch. Push. Not as fast as the desktop, but the work is real work, not a separate "mobile notes" app you'll have to reconcile later.
+
+**Back at the desk, a merge.** Your teammate pushed while you were out. Focus returns to TypeX → toast slides in: *"Upstream changes on* *`design-doc.md`. Review?"* A 3-way diff, rendered as two prose columns plus a merged column. You pick hunks. You commit. No `<<<<<<<` markers ever touch your face.
+
+**A reference to** **`#412`** **in a paragraph** has quietly become a link with a "merged" badge. Hover it — PR title, author, date. The GitHub integration isn't a separate panel, it's just *present*.
+
+**Publish time.** Command palette: "Export → PDF → Academic theme." Pandoc ships in the MSI, so it just works. Or: "Create PR from branch," and you skip the terminal entirely.
+
+**Evening, another machine.** Your spouse's laptop, you install TypeX, sign in with GitHub, pick the repo. Everything's there. No "import my vault" step, no "transfer save files," no subscription page.
+
+***
+
+## Competitive: TypeX vs Obsidian
+
+### Where Obsidian beats us today (honest)
+
+* Backlinks, graph view, tags as a first-class network. Their killer feature.
+
+* 1,000+ community plugins. Four years of network effects. Uncatchable in feature count.
+
+* Native iOS and Android apps shipping today.
+
+* Canvas — visual whiteboard of notes. Cult feature.
+
+* Daily notes / periodic notes workflow baked in.
+
+* Community moat — YouTube tutorials, templates, influencers, $10 courses.
+
+* Four years of polish — bug fixes, edge cases, muscle memory.
+
+If someone is building a second brain, they should use Obsidian. We aren't going to win that user in year one, and we shouldn't waste a roadmap chasing them.
+
+### Where TypeX beats Obsidian (specific)
+
+* **Actual WYSIWYG.** Obsidian's "Live Preview" still shows raw `**` around bold and raw `|` in tables when the cursor is on that line. It's a compromise. Milkdown isn't.
+
+* **Native speed.** Tauri shell + a tight bundle vs. Electron. Cold start and huge-file responsiveness are measurably better.
+
+* **Git is core, not a plugin.** The "Obsidian Git" community plugin is famously flaky. Ours is first-party, syncs automatically, and has a real 3-way merge UI.
+
+* **Free sync.** Obsidian Sync is $96/year. GitHub is free.
+
+* **Format breadth.** Pandoc is in the installer — docx, epub, LaTeX, 40+ formats. Obsidian is markdown-only natively; anything else is a plugin you configure.
+
+* **AI as a first-class surface.** Not a plugin. Not Claude-only or OpenAI-only. One interface, pick your backend.
+
+* **Open source, MIT, no freemium.** Obsidian is closed-source with paid Sync and paid Publish.
+
+* **Design.** Out-of-box, we are prettier and less dense.
+
+### How we win
+
+1. **Claim the Typora audience first, not the Obsidian audience.** Typora refugees want a polished WYSIWYG editor — a thing Obsidian *isn't*.
+2. **Position as "the editor for people who write things that get published."**
+3. **Steal Obsidian's best ideas without copying the whole app** (backlinks, properties, tags, outline). Skip graph view and canvas.
+4. **Be unambiguously better at what Obsidian is worst at** — WYSIWYG, git, speed, export, default aesthetics, free sync.
+5. **Use open source as a moat** against their closed-source freemium model.
+6. **Plugin API quality > quantity.**
+7. **Ship native iOS in year two.** Power users won't leave Obsidian without it.
+8. **Don't engage on PKM.** Don't build a graph view because a reviewer asked for one.
+
+***
+
+## Phased delivery plan
+
+Four strategic beats, in order, each standing on the previous:
+
+**Editor craft → Git-native → Cross-device → Extensible.**
+
+Publishing, mobile, and community are polish or scale work on top. Each beat ships as a standalone version that's independently worth using.
+
+### Phase 0 — Beta baseline (v0.1.x, shipped)
+
+WYSIWYG editor, tabs, session restore, two themes, design system, Pandoc export, MSI installer with branded file icons, first-run default-app prompt, progress toasts.
+
+**Position then:** a polished Typora replacement. Good, but not distinct.
+
+### Phase 1 — "Editor craft" (shipped in v0.3.0)
+
+Make the editor itself undeniably better than what Typora or Obsidian ships.
+
+| Ship                                                         | Why it matters                                                            |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| **Tri-mode with cursor sync** (WYSIWYG ↔ raw source ↔ split) | The single feature Obsidian fumbles. Our wedge against them.              |
+| **Outline / TOC side panel**                                 | Every writer wants this. Cheap, high return.                              |
+| **Frontmatter / properties panel**                           | Matches Obsidian's best ergonomic feature.                                |
+| **Tags (`#tag`) with a tag index**                           | Cheap. Closes a common "but does it have…" objection.                     |
+| **`[[Backlinks]]`** **wiki-links**                           | Steals Obsidian's idea without copying the whole app. Vault-scoped index. |
+| **Smarter paste** (extend language detection)                | Quality signal for developer users.                                       |
+
+**The one hard spike:** mapping cursor position between ProseMirror's doc and the raw markdown string. Prototype this first, in isolation. If it doesn't feel instant, ship WYSIWYG + raw as separate modes first and add split later.
+
+**Done when:** a Typora user or a Live Preview Obsidian user opens TypeX and doesn't want to go back.
+
+### Phase 2 — "Git-native" (shipped in v0.3.0)
+
+Git stops being a plugin anywhere in the world. Ours is first-party and invisible.
+
+| Ship                                                                           | Why it matters                                                                  |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| **libgit2 backend** (via `git2-rs`)                                            | Shelling out to `git` won't keep up with live gutter updates.                   |
+| **Gutter marks vs HEAD** (added / modified / removed)                          | VS Code ergonomics for prose writers.                                           |
+| **Blame-on-hover with GitHub avatars**                                         | Context, not a client.                                                          |
+| **Watch + 3-way reload** (external change → diff review, not silent overwrite) | Typora and Obsidian both get this wrong.                                        |
+| **Autocommit / autopush / autopull** with a visible sync pill                  | Foundation for Phase 3.                                                         |
+| **GitHub OAuth (device flow)**                                                 | The account. The only account we ship.                                          |
+| **Repo picker as vault source** (`Open repo…`)                                 | Collapses two features into one UX.                                             |
+| **Provider abstraction at the interface level**                                | Don't hardcode `api.github.com`. Regretting this later is guaranteed otherwise. |
+
+**Risks:** libgit2 bundling across Windows / macOS / Linux; OAuth redirect URL for a desktop app (use device flow, not a local HTTP server).
+
+**Done when:** a user can clone a repo in TypeX, edit, and push — without touching a terminal — and gutter marks feel as native as VS Code.
+
+### Phase 3 — "Cross-device" (deferred)
+
+| Ship                                                              | Why it matters                                                      |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| **3-way merge UI** (prose-rendered, hunk-accept)                  | The make-or-break feature. Budget real weeks.                       |
+| **Web build** (same Svelte+Milkdown bundle, no Tauri)             | Stopgap mobile story; on-ramp for curious users without installing. |
+| **isomorphic-git in a Worker** + OPFS storage                     | Vault = a GitHub repo, clonable in the browser.                     |
+| **File System Access API fallback** (Chrome / Edge)               | Non-signed-in web users still get something.                        |
+| **Sync status surface** (pill → detail panel with last-N commits) | Makes the magic visible.                                            |
+| **Auto-update for desktop** (Tauri updater)                       | Required before users depend on us.                                 |
+| **Crash + error telemetry** (opt-in)                              | Required for the same reason.                                       |
+
+**Risks:** bundle size (isomorphic-git + Milkdown is not small), CORS / CSP on GitHub API, OPFS quota surprises on iOS Safari.
+
+**Done when:** one user can bounce between desktop and an iPad browser on the same vault without thinking about it.
+
+### Phase 4 — "AI for writing" (shipped in v0.4.0)
+
+Opt-in AI help in the editor, backed by whatever the user already has on their machine. No plugin API yet — that lands later, if ever. AI is the accent, not the product.
+
+| Ship                                                                                              | Why it matters                                                                |
+| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Three backend shapes, one interface**: installed CLIs · Ollama local · direct APIs              | Meets the user where they already are. Zero-config for the common cases.      |
+| **Auto-detection** on PATH + common install dirs for Claude Code, Codex, OpenCode, Pi, paseo      | "Already works with what you have" beats "configure this first."              |
+| **Ollama via HTTP** (`localhost:11434`) with model list from `/api/tags`                          | Local-first default. No cloud, no keys, no round-trip.                        |
+| **Direct APIs** for Anthropic, OpenAI, Gemini — keys stored in OS keychain (never localStorage)  | For users who pay for frontier models directly.                               |
+| **Manual palette commands** — `AI: Rewrite selection`, `Continue from here`, `Summarize`, `Fix grammar`, `Translate` | The demo that convinces people it's useful.                                  |
+| **Inline autocomplete** — ghost text after a pause, `Tab` accepts, `Esc` dismisses                | The feature that makes it feel alive. Off by default.                         |
+| **Streaming everywhere** — adapters yield chunks so the UI types the response in, not waits      | Reuses the Phase-2 streaming caret + flash. Long responses feel instant.      |
+| **Status-bar indicator with pulsing accent** during in-flight requests                            | Acknowledgment on long generations. Cancel with a click.                      |
+| **No telemetry**                                                                                  | Prompts never leave the machine unless the user explicitly chose a cloud API. |
+
+**Waves:**
+
+1. **Backbone.** Provider interface, Ollama adapter, Anthropic adapter, Preferences → AI tab with status dots, `AI: Rewrite selection` end-to-end. Proves the vertical slice.
+2. **CLI adapters.** Detection + invocation for Claude Code, Codex, OpenCode, Pi, paseo. Each CLI is its own investigation — flags, model lists, streaming patterns differ.
+3. **Inline autocomplete.** Ghost-text rendering in Milkdown, debounce, cancellation-on-keystroke, `Tab`-to-accept.
+4. **Remaining commands** (Continue / Summarize / Fix / Translate), remaining backends (OpenAI / Gemini), per-command model overrides.
+
+**Explicitly NOT in this phase:**
+
+- Public plugin API / third-party plugins (deferred indefinitely; re-evaluate after AI ships).
+- Prompt library or template store (defer until usage data).
+- Multimodal / image input.
+
+**Risks:**
+
+- **CLI detection on Windows is fiddly.** Each vendor installs somewhere different (`%LOCALAPPDATA%\Programs\*`, Scoop shims, npm global, etc.). Budget real time for this in Wave 2.
+- **Every CLI has its own streaming shape.** Some write to stdout, some emit SSE, some need a `--json` flag. Each adapter needs its own integration test.
+- **Keychain plumbing.** Tauri 2 needs a Rust-side `keyring` crate binding + two commands. Well-trodden but a dep.
+
+**Done when:** a user installs Ollama, TypeX sees it instantly in Preferences → AI, they pick a local model, and `Ctrl+K → Rewrite selection` streams a better paragraph over the one they highlighted — with a pulsing accent indicator in the status bar during generation. No API key, no sign-in, no configuration step.
+
+### Phase 5 — "Publishing" (v0.6.x, 4–6 weeks)
+
+| Ship                                                                             | Why it matters                                          |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Export themes** (Academic, Memo, Engineering, Minimal) for HTML + PDF          | Obsidian Publish is $8/mo; ours is a menu item.         |
+| **"Create PR from branch"** + **"Publish as Gist"** from the command palette     | GitHub as a first-class surface, not a panel.           |
+| **Inline issue/PR references** (`#412` → link with open / closed / merged badge) | The small polish that signals we take GitHub seriously. |
+| **GitHub Actions status** for docs-build workflows in the status bar             | Completes the "git-native" promise.                     |
+| **Static site export** (one command → deployable HTML/CSS bundle)                | Replaces Obsidian Publish for writers who want a site.  |
+
+### Phase 6 — "Mobile" (v1.0, 12–16 weeks)
+
+| Ship                                                                                                                       | Why it matters                               |
+| -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **Native iOS app**: SwiftUI shell + WKWebView hosting the same editor bundle + a Swift bridge for filesystem/git (libgit2) | Power users won't leave Obsidian without it. |
+| **macOS code-sign + notarize**                                                                                             | Already possible; must ship before iOS.      |
+| **1.0 polish pass**: onboarding, accessibility audit, keyboard-only flow, dark-mode-first marketing pass                   | The version we put on HN.                    |
+| **Pricing page** — explicit "free, forever, open source" positioning                                                       | The anti-Obsidian stance made legible.       |
+
+### Phase 7 — Post-1.0 (ongoing)
+
+* **GitLab / Gitea providers** (unlocks self-hosted + privacy-conscious users)
+
+* **Android app** (same pattern as iOS, different shell)
+
+* **Community plugin registry** (only once Phase 4's API has survived real third-party usage)
+
+* **Localization** (starts with RTL support + one Asian language as the stress test)
+
+* **CRDT live co-editing** *only if* users demand it — bolt on top of the file + git base, never replace them
+
+***
+
+## Cross-cutting work
+
+Parallel to every phase:
+
+* **Marketing beats per phase.** Blog post + release video + HN / Reddit / lobste.rs post per version. The Obsidian subreddit is where our users live right now; show up there with actual value (e.g., "git-sync that actually works") not with ads.
+
+* **Changelog discipline.** Release notes in the MSI *and* on the site. Already doing this. Keep it.
+
+* **A reserved "nope, not shipping" list.** Graph view. Canvas. Daily notes workflow. If a user asks, the answer is "Obsidian is better at that and it's free for personal use." Discipline is the feature.
+
+***
+
+## Calendar
+
+Rough year-one calendar at a brisk indie pace (one focused dev):
+
+* **Q1 2026** — Phase 1 + 2 (editor craft + git-native)
+
+* **Q2 2026** — Phase 3 (cross-device) + telemetry + auto-update
+
+* **Q3 2026** — Phase 4 (plugin API + AI) — the riskiest quarter
+
+* **Q4 2026** — Phase 5 (publishing) + iOS groundwork
+
+* **Q1 2027** — Phase 6, v1.0 ships
+
+With a second contributor, shave roughly a quarter. With marketing attached to each release, v1.0 ships to an audience that's been watching.
+
+***
+
+## The discipline test
+
+Every feature request, at every phase, gets one question:
+
+> *Does this make the editor feel better for a developer writing a README, an academic writing a paper, or a blogger writing a post?*
+
+If no — even if it's a great feature — it's out of scope. That's the knife that keeps us from becoming Obsidian.
+
+***
+
+## Markdown Test
+
+### Headers & Text
+
+# H1 Header
+
+## H2 Header
+
+### H3 Header
+
+This is **bold text** and this is *italic text*. You can also use ~~strikethrough~~ and `inline code`.
+
+### Lists
+
+* Unordered item one
+
+* Unordered item two
+
+  * Nested item
+
+* Unordered item three
+
+1. First ordered item
+2. Second ordered item
+3. Third ordered item
+
+### Code Block
+
+```python
+def greet(name: str) -> str:
+    return f"Hello, {name}!"
+
+print(greet("World"))
+```
+
+### Table
+
+| Feature   | Status     | Priority |
+| --------- | ---------- | -------- |
+| WYSIWYG   | ✅ Done     | High     |
+| Git Sync  | 🚧 WIP     | Medium   |
+| AI Assist | 🔜 Planned | Low      |
+
+### Blockquote
+
+> "The universe is under no obligation to make sense to you." — Neil deGrasse Tyson
+
+### Links & Images
+
+[Visit GitHub](https://github.com)
+
+***
+
+*End of markdown test.*
+
+### Task Lists
+
+* [x] Create project structure
+
+* [x] Setup CI/CD pipeline
+
+* [ ] Write documentation
+
+* [ ] Add unit tests
+
+* [ ] Deploy to production
+
+### Nested Blockquotes
+
+> Level one quote
+>
+> > Level two quote
+> >
+> > > Level three quote — going deep!
+
+### Footnotes
+
+Here is a sentence with a footnote reference.[^1] And another one.[^2]
+
+[^1]: This is the first footnote. It can be as long as you want.
+
+[^2]: The second footnote supports **bold** and *italic* too.
+
+### Horizontal Rules
+
+Three different styles:
+
+***
+
+***
+
+***
+
+### Definition List
+
+**TypeScript**
+: A strongly typed superset of JavaScript
+
+**Rust**
+: A systems programming language focused on safety and performance
+
+**Go**
+: A statically typed, compiled language designed at Google
+
+### Math Inline
+
+The mass-energy equivalence is given by $E = mc^2$. The area of a circle is $A = \pi r^2$.
+
+### Emoji & Symbols
+
+* Checkmarks: ✅ ❌ ⚠️
+
+* Arrows: → ← ↑ ↓ ↔ ⇒ ⇔
+
+* Stars: ★ ☆ ✦ ✧
+
+* Misc: 🔥 💡 🚀 🎯 📝
+
+### Keyboard Shortcuts
+
+Press `Ctrl` + `S` to save, `Ctrl` + `Z` to undo, or `Ctrl` + `Shift` + `P` to open the command palette.
+
+### Admonition-Style Blocks
+
+> \[!NOTE]
+> This is a GitHub-style note block.
+
+> \[!WARNING]
+> Be careful with this operation — it cannot be undone.
+
+> \[!TIP]
+> Try using the split view for side-by-side editing.
+
+### YAML Frontmatter
+
+```yaml
 ---
-
-## Pillars (product vision)
-
-Three features define the product. Everything else is scaffolding.
-
-1. **Notes** — beautiful, fast markdown editing. Shipped in v0.1.0 beta.
-2. **Reminders** — live-tied to the operating system, with real permissions
-   and notifications that fire whether or not TypeX is open. **Future.**
-3. **JSX rendering** — open a `.jsx` / `.tsx` file, see it pixel-perfectly
-   rendered like a Claude artifact. State is preserved across sessions.
-   **Future.**
-
-Platform order: **Windows first, macOS second, iOS after those two ship.**
-
+title: "Markdown Test Document"
+author: "TypeX"
+date: 2026-04-19
+tags:
+  - test
+  - markdown
+  - highlighting
+draft: false
 ---
+```
 
-## 1. Notes
+### Diff Block
 
-Status: **mostly done**. Markdown editor, two themes, tabs, file tree,
-find/replace, Pandoc import/export, autosave, session restore. What's left
-to make the Notes pillar feel complete:
+```diff
+- function oldGreet(name) {
+-   return "Hello, " + name;
+- }
++ function newGreet(name: string): string {
++   return `Hello, ${name}!`;
++ }
+```
 
-- **Daily note** (`Ctrl+Shift+D`) — creates/opens `daily/YYYY-MM-DD.md` in
-  the workspace.
-- **Pinned notes** — `Ctrl+P` or drag a tab left to pin; pinned tabs
-  survive "Close all others."
-- **Wikilinks** `[[Page]]` — click to navigate, auto-create missing files,
-  back-links panel in the sidebar.
-- **Quick capture** — global hotkey (`Ctrl+Alt+N`) opens a small always-on-top
-  window, types one note, saves to `inbox/` and closes. No tab, no chrome.
-- **Search across notes** — ripgrep when available, Rust fallback otherwise.
-  One keystroke result preview.
+### JSON Block
 
-Everything else in the notes space (plugins, themes API, collaboration) is
-deferred until after Reminders and JSX rendering ship.
+```json
+{
+  "name": "typex",
+  "version": "0.1.2",
+  "description": "A markdown editor for people who publish",
+  "license": "MIT",
+  "features": ["wysiwyg", "git-sync", "ai-assist", "themes"]
+}
+```
 
----
+### HTML in Markdown
 
-## 2. Reminders
+<details>
+<summary>Click to expand</summary>
 
-A note can have reminders. Reminders fire through the operating system, so
-they work whether TypeX is open, closed, or the machine is locked.
+This is hidden content written in **Markdown** inside an HTML `<details>` tag. It demonstrates that HTML and Markdown can mix.
 
-### 2.1 Author model
+</details>
 
-Two paths for attaching a reminder:
+<center>
+  <em>This text is centered using HTML.</em>
+</center>
 
-- **Inline syntax** inside a note:
-  ```
-  - [ ] Follow up with Sarah @remind 2026-04-25 15:00
-  - [ ] Draft proposal @remind "next Monday 9am"
-  ```
-  Parser picks up `@remind <when>` after a task item and turns it into a
-  scheduled reminder tied to that line.
+***
 
-- **UI attach**: select a task item → right-click → "Add reminder…" → date
-  picker.
-
-Reminders are stored in `<workspace>/.typex/reminders.json`, keyed by
-`{file-path, line-index, created-at}`. The note is the source of truth; the
-JSON is a cache.
-
-### 2.2 OS integration
-
-Requires actual OS APIs, not just in-process setTimeout. Two-tier approach:
-
-**Tier 1 — in-process (always on).** When TypeX is open, a ticker reads
-pending reminders and shows an in-app toast at the right moment. Nothing to
-install.
-
-**Tier 2 — OS-native (fires when TypeX is closed).** Per platform:
-
-- **Windows**
-  - Notifications via Windows Toast API (`tauri-plugin-notification`
-    backends to `windows-rs` `Windows.UI.Notifications`).
-  - Scheduling when app is closed: register reminders with **Windows Task
-    Scheduler** (`schtasks.exe` or the `taskschd.dll` COM API). Each
-    scheduled task invokes TypeX with `--fire-reminder <id>`, which shows
-    the toast and marks the reminder.
-  - Permission gate: Windows 11 requires the app to be "registered" for
-    toast notifications (AppUserModelID + shortcut). Tauri's notification
-    plugin handles this for installed builds; dev builds fall back to a
-    fallback dialog.
-
-- **macOS**
-  - Notifications via `UNUserNotificationCenter` (requires user
-    permission prompt once).
-  - Scheduling when app is closed: macOS fires scheduled user notifications
-    natively — register the reminder with the system and it delivers even
-    if TypeX isn't running.
-  - Optional **Apple Reminders.app** bridge: write reminders into the
-    user's Reminders list via EventKit, so they also appear on iPhone /
-    Apple Watch. Opt-in preference.
-  - Permission gate: notification permission requested at first reminder
-    creation. EventKit permission requested separately only if user opts
-    into Apple Reminders bridging.
-
-- **Linux / iOS** — deferred.
-
-### 2.3 Interaction loop
-
-1. User writes `- [ ] Reply to legal @remind tomorrow 9am`.
-2. TypeX parses → creates reminder record → registers OS-level schedule.
-3. Sidebar "Reminders" panel lists upcoming, sorted by due.
-4. At 9 AM tomorrow, the OS fires the notification (even if TypeX is
-   closed). Clicking the notification launches TypeX and jumps to the
-   originating line.
-5. User marks the task `[x]` → reminder is automatically completed and
-   the OS schedule is unregistered.
-
-### 2.4 Edge cases
-
-- **Deleted the note** → orphaned reminder. On next startup, TypeX scans
-  for orphans, surfaces them in the panel with "open source…" (disabled) and
-  "dismiss."
-- **Clock drift / timezone change** → reminders store both wall-clock and
-  UTC; if the user crosses a timezone, wall-clock wins ("9 AM" means 9 AM
-  wherever you are).
-- **Snooze** → right-click OS notification → 5 min / 1 hour / tomorrow.
-  Re-registers the OS schedule.
-- **Multi-device** → not solved for v1. Reminders are per-workspace,
-  per-machine. iCloud sync (mac) and OneDrive sync (Windows) carry the
-  `.typex/reminders.json` but each machine also schedules its own OS tasks
-  for the same reminders, which would double-fire. Solve later.
-
-### 2.5 Phasing
-
-1. Inline syntax parser + `.typex/reminders.json` + sidebar panel.
-2. In-process notifications (Tier 1, any platform).
-3. Windows Task Scheduler registration.
-4. macOS `UNUserNotificationCenter` registration.
-5. Click-to-open from notification → jump to source line.
-6. Snooze from notification.
-7. macOS Apple Reminders bridge (opt-in).
-8. Multi-device dedup (later).
-
----
-
-## 3. JSX rendering
-
-Open a `.jsx` or `.tsx` file in TypeX — see it rendered exactly the way
-Claude (or any AI) would show an artifact. Interact with it. Close and
-reopen — your interaction state comes back.
-
-### 3.1 Author model
-
-Two entry points:
-
-- **Open a `.jsx` / `.tsx` file** → TypeX detects it by extension and
-  renders it full-canvas in the workspace (same area the editor occupies
-  for markdown). A small toggle in the toolbar flips between **Render** and
-  **Source** for the file.
-
-- **Fenced code block inside a note**:
-
-  ````
-  ```jsx render
-  export default function Dashboard() {
-    return <div className="p-6">...</div>
-  }
-  ```
-  ````
-
-  Renders inline inside the markdown doc (block-level, full content width).
-
-The file's default export is the component being rendered. No build step,
-no config.
-
-### 3.2 Runtime environment
-
-Matches Claude's artifact environment so work moves between them without
-rewrites:
-
-- **React 18** (not Preact — Claude uses React).
-- **Tailwind CSS** pre-bundled and available via `className="..."`.
-- **lucide-react** icons available by default.
-- **recharts** available by default.
-- **shadcn/ui**-style primitives available by default (Button, Card, Input,
-  Dialog, etc.).
-
-These are loaded once per TypeX session into an in-memory bundle; per-file
-render doesn't redownload. Bundle is ~300 KB gzipped, lazy-loaded on the
-first JSX file open so markdown-only users pay nothing.
-
-### 3.3 Rendering pipeline
-
-1. **Parse & transform.** JSX source → JS via `sucrase` (small, fast, no
-   config). Errors render as a small red panel with the message and the
-   offending line.
-2. **Sandbox.** Render inside an `<iframe sandbox="allow-scripts">` with
-   `srcdoc` containing the runtime + the transformed user code.
-3. **Bridge.** `postMessage` channel between parent and iframe for:
-   - state save/restore (next section)
-   - height reflow (iframe grows to content)
-   - navigation requests (user's component calling `openFile("…")`)
-   - error reports
-
-### 3.4 Save state
-
-This is the differentiator. When the user interacts with the rendered
-component — types into an input, toggles a tab, expands an accordion, picks
-a value from a dropdown — that state is preserved.
-
-Approach:
-
-- The runtime wraps React's `useState` and `useReducer` in a version that
-  tags each state cell with a deterministic **state key** built from the
-  component tree path + hook index.
-- On every state update, the iframe `postMessage`s the full state map to
-  the parent, throttled to ~4 Hz.
-- Parent writes it to `<workspace>/.typex/state/<file-hash>.json`.
-- On next open, the parent passes the saved state map back in before React
-  mounts; the wrapped hooks read their initial values from it instead of
-  the component's defaults.
-
-Caveats:
-
-- State keys are *structural*. If the user edits the component (adds a
-  hook, reorders JSX), the keys shift and old state is dropped. That's
-  correct — old state for a different tree is meaningless.
-- `useRef`, imperative DOM state, and animation frames are **not** saved;
-  only declared state.
-- A "Reset state" button in the toolbar wipes the saved file in one click.
-
-### 3.5 Interaction with markdown + notes
-
-- A markdown note can embed a rendered JSX block (see §3.1). Saving the
-  note saves the markdown. Saving state of the embedded component saves to
-  `<workspace>/.typex/state/<note-hash>/<block-id>.json`.
-- Clicking a link inside a rendered component can open a note by filename:
-  `<a href="file://note.md">` → TypeX intercepts, opens that note in a new
-  tab instead of navigating the iframe.
-- Reminders inside a rendered component: a component can call
-  `window.typex.addReminder({ at, text })` (host API) to create a reminder
-  bound to the current file. Permission-gated.
-
-### 3.6 Security
-
-- Every rendered file/block is in its own iframe sandbox.
-- No network by default. A per-file preference can enable
-  `allow-same-origin` + an explicit hostname allow-list (for fetching data,
-  embedding maps, etc.). Off by default; always visible in the file's
-  toolbar.
-- The host API available to components (`window.typex.*`) is small and
-  explicitly enumerated: `saveState`, `addReminder`, `openNote`,
-  `theme`, `fileName`. No FS access, no process spawn, no clipboard write
-  without a user gesture.
-
-### 3.7 Phasing
-
-1. Open `.jsx` → render, no state save, no Tailwind. ("Hello world works.")
-2. Tailwind + lucide-react in the runtime bundle.
-3. shadcn-style primitives + recharts.
-4. State save/restore with structural keys.
-5. `.md` embedded JSX blocks.
-6. Host API (`window.typex.*`) — opens bridge to notes and reminders.
-7. Error panel polish + line mapping from source.
-8. Network allow-list preference.
-
----
-
-## 4. Platform order
-
-1. **Windows desktop** — primary target. Ship everything here first.
-2. **macOS desktop** — second target. Port after Windows ships. Mostly a
-   matter of swapping Task Scheduler for `UNUserNotificationCenter` and
-   adding the optional Apple Reminders bridge.
-3. **iOS** — after both desktops are shipping stable. iOS loses Pandoc,
-   loses arbitrary OS scheduling (has its own equivalent), loses the
-   menubar. Separate design pass when we get there.
-
----
-
-## 5. Out of scope for now
-
-Consciously deferred until the three pillars above ship:
-
-- AI integrations (beyond rendering AI-authored JSX).
-- Real-time collaboration / CRDTs.
-- Plugin API.
-- Community theme marketplace.
-- Publishing pipeline (Gist, Medium, etc.).
-- Multi-root workspaces.
-- Git status in file tree.
-- Multiple windows.
-- Virtual-scrolling for huge documents.
-- Inline code execution (Python, shell).
-- Math / Mermaid / syntax-highlighting (currently installed, not wired —
-  wire when we have a reason, don't wire speculatively).
-
----
-
-## 6. Immediate next steps (small, concrete, orderable)
-
-Pick from the top; each item is a day or less.
-
-1. **Daily note command** (`Ctrl+Shift+D`) — 30 min.
-2. **Pinned tabs** — state + CSS already exist; wire the toggle — 1 hr.
-3. **Wikilinks** — parser + click-to-open + auto-create — half day.
-4. **Reminders panel** (sidebar, reads `.typex/reminders.json`) — half
-   day.
-5. **Inline `@remind` parser** — half day.
-6. **Tauri notification plugin + in-process firing** — half day.
-7. **Windows Task Scheduler registration** — 1 day (COM API learning curve).
-8. **JSX file detection + sucrase transform + iframe render** ("hello
-   world works") — 1 day.
-9. **Tailwind + lucide + recharts bundle** in the runtime — half day.
-10. **State save/restore with structural keys** — 2 days.
-
-After step 10, we have enough of all three pillars to call it a 1.0 preview.
+*That's all for the extended markdown test.*
