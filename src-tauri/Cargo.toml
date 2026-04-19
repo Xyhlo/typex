@@ -1,6 +1,6 @@
 [package]
 name = "typex"
-version = "0.1.2"
+version = "0.3.0"
 description = "TypeX — a beautifully crafted Markdown editor"
 authors = ["Amptis <hello@amptis.com>"]
 license = "MIT"
@@ -22,6 +22,8 @@ tauri-plugin-fs = "2"
 tauri-plugin-os = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+notify = "6"
+notify-debouncer-mini = "0.4"
 
 [target.'cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))'.dependencies]
 tauri-plugin-single-instance = { version = "2", features = ["deep-link"] }

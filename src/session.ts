@@ -4,7 +4,9 @@ const PREFS_KEY = "typex:prefs";
 export interface SessionData {
   openFiles: string[];
   activePath: string | null;
+  /** @deprecated superseded by `workspaceRoots`; kept for forward-migrating old sessions. */
   workspaceRoot: string | null;
+  workspaceRoots: string[];
 }
 
 export interface Prefs {
@@ -19,6 +21,22 @@ export interface Prefs {
    * When false, only Markdown-family files show up in the dialog.
    */
   openAllFormats: boolean;
+  /** Wave 4: autocommit after file save (debounced). */
+  autocommit: boolean;
+  /** Wave 4: debounce window for autocommit (ms). */
+  autocommitDelayMs: number;
+  /** Wave 4: push after each autocommit. Requires git credential helper. */
+  autopush: boolean;
+  /** Wave 4: `git pull --ff-only` when the window regains focus. */
+  autopullOnFocus: boolean;
+  /**
+   * Streaming: apply external writes live even when the tab has unsaved
+   * edits. When off (default), the existing "Keep mine / Reload" modal
+   * continues to gate dirty-tab conflicts.
+   */
+  liveReload: boolean;
+  /** Pulse tabs and flash changed regions when external writes land. */
+  animateExternalEdits: boolean;
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -28,20 +46,47 @@ const DEFAULT_PREFS: Prefs = {
   readingMode: "vertical",
   editorFont: "sans",
   openAllFormats: true,
+  autocommit: false,
+  autocommitDelayMs: 15_000,
+  autopush: false,
+  autopullOnFocus: false,
+  // ON by default — the whole point of streaming is that an AI writing into
+  // the file replaces content with visible animations rather than a modal
+  // per chunk. Users who want the old safety net can turn it off.
+  liveReload: true,
+  animateExternalEdits: true,
 };
 
 export const loadSession = (): SessionData => {
+  const empty: SessionData = {
+    openFiles: [],
+    activePath: null,
+    workspaceRoot: null,
+    workspaceRoots: [],
+  };
   try {
     const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return { openFiles: [], activePath: null, workspaceRoot: null };
+    if (!raw) return empty;
     const s = JSON.parse(raw);
+    const roots = Array.isArray(s.workspaceRoots)
+      ? (s.workspaceRoots as unknown[]).filter((x): x is string => typeof x === "string")
+      : [];
+    // Migrate old single-root sessions.
+    const legacy =
+      typeof s.workspaceRoot === "string" && s.workspaceRoot.length > 0
+        ? s.workspaceRoot
+        : null;
+    if (legacy && !roots.includes(legacy)) roots.unshift(legacy);
     return {
-      openFiles: Array.isArray(s.openFiles) ? s.openFiles.filter((x: unknown) => typeof x === "string") : [],
+      openFiles: Array.isArray(s.openFiles)
+        ? (s.openFiles as unknown[]).filter((x): x is string => typeof x === "string")
+        : [],
       activePath: typeof s.activePath === "string" ? s.activePath : null,
-      workspaceRoot: typeof s.workspaceRoot === "string" ? s.workspaceRoot : null,
+      workspaceRoot: legacy,
+      workspaceRoots: roots,
     };
   } catch {
-    return { openFiles: [], activePath: null, workspaceRoot: null };
+    return empty;
   }
 };
 

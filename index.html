@@ -58,6 +58,9 @@
         <nav class="sidebar__nav">
           <button class="sidebar__tab is-active" data-panel="files" title="Files"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></button>
           <button class="sidebar__tab" data-panel="outline" title="Outline"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M8 12h12M12 18h8"/></svg></button>
+          <button class="sidebar__tab" data-panel="tags" title="Tags"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11 11 5h7v7l-6 6a2 2 0 0 1-2.8 0L5 13.8a2 2 0 0 1 0-2.8Z"/><circle cx="14.5" cy="9.5" r="1.2"/></svg></button>
+          <button class="sidebar__tab" data-panel="backlinks" title="Backlinks"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg></button>
+          <button class="sidebar__tab" data-panel="properties" title="Properties"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h12"/></svg></button>
         </nav>
         <div class="sidebar__content">
           <div class="panel panel--files is-active" data-panel="files">
@@ -70,8 +73,11 @@
                 <button id="btn-open-file-sidebar" class="icon-btn icon-btn--sm" title="Open file (Ctrl+O)" aria-label="Open file">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 2v6h6"/></svg>
                 </button>
-                <button id="btn-open-folder" class="icon-btn icon-btn--sm" title="Open folder (Ctrl+K Ctrl+O)" aria-label="Open folder">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+                <button id="btn-open-folder" class="icon-btn icon-btn--sm" title="Add folder to workspace (Ctrl+Shift+O)" aria-label="Add folder to workspace">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M12 12v6M9 15h6"/></svg>
+                </button>
+                <button id="btn-recent-folders" class="icon-btn icon-btn--sm" title="Recent folders" aria-label="Recent folders">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
                 </button>
               </div>
             </div>
@@ -81,12 +87,32 @@
             <div class="panel__header"><span class="panel__title">Outline</span></div>
             <div id="outline" class="outline"></div>
           </div>
+          <div class="panel panel--tags" data-panel="tags">
+            <div class="panel__header"><span class="panel__title">Tags</span></div>
+            <div id="tags" class="tags-panel"></div>
+          </div>
+          <div class="panel panel--backlinks" data-panel="backlinks">
+            <div class="panel__header"><span class="panel__title">Backlinks</span></div>
+            <div id="backlinks" class="backlinks-panel"></div>
+          </div>
+          <div class="panel panel--properties" data-panel="properties">
+            <div class="panel__header"><span class="panel__title">Properties</span></div>
+            <div id="properties" class="properties-panel"></div>
+          </div>
         </div>
       </aside>
 
       <main id="workspace" class="workspace">
-        <div id="editor-host" class="editor-host">
-          <div id="editor" class="editor"></div>
+        <div id="editor-panes" class="editor-panes" data-view-mode="wysiwyg">
+          <!-- Split-mode layout: raw on the left, WYSIWYG preview on the right. -->
+          <div id="raw-host" class="raw-host">
+            <div id="git-gutter" class="git-gutter" hidden aria-hidden="true"></div>
+            <!-- wrap="off" keeps visual-row-N aligned to source-line-N so the git gutter marks line up. Long paragraphs scroll horizontally. -->
+            <textarea id="raw-editor" class="raw-editor" spellcheck="false" wrap="off" aria-label="Raw markdown source" title="Ctrl+click a line for git blame"></textarea>
+          </div>
+          <div id="editor-host" class="editor-host">
+            <div id="editor" class="editor"></div>
+          </div>
         </div>
 
         <div id="findbar" class="findbar" hidden>
@@ -117,12 +143,20 @@
         <div class="statusbar__left">
           <span id="status-path" class="status-item">Untitled</span>
           <span id="status-dirty" class="status-item status-item--dirty" hidden>●</span>
+          <button id="status-git" type="button" class="status-item status-item--button status-item--git" title="Git status — click to refresh" hidden>
+            <span class="status-git__dot"></span>
+            <span id="status-git-label" class="status-git__label"></span>
+          </button>
+          <span id="status-live" class="status-item status-item--live" title="An external process is writing to this file" hidden>
+            <span class="status-live__dot"></span>LIVE
+          </span>
         </div>
         <div class="statusbar__right">
           <span id="status-words" class="status-item">0 words</span>
           <span id="status-chars" class="status-item">0 chars</span>
           <span id="status-reading" class="status-item">0 min</span>
           <span id="status-mode" class="status-item">Markdown</span>
+          <button id="status-view" type="button" class="status-item status-item--button" title="Toggle view (Ctrl+/)">WYSIWYG</button>
         </div>
       </footer>
 

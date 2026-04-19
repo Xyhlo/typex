@@ -35,13 +35,94 @@
   min-width: 0;
 }
 
+.editor-panes {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
 .editor-host {
   flex: 1;
   overflow: auto;
   display: flex;
   justify-content: center;
   padding: var(--content-pad-y) var(--content-pad-x);
+  min-width: 0;
 }
+
+.raw-host {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Split divider — raw is on the left, WYSIWYG on the right.
+   Border lives on the right pane's left edge so it only shows in split mode. */
+.editor-panes[data-view-mode="split"] .editor-host {
+  border-left: 1px solid var(--border-muted);
+}
+.raw-editor {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  resize: none;
+  background: var(--bg-content);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  padding: var(--sp-4) var(--sp-4) var(--sp-4) 32px;
+  tab-size: 2;
+}
+
+/* Git gutter overlay inside the raw pane */
+.git-gutter {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.git-gutter__layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  will-change: transform;
+}
+.git-gutter__mark {
+  position: absolute;
+  left: 0;
+  width: 3px;
+  border-radius: 1px 2px 2px 1px;
+}
+.git-gutter__mark--added { background: var(--git-ok, #4aa572); }
+.git-gutter__mark--modified { background: var(--git-dirty, #c98a2a); }
+.git-gutter__mark--removed-above {
+  width: 0;
+  height: 0;
+  border-left: 4px solid var(--git-diverged, #c94a4a);
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+}
+.raw-editor::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* View-mode visibility */
+.editor-panes[data-view-mode="wysiwyg"] .raw-host { display: none; }
+.editor-panes[data-view-mode="raw"] .editor-host { display: none; }
+.editor-panes[data-view-mode="raw"] .raw-host { flex: 1; }
+.editor-panes[data-view-mode="split"] .editor-host,
+.editor-panes[data-view-mode="split"] .raw-host { flex: 1 1 50%; }
 
 /* Buttons — shared atoms */
 .icon-btn {

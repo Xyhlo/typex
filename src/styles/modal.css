@@ -256,3 +256,43 @@
   from { opacity: 0; transform: scale(0.98) translateY(-4px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
+
+/* Clone dialog */
+.clone-dialog__dest-row {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: stretch;
+}
+.clone-dialog__dest {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 6px var(--sp-2);
+  min-height: 30px;
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-sm);
+  background: var(--bg-overlay);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.clone-dialog__hint {
+  font-size: var(--fs-xs);
+  color: var(--fg-subtle);
+  margin-top: var(--sp-2);
+}
+
+/* External-change modal path indicator */
+.external-change__path {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--fg-subtle);
+  word-break: break-all;
+  padding: var(--sp-2);
+  background: var(--bg-overlay);
+  border-radius: var(--radius-sm);
+  margin-top: var(--sp-2);
+}

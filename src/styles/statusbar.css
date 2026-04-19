@@ -50,3 +50,75 @@
   font-size: 14px;
   padding: 0 4px;
 }
+
+.status-item--button {
+  border: none;
+  background: transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.status-item--button:hover {
+  background: var(--bg-overlay);
+  color: var(--fg);
+}
+.status-item--button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Git sync pill */
+.status-item--git { gap: 6px; }
+.status-git__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fg-subtle);
+  flex-shrink: 0;
+  transition: background var(--dur-xs) var(--ease-standard);
+}
+.status-item--git[data-state="clean"] .status-git__dot { background: var(--git-ok, #4aa572); }
+.status-item--git[data-state="dirty"] .status-git__dot { background: var(--git-dirty, #c98a2a); }
+.status-item--git[data-state="diverged"] .status-git__dot { background: var(--git-diverged, #c94a4a); }
+.status-item--git[data-state="in-progress"] .status-git__dot { background: var(--git-progress, #8a60c9); }
+.status-item--git[data-state="detached"] .status-git__dot { background: var(--fg-muted); }
+.status-item--git[data-state="error"] .status-git__dot {
+  background: var(--git-error, #b54b4b);
+  outline: 2px solid color-mix(in srgb, var(--git-error, #b54b4b) 30%, transparent);
+  outline-offset: 1px;
+}
+.status-item--git[data-state="gone"] .status-git__dot { background: var(--git-diverged, #c94a4a); }
+.status-item--git[data-state="initial"] .status-git__dot { background: var(--fg-subtle); }
+
+/* LIVE badge — shown when at least one open tab is receiving external writes.
+   Styled bold + background pill so it's unmistakable. */
+.status-item--live {
+  gap: 6px;
+  padding: 3px 10px;
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.12em;
+  font-size: calc(var(--fs-xs) + 0.5px);
+  color: var(--accent-on, #fff);
+  background: var(--accent);
+  border-radius: 999px;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+  animation: status-live-pulse 1.1s ease-in-out infinite;
+}
+.status-live__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.95;
+}
+@keyframes status-live-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 0%, transparent);
+    filter: brightness(1.15);
+  }
+}
+.status-git__label { font-family: var(--font-mono); font-size: calc(var(--fs-xs) - 0.5px); }

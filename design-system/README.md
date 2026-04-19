@@ -61,21 +61,21 @@ Or drop in the component classes:
 All tokens and components are prefixed `tx-` to avoid collision with host
 projects (marketing page, dashboard, whatever else lives alongside TypeX).
 
-| Prefix | What it is |
-|---|---|
-| `--tx-bg-*` | surfaces (shell / app / content / raised / overlay / elevated / inset) |
-| `--tx-fg-*` | text (fg / heading / muted / subtle / faint / on-accent) |
-| `--tx-border*` | strokes (normal / strong / subtle / focus) |
-| `--tx-accent*` | indigo (base / hover / active / muted / soft / ring) |
-| `--tx-success/warning/danger/info` | semantic feedback |
-| `--tx-hl-*` | syntax highlighting (keyword, string, number, comment, func, type, tag, attr, meta, punc) |
-| `--tx-font-*` | font stacks (ui / editor / serif / mono) |
-| `--tx-fs-* / --tx-lh-* / --tx-fw-* / --tx-ls-*` | font size, line height, weight, letter-spacing |
-| `--tx-sp-*` | spacing scale (4px grid) |
-| `--tx-radius-*` | border radii |
-| `--tx-shadow-*` | elevation |
-| `--tx-dur-* / --tx-ease-*` | motion |
-| `--tx-motion-*` | intent-based motion aliases (hover / press / panel / reveal / hero) |
+| Prefix                                          | What it is                                                                                |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `--tx-bg-*`                                     | surfaces (shell / app / content / raised / overlay / elevated / inset)                    |
+| `--tx-fg-*`                                     | text (fg / heading / muted / subtle / faint / on-accent)                                  |
+| `--tx-border*`                                  | strokes (normal / strong / subtle / focus)                                                |
+| `--tx-accent*`                                  | indigo (base / hover / active / muted / soft / ring)                                      |
+| `--tx-success/warning/danger/info`              | semantic feedback                                                                         |
+| `--tx-hl-*`                                     | syntax highlighting (keyword, string, number, comment, func, type, tag, attr, meta, punc) |
+| `--tx-font-*`                                   | font stacks (ui / editor / serif / mono)                                                  |
+| `--tx-fs-* / --tx-lh-* / --tx-fw-* / --tx-ls-*` | font size, line height, weight, letter-spacing                                            |
+| `--tx-sp-*`                                     | spacing scale (4px grid)                                                                  |
+| `--tx-radius-*`                                 | border radii                                                                              |
+| `--tx-shadow-*`                                 | elevation                                                                                 |
+| `--tx-dur-* / --tx-ease-*`                      | motion                                                                                    |
+| `--tx-motion-*`                                 | intent-based motion aliases (hover / press / panel / reveal / hero)                       |
 
 ## Design rules
 
@@ -98,3 +98,5 @@ projects (marketing page, dashboard, whatever else lives alongside TypeX).
 
 See `.save-points/README.md` at the repo root for how to iterate on the
 design system and marketing page without losing context between sessions.
+
+\#draft

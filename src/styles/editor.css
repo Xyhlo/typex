@@ -341,3 +341,88 @@
 [data-focus-mode="true"] .ProseMirror > *:hover {
   opacity: 1;
 }
+
+/* ---------- Wikilinks ---------- */
+.ProseMirror .wikilink {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0 2px;
+  cursor: pointer;
+  transition: background var(--dur-xs) var(--ease-standard);
+}
+.ProseMirror .wikilink:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  text-decoration: underline;
+}
+.ProseMirror .wikilink--broken {
+  color: var(--warn, #c98a2a);
+  background: color-mix(in srgb, var(--warn, #c98a2a) 10%, transparent);
+  border-bottom: 1px dashed var(--warn, #c98a2a);
+  text-decoration: none;
+}
+.ProseMirror .wikilink--broken:hover {
+  background: color-mix(in srgb, var(--warn, #c98a2a) 18%, transparent);
+}
+
+/* ---------- External write flash ---------- */
+/* Highlights the block(s) that just changed because of an external write
+   (AI stream, formatter-on-save, git checkout). Fades over ~1.5s. Uses a
+   left-bar + background combo so users notice it even on a busy doc. */
+.ProseMirror .external-flash {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: inset 3px 0 0 var(--accent);
+  border-radius: var(--radius-sm);
+  padding-left: 4px;
+  margin-left: -7px;
+  animation: external-flash-fade 1500ms ease-out forwards;
+}
+@keyframes external-flash-fade {
+  0% {
+    background: color-mix(in srgb, var(--accent) 38%, transparent);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  40% {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 80%, transparent);
+  }
+  100% {
+    background: color-mix(in srgb, var(--accent) 0%, transparent);
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+
+/* ---------- Stream caret ---------- */
+/* Blinking marker at the growing edge of a streaming apply, so the user
+   sees "the AI is typing here right now". */
+.ProseMirror .stream-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin: 0 1px;
+  background: var(--accent);
+  border-radius: 1px;
+  vertical-align: text-bottom;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 60%, transparent);
+  animation: stream-caret-blink 0.85s steps(2, end) infinite;
+}
+@keyframes stream-caret-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.25; }
+}
+
+/* ---------- Editor-host streaming border ---------- */
+/* While anything is streaming, pulse an accent-colored inset border on the
+   editor host itself. Makes it obvious "something external is writing here"
+   even when the user's focus is elsewhere on the page. */
+html[data-streaming-any="true"] .editor-host {
+  animation: editor-streaming-glow 1.6s ease-in-out infinite;
+}
+@keyframes editor-streaming-glow {
+  0%, 100% {
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  50% {
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+}

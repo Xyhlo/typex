@@ -31,6 +31,15 @@ import { createPalette } from "./ui/palette";
 import { initSidebar, toggleSidebar } from "./ui/sidebar";
 import { initStatusbar } from "./ui/statusbar";
 import { initOutline } from "./ui/outline";
+import { initTags } from "./ui/tags";
+import { initBacklinks } from "./ui/backlinks";
+import { initProperties } from "./ui/properties";
+import {
+  initViewMode,
+  toggleRawMode,
+  toggleSplitMode,
+  setViewMode,
+} from "./ui/view-mode";
 import { initWindowControls } from "./ui/window-controls";
 import { createTabsController } from "./ui/tabs";
 import { toast, progressToast } from "./ui/toast";
@@ -51,11 +60,43 @@ import {
 } from "./recent";
 import { loadSession, saveSession, loadPrefs, savePrefs } from "./session";
 import {
+  setWorkspaceRoot as setVaultRoot,
+  onFileSaved as onVaultFileSaved,
+} from "./vault/index";
+import {
+  refreshGitStatus,
+  refreshCurrentGitStatus,
+  getGitStatus,
+  gitCommitAll,
+  gitPush,
+  gitPull,
+} from "./git";
+import {
+  onAnySave,
+  onWindowFocus as onGitFocus,
+  cancelPendingCommitFor,
+  summarizeSyncError as summarizeGitError,
+} from "./git/autosync";
+import { initGitGutter, refreshGitGutter } from "./ui/git-gutter";
+import { watchRoots, markOwnWrite } from "./fs/watcher";
+import {
+  startStreamingSweeper,
+  subscribeStreaming,
+  isStreaming,
+} from "./fs/streaming";
+import { initExternalChange } from "./ui/external-change";
+import { showCloneDialog } from "./ui/clone-dialog";
+import { showPopupMenu } from "./ui/recent-menu";
+import {
   getActiveTab,
   getState,
   setState,
   updateTab,
   subscribe,
+  primaryWorkspaceRoot,
+  addWorkspaceRoot,
+  removeWorkspaceRoot,
+  setWorkspaceRoots,
   type DocTab,
 } from "./state";
 import { WELCOME_CONTENT } from "./welcome";
@@ -76,7 +117,9 @@ const bootstrap = async (): Promise<void> => {
 
   let currentTabId: string | null = null;
   let applyingExternalContent = false;
-  let workspaceRoot: string | null = null;
+  // Cached per-root directory trees so switch-back-to-a-previous-root is
+  // instant rather than re-walking the FS.
+  const rootTreeCache = new Map<string, import("./fs/files").DirEntryNode>();
   let autosaveTimer: number | null = null;
   let pandocReady = false;
   let pandocVer: string | null = null;
@@ -96,6 +139,10 @@ const bootstrap = async (): Promise<void> => {
       return;
     }
     if (tab.id === currentTabId) return;
+    // Cancel any in-flight stream on the outgoing tab. Without this, a
+    // pending rAF step from streamApply can write the old tab's content
+    // into the new tab's buffer after `setContent` has already landed.
+    editor.cancelStream();
     // Micro-fade while content is swapped so the switch doesn't pop.
     editorHost.dataset.swapping = "true";
     applyingExternalContent = true;
@@ -125,12 +172,143 @@ const bootstrap = async (): Promise<void> => {
       if (!active) return;
       updateTab(active.id, { content: md });
     },
+    onOpenWikilink: (target, resolved) => {
+      if (resolved) void openPath(resolved);
+      else toast(`No document named "${target}"`);
+    },
   });
   editor.focus();
 
   const fileTree = createFileTree(fileTreeEl, {
     onOpenFile: (path) => void openPath(path),
+    onCloseRoot: (path) => void closeWorkspaceFolder(path),
   });
+  initTags({ onOpenFile: (path) => void openPath(path) });
+  initBacklinks({ onOpenFile: (path) => void openPath(path) });
+  initProperties();
+  const viewModeOpts = {
+    editor,
+    applyContentToEditor: async (md: string) => {
+      applyingExternalContent = true;
+      try {
+        await editor.setContent(md);
+      } finally {
+        applyingExternalContent = false;
+      }
+    },
+  };
+  initViewMode(viewModeOpts);
+
+  // Wave 4: pull-on-focus hook.
+  window.addEventListener("focus", () => {
+    void onGitFocus();
+  });
+
+  // External-change policy — silent reload when clean, prompt when dirty.
+  initExternalChange({
+    reloadTab: async (path, disk, opts = {}) => {
+      const t = getState().tabs.find((x) => x.path === path);
+      if (!t) return;
+      const oldMarkdown = t.content;
+      updateTab(t.id, { content: disk, savedContent: disk });
+      // Drop any pending autocommit for this path — the message we'd have
+      // built is no longer accurate now that local edits were discarded.
+      cancelPendingCommitFor(path);
+      if (getState().activeTabId === t.id) {
+        applyingExternalContent = true;
+        try {
+          const animate = loadPrefs().animateExternalEdits;
+          if (opts.streaming) {
+            // Mid-stream apply: gradually type the content in over ~400ms
+            // with a blinking caret at the growing edge, preserve scroll,
+            // and flash the changed range when the stream settles. Skip the
+            // toast — the visible typing is the affordance.
+            await editor.applyExternalText(disk, {
+              flashChangedLines: animate,
+              oldMarkdown,
+              stream: animate,
+            });
+          } else {
+            // One-shot external save (git checkout, single editor save).
+            // Preserve scroll but don't flash — a batch-file-update shouldn't
+            // light up every open tab. Flash only happens inside streams.
+            await editor.applyExternalText(disk, {
+              flashChangedLines: false,
+              oldMarkdown,
+            });
+            toast(`Reloaded ${basename(path)}`);
+          }
+        } finally {
+          applyingExternalContent = false;
+        }
+      } else if (!opts.streaming) {
+        toast(`Reloaded ${basename(path)}`);
+      }
+    },
+    onExternalChange: (_path) => {
+      // Git/vault might be affected by any fs change.
+      void refreshCurrentGitStatus();
+      const active = getActiveTab();
+      if (active?.path) void refreshGitGutter(active.path);
+    },
+  });
+
+  // Start the streaming sweeper so stale paths drop out of "streaming" after
+  // their last event ages out.
+  startStreamingSweeper();
+
+  // Propagate streaming state to the DOM: `data-streaming-any` on <html> for
+  // a global status-bar badge, and `data-streaming="true"` on each matching
+  // tab for its pulse animation.
+  const applyStreamingAttrs = (): void => {
+    // `animateExternalEdits` gates ALL streaming visuals — pulse, LIVE
+    // badge, and flash — so a user who wants a calm UI can turn everything
+    // off with one toggle.
+    const animate = loadPrefs().animateExternalEdits;
+    const anyActive =
+      animate &&
+      getState().tabs.some((t) => t.path && isStreaming(t.path));
+    document.documentElement.dataset.streamingAny = anyActive ? "true" : "false";
+    const live = document.getElementById("status-live");
+    if (live) live.hidden = !anyActive;
+    const strip = document.getElementById("tab-strip");
+    if (!strip) return;
+    const tabEls = strip.querySelectorAll<HTMLElement>(".tab[data-id]");
+    for (const el of Array.from(tabEls)) {
+      const tabId = el.dataset.id;
+      const tab = getState().tabs.find((t) => t.id === tabId);
+      const streaming = animate && !!tab?.path && isStreaming(tab.path);
+      el.dataset.streaming = streaming ? "true" : "false";
+    }
+  };
+  subscribeStreaming(applyStreamingAttrs);
+  // Also re-apply after tab-strip re-renders (which happen on state changes),
+  // so the newly-minted DOM nodes pick up the current streaming state.
+  subscribe(applyStreamingAttrs);
+  // Git gutter in the raw pane.
+  const rawTextarea = document.getElementById("raw-editor") as HTMLTextAreaElement | null;
+  const rawGutterHost = document.getElementById("git-gutter");
+  const gutterOpts = rawTextarea && rawGutterHost
+    ? { textarea: rawTextarea, host: rawGutterHost }
+    : null;
+  if (gutterOpts) initGitGutter(gutterOpts);
+  // Status-bar view button cycles wysiwyg → raw → split → wysiwyg.
+  const statusViewBtn = document.getElementById("status-view");
+  if (statusViewBtn) {
+    statusViewBtn.addEventListener("click", () => {
+      const current = getState().viewMode;
+      const next = current === "wysiwyg" ? "raw" : current === "raw" ? "split" : "wysiwyg";
+      void setViewMode(next, viewModeOpts);
+    });
+  }
+
+  // Git sync pill — click to refresh status.
+  const statusGitBtn = document.getElementById("status-git");
+  if (statusGitBtn) {
+    statusGitBtn.addEventListener("click", () => {
+      void refreshCurrentGitStatus();
+    });
+  }
 
   // ---------- File operations ----------
   const createNew = async (): Promise<void> => {
@@ -212,29 +390,151 @@ const bootstrap = async (): Promise<void> => {
     await openPath(path);
   };
 
+  let folderDialogOpen = false;
   const openFolder = async (): Promise<void> => {
     if (!isTauri()) {
       toast("Open folder is only available in the desktop app");
       return;
     }
-    const folder = await openFolderDialog();
-    if (!folder) return;
-    await loadWorkspace(folder);
+    if (folderDialogOpen) return;
+    folderDialogOpen = true;
+    try {
+      const folder = await openFolderDialog();
+      if (!folder) return;
+      await addWorkspaceFolder(folder);
+    } finally {
+      folderDialogOpen = false;
+    }
   };
 
-  const loadWorkspace = async (folder: string): Promise<void> => {
-    try {
-      const tree = await readWorkspace(folder);
-      workspaceRoot = folder;
-      fileTree.mount(tree);
-      pushRecentFolder(folder);
-      const titleEl = document.getElementById("files-title");
-      if (titleEl) titleEl.textContent = basename(folder);
-      toast(`Opened ${basename(folder)}`);
-    } catch (err) {
-      console.error(err);
-      toast("Couldn't open folder");
+  /**
+   * Serialize workspace-view refreshes so rapid add/close calls don't race
+   * on `setVaultRoot`, `watchRoots`, and `mountRoots`.
+   */
+  let refreshChain: Promise<void> = Promise.resolve();
+  const refreshWorkspaceViews = (): Promise<void> => {
+    const next = refreshChain.then(runRefreshWorkspaceViews);
+    refreshChain = next.catch(() => {}); // keep chain alive on errors
+    return next;
+  };
+  const runRefreshWorkspaceViews = async (): Promise<void> => {
+    const roots = getState().workspaceRoots;
+    const trees: import("./fs/files").DirEntryNode[] = [];
+    for (const r of roots) {
+      try {
+        const tree = await readWorkspace(r);
+        rootTreeCache.set(r, tree);
+        trees.push(tree);
+      } catch (err) {
+        console.error(`[workspace] failed to read ${r}:`, err);
+      }
     }
+    fileTree.mountRoots(trees);
+    const titleEl = document.getElementById("files-title");
+    if (titleEl) {
+      titleEl.textContent =
+        roots.length === 0
+          ? "Files"
+          : roots.length === 1
+            ? basename(roots[0])
+            : `${roots.length} folders`;
+    }
+    // Await vault + watcher so back-to-back refreshes observe consistent state.
+    await setVaultRoot(roots);
+    await watchRoots(roots);
+    const active = getActiveTab();
+    const gitTarget = active?.path ?? primaryWorkspaceRoot();
+    void refreshGitStatus(gitTarget);
+  };
+
+  /** Add a folder to the workspace. No-op if already open. */
+  const addWorkspaceFolder = async (folder: string): Promise<void> => {
+    const before = getState().workspaceRoots.length;
+    addWorkspaceRoot(folder);
+    const after = getState().workspaceRoots.length;
+    if (after === before) {
+      toast(`${basename(folder)} is already open`);
+      return;
+    }
+    pushRecentFolder(folder);
+    toast(`Added ${basename(folder)}`);
+    await refreshWorkspaceViews();
+  };
+
+  /** Remove a folder from the workspace. */
+  const closeWorkspaceFolder = async (folder: string): Promise<void> => {
+    const before = getState().workspaceRoots.length;
+    removeWorkspaceRoot(folder);
+    if (getState().workspaceRoots.length === before) return;
+    rootTreeCache.delete(folder);
+    toast(`Removed ${basename(folder)}`);
+    await refreshWorkspaceViews();
+  };
+
+  /**
+   * Replace the entire roots list — used by session restore. Filters out
+   * paths that no longer exist on disk so ghost roots don't persist across
+   * reboots.
+   */
+  const loadWorkspaces = async (folders: string[]): Promise<void> => {
+    const alive: string[] = [];
+    for (const f of folders) {
+      try {
+        if (await pathExists(f)) alive.push(f);
+      } catch {
+        /* skip */
+      }
+    }
+    const dropped = folders.length - alive.length;
+    if (dropped > 0) {
+      toast(`${dropped} folder${dropped === 1 ? "" : "s"} from last session no longer exist`);
+    }
+    setWorkspaceRoots(alive);
+    for (const f of alive) pushRecentFolder(f);
+    await refreshWorkspaceViews();
+  };
+
+  /** @deprecated — single-folder compat for old call sites. */
+  const loadWorkspace = async (folder: string): Promise<void> => {
+    await loadWorkspaces([folder]);
+  };
+
+  /** Popup menu showing recent folders — click to add to workspace. */
+  const showRecentFoldersMenu = (): void => {
+    const anchor = document.getElementById("btn-recent-folders");
+    if (!anchor) return;
+    const recents = recentFolders();
+    const openSet = new Set(
+      getState().workspaceRoots.map((r) => r.replace(/\\/g, "/").toLowerCase()),
+    );
+    const items = recents.map((path) => {
+      const open = openSet.has(path.replace(/\\/g, "/").toLowerCase());
+      return {
+        label: basename(path),
+        subtitle: path,
+        checked: open,
+        disabled: open,
+        run: () => void addWorkspaceFolder(path),
+      };
+    });
+    if (recents.length > 0) {
+      items.push({
+        label: "Clear recent folders",
+        subtitle: "",
+        checked: false,
+        disabled: false,
+        run: () => {
+          clearRecentFolders();
+          toast("Cleared recent folders");
+        },
+      });
+    }
+    showPopupMenu({
+      anchor,
+      title: "Recent folders",
+      items,
+      emptyMessage: "No recent folders",
+    });
   };
 
   /**
@@ -246,9 +546,17 @@ const bootstrap = async (): Promise<void> => {
     if (!tab.path) throw new Error("Tab has no path");
     const ext = extOf(tab.path);
     if (isMarkdownExt(ext) || !ext) {
+      markOwnWrite(tab.path);
       await saveFile(tab.path, tab.content);
+      // Re-mark after the write — catches fs events that arrive post-write.
+      markOwnWrite(tab.path);
+      void onVaultFileSaved(tab.path, tab.content);
+      void refreshCurrentGitStatus();
+      void refreshGitGutter(tab.path);
+      onAnySave(tab.path);
       return;
     }
+    markOwnWrite(tab.path);
     const targetFmt =
       tab.sourceFormat ?? getExportFormatByExt(ext)?.pandocName ?? null;
     if (!targetFmt) {
@@ -258,6 +566,12 @@ const bootstrap = async (): Promise<void> => {
       throw new Error("Pandoc is required for this format");
     }
     await pandocExport(tab.content, targetFmt, tab.path);
+    // Re-mark after the long Pandoc write so the post-write fs event is still
+    // inside the blackout window.
+    markOwnWrite(tab.path);
+    void refreshCurrentGitStatus();
+    void refreshGitGutter(tab.path);
+    onAnySave(tab.path);
   };
 
   const save = async (): Promise<void> => {
@@ -310,10 +624,11 @@ const bootstrap = async (): Promise<void> => {
     }
     const defaultExt = active.sourceExt ?? "md";
     const base = active.title.replace(/\.[^.]+$/, "") || "Untitled";
+    const primaryRoot = primaryWorkspaceRoot();
     const defaultPath =
       active.path ??
-      (workspaceRoot
-        ? `${workspaceRoot}/${base}.${defaultExt}`
+      (primaryRoot
+        ? `${primaryRoot}/${base}.${defaultExt}`
         : `${base}.${defaultExt}`);
 
     const chosen = await saveAsDialog(defaultPath);
@@ -325,7 +640,9 @@ const bootstrap = async (): Promise<void> => {
 
     try {
       if (isMarkdownExt(finalExt) || !finalExt) {
+        markOwnWrite(finalPath);
         await saveFile(finalPath, active.content);
+        markOwnWrite(finalPath);
       } else {
         const fmt = getExportFormatByExt(finalExt);
         if (!fmt) {
@@ -350,7 +667,8 @@ const bootstrap = async (): Promise<void> => {
           : getExportFormatByExt(finalExt)?.pandocName ?? null,
       });
       pushRecentFile(finalPath);
-      if (workspaceRoot && finalPath.startsWith(workspaceRoot)) {
+      // If the saved file lands inside any open root, refresh that root's tree.
+      if (getState().workspaceRoots.some((r) => finalPath.startsWith(r))) {
         void refreshWorkspace();
       }
       toast(`Saved as ${basename(finalPath)}`);
@@ -374,8 +692,9 @@ const bootstrap = async (): Promise<void> => {
       return;
     }
     const base = (active.title.replace(/\.[^.]+$/, "") || "document");
-    const defaultPath = workspaceRoot
-      ? `${workspaceRoot}/${base}.${format.ext}`
+    const exportRoot = primaryWorkspaceRoot();
+    const defaultPath = exportRoot
+      ? `${exportRoot}/${base}.${format.ext}`
       : `${base}.${format.ext}`;
     const chosen = await saveAsDialog(defaultPath);
     if (!chosen) return;
@@ -385,9 +704,13 @@ const bootstrap = async (): Promise<void> => {
     const progress = progressToast(`Exporting to ${format.label}…`);
     try {
       if (isNative) {
+        markOwnWrite(finalPath);
         await saveFile(finalPath, active.content);
+        markOwnWrite(finalPath);
       } else {
+        markOwnWrite(finalPath);
         await pandocExport(active.content, format.pandocName, finalPath);
+        markOwnWrite(finalPath);
       }
       progress.success(`Exported to ${basename(finalPath)}`);
     } catch (err) {
@@ -524,13 +847,12 @@ const bootstrap = async (): Promise<void> => {
   };
 
   const refreshWorkspace = async (): Promise<void> => {
-    if (!workspaceRoot) {
+    if (getState().workspaceRoots.length === 0) {
       toast("No folder open");
       return;
     }
     try {
-      const tree = await readWorkspace(workspaceRoot);
-      fileTree.mount(tree);
+      await refreshWorkspaceViews();
       const active = getActiveTab();
       fileTree.setActive(active?.path ?? null);
       toast("Folder refreshed");
@@ -644,8 +966,11 @@ const bootstrap = async (): Promise<void> => {
       for (const t of dirtyWithPath) {
         void (async () => {
           try {
+            markOwnWrite(t.path!);
             await saveFile(t.path!, t.content);
+            markOwnWrite(t.path!);
             updateTab(t.id, { savedContent: t.content });
+            onAnySave(t.path!);
           } catch (err) {
             console.error("autosave failed:", err);
           }
@@ -716,7 +1041,7 @@ const bootstrap = async (): Promise<void> => {
         </svg>
       </div>
       <div class="about__name">TypeX</div>
-      <div class="about__version">Version 0.1.0</div>
+      <div class="about__version">Version 0.3.0</div>
       ${pandocLine}
       <p class="about__tag">A beautifully crafted Markdown editor.<br/>Built with Tauri, TypeScript, and Milkdown.</p>
     `;
@@ -825,6 +1150,26 @@ const bootstrap = async (): Promise<void> => {
       }),
     );
 
+    addRow(
+      filesSection,
+      "Live-reload external writes",
+      "When an AI agent or another editor rapidly writes to a file that's open here, apply the writes through instead of popping a 'Keep mine / Reload' modal per chunk. Turn off to restore the modal gate for every external change on a dirty tab.",
+      makeToggle(prefs.liveReload, (v) => {
+        prefs.liveReload = v;
+        savePrefs(prefs);
+      }),
+    );
+
+    addRow(
+      filesSection,
+      "Animate external edits",
+      "Pulse the tab and briefly highlight changed blocks when external writes land.",
+      makeToggle(prefs.animateExternalEdits, (v) => {
+        prefs.animateExternalEdits = v;
+        savePrefs(prefs);
+      }),
+    );
+
     // ---- Section: Editor ----
     const editorSection = document.createElement("div");
     editorSection.className = "prefs__section";
@@ -913,7 +1258,43 @@ const bootstrap = async (): Promise<void> => {
       defaultsBtn,
     );
 
-    body.append(filesSection, editorSection, convSection, winSection);
+    // ---- Section: Git ----
+    const gitSection = document.createElement("div");
+    gitSection.className = "prefs__section";
+    const gitTitle = document.createElement("p");
+    gitTitle.className = "prefs__section-title";
+    gitTitle.textContent = "Git";
+    gitSection.appendChild(gitTitle);
+
+    addRow(
+      gitSection,
+      "Autocommit on save",
+      `Silently commit changes ${Math.round((prefs.autocommitDelayMs ?? 15000) / 1000)} seconds after your last save. Only runs when the workspace is a git repo.`,
+      makeToggle(prefs.autocommit, (v) => {
+        prefs.autocommit = v;
+        savePrefs(prefs);
+      }),
+    );
+    addRow(
+      gitSection,
+      "Autopush after commit",
+      "Runs git push after each autocommit. Uses your system git credential helper — TypeX does not store credentials.",
+      makeToggle(prefs.autopush, (v) => {
+        prefs.autopush = v;
+        savePrefs(prefs);
+      }),
+    );
+    addRow(
+      gitSection,
+      "Pull on focus",
+      "Run git pull --ff-only when the window regains focus. Only fires when the working tree is clean.",
+      makeToggle(prefs.autopullOnFocus, (v) => {
+        prefs.autopullOnFocus = v;
+        savePrefs(prefs);
+      }),
+    );
+
+    body.append(filesSection, editorSection, gitSection, convSection, winSection);
 
     showModal({
       title: "Preferences",
@@ -984,7 +1365,8 @@ const bootstrap = async (): Promise<void> => {
   registerCommands([
     { id: "file.new", title: "New document", section: "File", shortcut: ["Ctrl", "N"], run: createNew },
     { id: "file.open", title: "Open file…", section: "File", shortcut: ["Ctrl", "O"], run: openFile },
-    { id: "file.openFolder", title: "Open folder…", section: "File", shortcut: ["Ctrl", "Shift", "O"], run: openFolder },
+    { id: "file.openFolder", title: "Add folder to workspace…", subtitle: "Stacks with any already-open folders", section: "File", shortcut: ["Ctrl", "Shift", "O"], run: openFolder },
+    { id: "file.recentFolders", title: "Open recent folder…", subtitle: "Pick from recently-used folders", section: "File", run: showRecentFoldersMenu },
     { id: "file.save", title: "Save", section: "File", shortcut: ["Ctrl", "S"], run: save },
     { id: "file.saveAs", title: "Save as…", section: "File", shortcut: ["Ctrl", "Shift", "S"], run: saveAs },
     { id: "file.saveAll", title: "Save all", section: "File", shortcut: ["Ctrl", "Alt", "S"], run: saveAll },
@@ -1012,6 +1394,79 @@ const bootstrap = async (): Promise<void> => {
     { id: "view.theme.light", title: "Theme: Light (Ivory Paper)", section: "View", run: () => applyTheme("light") },
     { id: "view.sidebar.toggle", title: "Toggle sidebar", section: "View", shortcut: ["Ctrl", "\\"], run: toggleSidebar },
     { id: "view.focus.toggle", title: "Toggle focus mode", section: "View", shortcut: ["Ctrl", "."], run: toggleFocusMode },
+    { id: "view.raw.toggle", title: "Toggle raw source mode", subtitle: "Show the raw Markdown text", section: "View", shortcut: ["Ctrl", "/"], run: () => toggleRawMode(viewModeOpts) },
+    { id: "view.split.toggle", title: "Toggle split view", subtitle: "Raw on the left, WYSIWYG preview on the right", section: "View", shortcut: ["Ctrl", "Shift", "/"], run: () => toggleSplitMode(viewModeOpts) },
+    { id: "git.refresh", title: "Refresh git status", subtitle: "Re-read branch, dirty state, and upstream ahead/behind", section: "Git", run: () => void refreshCurrentGitStatus() },
+    {
+      id: "git.commit",
+      title: "Commit all changes",
+      subtitle: "Stage everything and commit with a TypeX-generated message",
+      section: "Git",
+      run: () => {
+        const s = getGitStatus();
+        if (!s.is_repo || !s.root) { toast("No git repo in this workspace"); return; }
+        void (async () => {
+          const p = progressToast("Committing…");
+          try {
+            const result = await gitCommitAll(s.root!, "TypeX: update");
+            if (!result.committed) { p.close(); toast(result.message); }
+            else p.success(`Committed ${result.file_count} file(s)${result.short ? ` · ${result.short}` : ""}`);
+            void refreshCurrentGitStatus();
+          } catch (err) {
+            p.error(`Commit failed: ${String(err).slice(0, 160)}`);
+          }
+        })();
+      },
+    },
+    {
+      id: "git.push",
+      title: "Push to upstream",
+      subtitle: "git push — uses your system git credential helper",
+      section: "Git",
+      run: () => {
+        const s = getGitStatus();
+        if (!s.is_repo || !s.root) { toast("No git repo in this workspace"); return; }
+        void (async () => {
+          const p = progressToast("Pushing…");
+          const res = await gitPush(s.root!);
+          if (res.ok) p.success("Pushed");
+          else p.error(`Push failed: ${summarizeGitError(res.stderr)}`);
+          void refreshCurrentGitStatus();
+        })();
+      },
+    },
+    {
+      id: "git.clone",
+      title: "Clone a git repository…",
+      subtitle: "Paste any git URL and pick a destination folder",
+      section: "Git",
+      run: () => showCloneDialog({
+        onCloned: async (absolutePath) => {
+          await loadWorkspace(absolutePath);
+        },
+      }),
+    },
+    {
+      id: "git.pull",
+      title: "Pull from upstream (--ff-only)",
+      subtitle: "git pull --ff-only — safely fetches and fast-forwards",
+      section: "Git",
+      run: () => {
+        const s = getGitStatus();
+        if (!s.is_repo || !s.root) { toast("No git repo in this workspace"); return; }
+        void (async () => {
+          const p = progressToast("Pulling…");
+          const res = await gitPull(s.root!);
+          if (res.ok) {
+            if (res.stdout.includes("Already up to date")) p.close();
+            else p.success("Pulled latest");
+          } else {
+            p.error(`Pull failed: ${summarizeGitError(res.stderr)}`);
+          }
+          void refreshCurrentGitStatus();
+        })();
+      },
+    },
     { id: "view.typewriter.toggle", title: "Toggle typewriter mode", section: "View", run: toggleTypewriter },
     { id: "view.font.sans", title: "Editor font: Sans", section: "View", run: () => setEditorFont("sans") },
     { id: "view.font.serif", title: "Editor font: Serif", section: "View", run: () => setEditorFont("serif") },
@@ -1147,7 +1602,10 @@ const bootstrap = async (): Promise<void> => {
         { label: "New document", accessKey: "N", shortcut: "Ctrl+N", run: () => void createNew() },
         { type: "separator" },
         { label: "Open file…", accessKey: "O", shortcut: "Ctrl+O", run: () => void openFile() },
-        { label: "Open folder…", accessKey: "F", shortcut: "Ctrl+Shift+O", run: () => void openFolder() },
+        { label: "Add folder to workspace…", accessKey: "F", shortcut: "Ctrl+Shift+O", run: () => void openFolder() },
+        { label: "Clone git repository…", accessKey: "C", run: () => showCloneDialog({
+          onCloned: async (p) => { await loadWorkspace(p); },
+        }) },
         { label: "Open recent", accessKey: "R", submenu: buildRecentSubmenu() },
         { type: "separator" },
         { label: "Save", accessKey: "S", shortcut: "Ctrl+S", run: () => void save() },
@@ -1209,6 +1667,9 @@ const bootstrap = async (): Promise<void> => {
           { label: "Toggle sidebar", shortcut: "Ctrl+\\", checked: !s.sidebarCollapsed, run: toggleSidebar },
           { label: "Focus mode", shortcut: "Ctrl+.", checked: s.focusMode, run: toggleFocusMode },
           { label: "Typewriter mode", checked: prefs.typewriter, run: toggleTypewriter },
+          { type: "separator" },
+          { label: "Raw source", shortcut: "Ctrl+/", checked: s.viewMode === "raw", run: () => toggleRawMode(viewModeOpts) },
+          { label: "Split (raw + preview)", shortcut: "Ctrl+Shift+/", checked: s.viewMode === "split", run: () => toggleSplitMode(viewModeOpts) },
           { type: "separator" },
           {
             label: "Theme",
@@ -1347,6 +1808,7 @@ const bootstrap = async (): Promise<void> => {
       ["btn-open-file-sidebar", openFile],
       ["btn-new-file", () => void createNew()],
       ["btn-new-file-empty", () => void createNew()],
+      ["btn-recent-folders", () => showRecentFoldersMenu()],
     ];
     for (const [id, fn] of bindings) {
       const btn = document.getElementById(id);
@@ -1414,6 +1876,8 @@ const bootstrap = async (): Promise<void> => {
     if (k === "l" && e.shiftKey) { e.preventDefault(); toggleTheme(); return; }
     if (k === "w" && e.shiftKey) { e.preventDefault(); toggleReadingMode(); return; }
     if (k === "\\") { e.preventDefault(); toggleSidebar(); return; }
+    if (k === "/" && !e.shiftKey) { e.preventDefault(); toggleRawMode(viewModeOpts); return; }
+    if (k === "/" && e.shiftKey) { e.preventDefault(); toggleSplitMode(viewModeOpts); return; }
     if (k === ".") { e.preventDefault(); toggleFocusMode(); return; }
     if (k === "=" || k === "+") { e.preventDefault(); zoomIn(); return; }
     if (k === "-") { e.preventDefault(); zoomOut(); return; }
@@ -1445,10 +1909,12 @@ const bootstrap = async (): Promise<void> => {
     // Keep file-tree highlight in sync
     fileTree.setActive(active?.path ?? null);
     // Persist session
+    const roots = s.workspaceRoots;
     saveSession({
       openFiles: s.tabs.map((t) => t.path).filter((p): p is string => !!p),
       activePath: active?.path ?? null,
-      workspaceRoot,
+      workspaceRoot: roots[0] ?? null, // legacy field
+      workspaceRoots: roots,
     });
   });
 
@@ -1487,8 +1953,8 @@ const bootstrap = async (): Promise<void> => {
   } else {
     // Normal session restore
     const session = loadSession();
-    if (session.workspaceRoot && isTauri()) {
-      void loadWorkspace(session.workspaceRoot);
+    if (session.workspaceRoots.length > 0 && isTauri()) {
+      void loadWorkspaces(session.workspaceRoots);
     }
     if (session.openFiles.length && isTauri()) {
       const welcomeTab = initialTab;

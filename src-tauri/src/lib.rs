@@ -1,7 +1,9 @@
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};
 
+mod git;
 mod pandoc;
+mod watcher;
 
 #[derive(Serialize)]
 pub struct AppInfo {
@@ -90,6 +92,10 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .setup(|app| {
+            watcher::register(&app.handle());
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             app_info,
             launch_paths,
@@ -97,6 +103,18 @@ pub fn run() {
             pandoc::pandoc_version,
             pandoc::pandoc_convert_from_file,
             pandoc::pandoc_convert_to_file,
+            git::git_is_repo,
+            git::git_status,
+            git::git_log_recent,
+            git::git_diff_file,
+            git::git_blame_line,
+            git::git_commit_all,
+            git::git_push,
+            git::git_pull,
+            git::git_clone,
+            watcher::fs_watch,
+            watcher::fs_watch_roots,
+            watcher::fs_unwatch,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TypeX");

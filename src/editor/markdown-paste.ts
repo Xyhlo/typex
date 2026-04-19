@@ -28,6 +28,14 @@ import { createLowlight, common } from "lowlight";
 
 const lowlight = createLowlight(common);
 
+// Flip to true in devtools (`window.__typexPasteDebug = true`) to trace paste decisions.
+const debugEnabled = (): boolean =>
+  typeof window !== "undefined" &&
+  (window as unknown as { __typexPasteDebug?: boolean }).__typexPasteDebug === true;
+const dlog = (msg: string): void => {
+  if (debugEnabled()) console.info(msg);
+};
+
 /**
  * STRONG markdown signals — syntax that isn't used as comments or statements
  * in any common programming language. If we see these, it's markdown, full
@@ -97,11 +105,17 @@ const detectLanguage = (text: string): string => {
   // Shebang fast paths
   if (firstLine.startsWith("#!")) {
     if (/\bpython[0-9.]*\b/.test(firstLine)) return "python";
-    if (/\bnode\b/.test(firstLine)) return "javascript";
-    if (/\b(ba|z|)sh\b/.test(firstLine)) return "bash";
+    if (/\b(ts-)?node\b/.test(firstLine)) return "javascript";
+    if (/\bdeno\b/.test(firstLine)) return "typescript";
+    if (/\b(ba|z|k|da|)sh\b/.test(firstLine)) return "bash";
+    if (/\bfish\b/.test(firstLine)) return "bash"; // close enough
     if (/\bruby\b/.test(firstLine)) return "ruby";
     if (/\bperl\b/.test(firstLine)) return "perl";
-    if (/\bdeno\b/.test(firstLine)) return "typescript";
+    if (/\blua(jit)?\b/.test(firstLine)) return "lua";
+    if (/\b(g|m|n)?awk\b/.test(firstLine)) return "awk";
+    if (/\btclsh\b/.test(firstLine)) return "tcl";
+    if (/\bRscript\b/.test(firstLine)) return "r";
+    if (/\bphp\b/.test(firstLine)) return "php";
   }
   if (/^\s*<\?php\b/i.test(firstLine)) return "php";
   if (/^\s*<\?xml\b/i.test(firstLine)) return "xml";
@@ -132,34 +146,30 @@ const insertSlice = (view: EditorView, slice: Slice): void => {
 
 const handle = (ctx: Ctx, view: EditorView, event: ClipboardEvent): boolean => {
   const data = event.clipboardData;
-  if (!data) {
-    console.info("[typex paste] no clipboardData");
-    return false;
-  }
+  if (!data) return false;
 
-  const types = Array.from(data.types ?? []);
   let text = data.getData("text/plain");
-  const hasHtml = !!data.getData("text/html");
-
-  console.info(
-    `[typex paste] fire — types=${JSON.stringify(types)} plainLen=${text.length} hasHtml=${hasHtml}`,
-  );
-
   if (!text) return false;
+
+  if (debugEnabled()) {
+    const types = Array.from(data.types ?? []);
+    const hasHtml = !!data.getData("text/html");
+    dlog(
+      `[typex paste] fire — types=${JSON.stringify(types)} plainLen=${text.length} hasHtml=${hasHtml}`,
+    );
+  }
 
   const strongMd = hasStrongMarkdown(text);
   const weakMd = hasWeakMarkdown(text);
   const code = looksLikeCode(text);
-  console.info(
-    `[typex paste] detection — strongMd=${strongMd} weakMd=${weakMd} code=${code}`,
-  );
+  dlog(`[typex paste] detection — strongMd=${strongMd} weakMd=${weakMd} code=${code}`);
 
   // Strong markdown (fence / quote / table / task / image) always wins.
   // Otherwise, code beats weak markdown — that's what prevents a Python
   // `# comment` line from being mistaken for a heading.
   if (!strongMd && code) {
     const lang = detectLanguage(text);
-    console.info(`[typex paste] wrapping — language=${JSON.stringify(lang)}`);
+    dlog(`[typex paste] wrapping — language=${JSON.stringify(lang)}`);
     const trimmed = text.replace(/\s+$/, "");
     text = "```" + lang + "\n" + trimmed + "\n```";
   }
@@ -167,16 +177,15 @@ const handle = (ctx: Ctx, view: EditorView, event: ClipboardEvent): boolean => {
   try {
     const parser = ctx.get(parserCtx);
     const doc = parser(text);
-    if (!doc || doc.content.size === 0) {
-      console.warn("[typex paste] parser produced empty doc");
-      return false;
-    }
+    if (!doc || doc.content.size === 0) return false;
 
-    const firstChildName = doc.firstChild?.type.name ?? "(none)";
-    const firstChildAttrs = JSON.stringify(doc.firstChild?.attrs ?? {});
-    console.info(
-      `[typex paste] parsed — childCount=${doc.childCount} first=${firstChildName} attrs=${firstChildAttrs}`,
-    );
+    if (debugEnabled()) {
+      const firstChildName = doc.firstChild?.type.name ?? "(none)";
+      const firstChildAttrs = JSON.stringify(doc.firstChild?.attrs ?? {});
+      dlog(
+        `[typex paste] parsed — childCount=${doc.childCount} first=${firstChildName} attrs=${firstChildAttrs}`,
+      );
+    }
 
     const openStart = shouldMergeAtBoundary(doc.firstChild) ? 1 : 0;
     const openEnd = shouldMergeAtBoundary(doc.lastChild) ? 1 : 0;
@@ -185,7 +194,6 @@ const handle = (ctx: Ctx, view: EditorView, event: ClipboardEvent): boolean => {
     event.preventDefault();
     event.stopPropagation();
     insertSlice(view, slice);
-    console.info("[typex paste] dispatched slice");
     return true;
   } catch (err) {
     console.error("[typex paste] failed:", err);

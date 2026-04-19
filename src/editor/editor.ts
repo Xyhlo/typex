@@ -25,6 +25,14 @@ import { replaceAll, getMarkdown, getHTML, callCommand } from "@milkdown/utils";
 import { markdownPaste } from "./markdown-paste";
 import { viewHooks } from "./view-hooks";
 import { syntaxHighlight } from "./syntax-highlight";
+import { wikilinkRenderPlugin } from "./wikilink-render";
+import {
+  externalFlashPlugin,
+  flashExternalRange,
+  showExternalCaret,
+  hideExternalCaret,
+} from "./external-flash";
+import { streamApply, cancelStreamApply } from "./stream-apply";
 
 export type EditorCommand =
   | "bold"
@@ -50,6 +58,30 @@ export type EditorCommand =
 
 export interface EditorController {
   setContent: (markdown: string) => Promise<void>;
+  /**
+   * Apply new markdown that came from an external write (AI stream, formatter,
+   * git checkout). Preserves the editor's scroll position across the swap
+   * and, if `flashChangedLines` is true, briefly highlights the top-level
+   * blocks corresponding to the changed line range in the new source.
+   *
+   * When `stream` is true, the new content is applied gradually over ~400ms
+   * with a blinking caret at the growing edge, so an atomic OS-level write
+   * still looks like a live stream of characters.
+   */
+  applyExternalText: (
+    markdown: string,
+    opts?: {
+      flashChangedLines?: boolean;
+      oldMarkdown?: string;
+      stream?: boolean;
+    },
+  ) => Promise<void>;
+  /**
+   * Cancel any in-flight stream apply and resolve its pending promise.
+   * Call before switching tabs / loading new content so a stale stream
+   * can't write into the new tab's buffer.
+   */
+  cancelStream: () => void;
   getContent: () => string;
   getHTML: () => string;
   focus: () => void;
@@ -66,12 +98,17 @@ export interface CreateEditorOpts {
   initialContent: string;
   onChange: (markdown: string) => void;
   onReady?: () => void;
+  onOpenWikilink?: (target: string, resolvedPath: string | null) => void;
 }
 
 export const createEditor = async (
   opts: CreateEditorOpts,
 ): Promise<EditorController> => {
-  const { host, initialContent, onChange, onReady } = opts;
+  const { host, initialContent, onChange, onReady, onOpenWikilink } = opts;
+
+  const wikilink = wikilinkRenderPlugin({
+    onOpen: (target, resolved) => onOpenWikilink?.(target, resolved),
+  });
 
   const editor = await Editor.make()
     .config((ctx) => {
@@ -84,6 +121,8 @@ export const createEditor = async (
     .use(markdownPaste) // must register BEFORE clipboard so our paste hook wins
     .use(viewHooks)
     .use(syntaxHighlight)
+    .use(wikilink)
+    .use(externalFlashPlugin)
     .use(commonmark)
     .use(gfm)
     .use(history)
@@ -167,9 +206,195 @@ export const createEditor = async (
     }
   };
 
+  /**
+   * Generation counter — a late rAF scroll-restore from an older apply must
+   * not clobber a newer one when stream chunks overlap.
+   */
+  let scrollGen = 0;
+
+  /**
+   * Split `md` into top-level blocks, each described by its `[firstLine, lastLine]`
+   * (inclusive, 0-indexed). Blank lines separate blocks, but blank lines
+   * *inside* fenced code blocks don't — they stay part of the fence.
+   */
+  const splitTopLevelBlocks = (
+    md: string,
+  ): Array<{ firstLine: number; lastLine: number }> => {
+    const lines = md.split("\n");
+    const blocks: Array<{ firstLine: number; lastLine: number }> = [];
+    let inFence: "`" | "~" | null = null;
+    let blockStart = -1;
+
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i].trim();
+      if (inFence) {
+        if (
+          (inFence === "`" && trimmed.startsWith("```")) ||
+          (inFence === "~" && trimmed.startsWith("~~~"))
+        ) {
+          inFence = null;
+        }
+        continue;
+      }
+      if (trimmed.startsWith("```")) {
+        if (blockStart < 0) blockStart = i;
+        inFence = "`";
+        continue;
+      }
+      if (trimmed.startsWith("~~~")) {
+        if (blockStart < 0) blockStart = i;
+        inFence = "~";
+        continue;
+      }
+      if (trimmed === "") {
+        if (blockStart >= 0) {
+          blocks.push({ firstLine: blockStart, lastLine: i - 1 });
+          blockStart = -1;
+        }
+        continue;
+      }
+      if (blockStart < 0) blockStart = i;
+    }
+    if (blockStart >= 0) {
+      blocks.push({ firstLine: blockStart, lastLine: lines.length - 1 });
+    }
+    return blocks;
+  };
+
+  const mapLineRangeToBlockIndex = (
+    md: string,
+    range: { firstChangedLine: number; lastChangedLine: number },
+  ): { firstBlock: number; lastBlock: number } | null => {
+    const blocks = splitTopLevelBlocks(md);
+    if (blocks.length === 0) return null;
+    let firstBlock = -1;
+    let lastBlock = -1;
+    for (let i = 0; i < blocks.length; i++) {
+      const b = blocks[i];
+      if (firstBlock < 0 && range.firstChangedLine <= b.lastLine) {
+        firstBlock = i;
+      }
+      if (range.lastChangedLine >= b.firstLine) {
+        lastBlock = i;
+      }
+    }
+    if (firstBlock < 0) firstBlock = blocks.length - 1;
+    if (lastBlock < firstBlock) lastBlock = firstBlock;
+    return { firstBlock, lastBlock };
+  };
+
+  /** Compute the line range in `newMd` that differs from `oldMd`. */
+  const diffLineRange = (
+    oldMd: string,
+    newMd: string,
+  ): { firstChangedLine: number; lastChangedLine: number } | null => {
+    if (!oldMd || !newMd) return null;
+    const oldLines = oldMd.split("\n");
+    const newLines = newMd.split("\n");
+    let prefix = 0;
+    const maxPrefix = Math.min(oldLines.length, newLines.length);
+    while (prefix < maxPrefix && oldLines[prefix] === newLines[prefix]) prefix++;
+    let suffix = 0;
+    while (
+      suffix < Math.min(oldLines.length - prefix, newLines.length - prefix) &&
+      oldLines[oldLines.length - 1 - suffix] === newLines[newLines.length - 1 - suffix]
+    ) {
+      suffix++;
+    }
+    const firstChangedLine = prefix;
+    const lastChangedLine = newLines.length - suffix - 1;
+    if (lastChangedLine < firstChangedLine) return null;
+    return { firstChangedLine, lastChangedLine };
+  };
+
   return {
     async setContent(md: string) {
       await editor.action(replaceAll(md));
+    },
+    async applyExternalText(md, opts = {}) {
+      const scrollEl = proseRoot()?.parentElement ?? null;
+      // Scroll restore only for atomic (non-stream) applies. During a stream,
+      // capturing scroll once and restoring at the end yanks the viewport
+      // back to the pre-stream position once the last chunk lands — terrible
+      // for a long AI append where the user expects to track the growing edge.
+      const useStream = opts.stream && opts.oldMarkdown !== undefined;
+      const savedScroll = useStream ? null : scrollEl?.scrollTop ?? 0;
+
+      const range =
+        opts.flashChangedLines && opts.oldMarkdown
+          ? diffLineRange(opts.oldMarkdown, md)
+          : null;
+      // Map source-line range → block index range by splitting the new
+      // markdown into top-level blocks while respecting fenced code blocks.
+      const blockRange = range ? mapLineRangeToBlockIndex(md, range) : null;
+
+      if (opts.stream && opts.oldMarkdown !== undefined) {
+        // Gradual apply — types out the new content over ~400ms with a
+        // blinking caret at the growing edge.
+        await new Promise<void>((resolve) => {
+          streamApply(editor, opts.oldMarkdown ?? "", md, {
+            animate: true,
+            onTick: () => {
+              // Update the caret to the current doc end.
+              editor.action((ctx) => {
+                const view = ctx.get(editorViewCtx);
+                showExternalCaret(view, view.state.doc.content.size);
+              });
+            },
+            onDone: () => {
+              editor.action((ctx) => {
+                const view = ctx.get(editorViewCtx);
+                // Let the caret linger briefly after the last character so
+                // the user sees the "done" flourish, then hide.
+                window.setTimeout(() => hideExternalCaret(view), 600);
+              });
+              resolve();
+            },
+          });
+        });
+      } else {
+        await editor.action(replaceAll(md));
+      }
+
+      if (blockRange) {
+        editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx);
+          const doc = view.state.doc;
+          let idx = 0;
+          let from = -1;
+          let to = 0;
+          doc.forEach((node, offset) => {
+            if (idx >= blockRange.firstBlock && from < 0) from = offset;
+            if (idx <= blockRange.lastBlock) to = offset + node.nodeSize;
+            idx++;
+          });
+          if (from < 0) {
+            // Range fell past the end — fall back to flashing the last block
+            // so the user still gets a visual cue that something landed.
+            const last = doc.lastChild;
+            if (last) {
+              const lastOffset = doc.content.size - last.nodeSize;
+              flashExternalRange(view, {
+                from: lastOffset,
+                to: doc.content.size,
+              });
+            }
+            return;
+          }
+          flashExternalRange(view, { from, to });
+        });
+      }
+
+      // Atomic apply: restore scroll on the next frame so layout has settled.
+      // For streams, savedScroll is null and we let ProseMirror's natural
+      // scroll behavior ride — the user sees the stream grow in place.
+      if (scrollEl && savedScroll !== null) {
+        const myGen = ++scrollGen;
+        requestAnimationFrame(() => {
+          if (myGen !== scrollGen) return;
+          scrollEl.scrollTop = savedScroll;
+        });
+      }
     },
     getContent() {
       return editor.action(getMarkdown());
@@ -182,6 +407,9 @@ export const createEditor = async (
     insertText,
     selectAll,
     applyLink,
+    cancelStream() {
+      cancelStreamApply(editor);
+    },
     run: runCmd,
     async destroy() {
       await editor.destroy();

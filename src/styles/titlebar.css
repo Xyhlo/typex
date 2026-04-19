@@ -159,6 +159,52 @@
   background: var(--bg-content);
 }
 
+.tab[data-streaming="true"] {
+  position: relative;
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-app));
+  color: var(--fg);
+  animation: tab-streaming-pulse 1.1s ease-in-out infinite;
+}
+@keyframes tab-streaming-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 40%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+    background: color-mix(in srgb, var(--accent) 8%, var(--bg-app));
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 90%, transparent),
+      0 0 10px 2px color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent) 16%, var(--bg-app));
+  }
+}
+/* Pulsing "live" dot on streaming tabs, after the label. */
+.tab[data-streaming="true"] .tab__label::after {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+  animation: tab-streaming-dot 1.1s ease-in-out infinite;
+  vertical-align: middle;
+}
+@keyframes tab-streaming-dot {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(0.85);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+
 .tab.is-active::after {
   content: "";
   position: absolute;
