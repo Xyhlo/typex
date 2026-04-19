@@ -1,0 +1,93 @@
+/* ============================================================
+   First-run "make TypeX the default" banner.
+   Slides down from beneath the titlebar on app boot if the user
+   hasn't answered the question yet. Dismissible forever.
+   ============================================================ */
+
+.default-prompt {
+  position: absolute;
+  top: calc(var(--titlebar-h) + var(--sp-3));
+  left: 50%;
+  transform: translate(-50%, -8px);
+  z-index: var(--z-toast);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-lg) var(--ease-out),
+    transform var(--dur-lg) var(--ease-out);
+}
+.default-prompt.is-open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+.default-prompt__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: min(720px, calc(100vw - 32px));
+}
+
+.default-prompt__mark {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    var(--accent-hover),
+    var(--accent) 45%,
+    var(--accent-active) 100%
+  );
+  box-shadow: 0 0 12px var(--accent-soft);
+  flex-shrink: 0;
+}
+
+.default-prompt__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.default-prompt__title {
+  font-weight: var(--fw-semibold);
+  color: var(--fg-heading);
+  font-size: var(--fs-md);
+  letter-spacing: var(--ls-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.default-prompt__sub {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
+
+.default-prompt__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+.default-prompt__actions .primary-btn,
+.default-prompt__actions .ghost-btn {
+  white-space: nowrap;
+}
+.default-prompt__actions .icon-btn {
+  color: var(--fg-subtle);
+}
+.default-prompt__actions .icon-btn:hover {
+  color: var(--fg);
+  background: var(--bg-overlay);
+}
+
+@media (max-width: 720px) {
+  .default-prompt__inner { flex-wrap: wrap; }
+  .default-prompt__actions { width: 100%; justify-content: flex-end; }
+}

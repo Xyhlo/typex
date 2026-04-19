@@ -136,6 +136,24 @@
 
       <div id="modal-root" class="modal-root" hidden></div>
 
+      <div id="default-prompt" class="default-prompt" hidden>
+        <div class="default-prompt__inner">
+          <span class="default-prompt__mark" aria-hidden="true"></span>
+          <div class="default-prompt__text">
+            <div class="default-prompt__title" id="default-prompt-title">Use TypeX for Markdown files?</div>
+            <div class="default-prompt__sub">Windows will ask you to confirm.</div>
+          </div>
+          <div class="default-prompt__actions">
+            <button id="default-prompt-this" class="primary-btn">Set for this type</button>
+            <button id="default-prompt-all" class="ghost-btn">Manage all types…</button>
+            <button id="default-prompt-later" class="ghost-btn">Not now</button>
+            <button id="default-prompt-dismiss" class="icon-btn icon-btn--sm" title="Don't ask again" aria-label="Don't ask again">
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div id="toast" class="toast" hidden></div>
     </div>
     <script type="module" src="/src/main.ts"></script>

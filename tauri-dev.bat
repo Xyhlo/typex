@@ -38,6 +38,14 @@ if errorlevel 1 (
     exit /b 1
 )
 
+:: Kill any stale process still holding port 1420 from a previous run.
+for /f "tokens=5" %%a in ('netstat -ano -p tcp ^| findstr ":1420 "') do (
+    if not "%%a"=="0" (
+        echo   Port 1420 held by PID %%a. Releasing it...
+        taskkill /F /PID %%a >nul 2>&1
+    )
+)
+
 :: Install JS deps on a fresh clone.
 if not exist "node_modules" (
     echo   node_modules is missing, running "npm install" first...

@@ -24,6 +24,38 @@ fn launch_paths() -> Vec<String> {
     collect_file_args(&std::env::args().collect::<Vec<_>>())
 }
 
+/// Open Windows' Default Apps settings so the user can promote TypeX to
+/// the default handler. On Win11 22H2+, passing `typedFilter=.docx` focuses
+/// the dialog on a specific extension; passing nothing shows the full
+/// Default Apps page. Silent no-op on non-Windows builds.
+#[tauri::command]
+fn open_default_apps_settings(typed_filter: Option<String>) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::process::Command;
+        let uri = match typed_filter.as_deref() {
+            Some(ext) if !ext.is_empty() => {
+                let clean = ext.trim_start_matches('.');
+                format!("ms-settings:defaultapps?typedFilter=.{}", clean)
+            }
+            _ => "ms-settings:defaultapps".to_string(),
+        };
+        // `start` is a cmd builtin, so we invoke through cmd. The empty
+        // string is the window title placeholder `start` expects before
+        // the URL argument.
+        Command::new("cmd")
+            .args(["/C", "start", "", &uri])
+            .spawn()
+            .map_err(|e| format!("Failed to open settings: {e}"))?;
+        return Ok(());
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = typed_filter;
+        Err("Default-app settings are Windows-only.".to_string())
+    }
+}
+
 /// Extract file-path arguments from argv (skipping the binary and any flags).
 fn collect_file_args(argv: &[String]) -> Vec<String> {
     argv.iter()
@@ -61,6 +93,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             app_info,
             launch_paths,
+            open_default_apps_settings,
             pandoc::pandoc_version,
             pandoc::pandoc_convert_from_file,
             pandoc::pandoc_convert_to_file,

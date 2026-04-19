@@ -24,6 +24,8 @@ import {
   type PandocFormat,
 } from "./fs/pandoc";
 import { launchPaths, onLaunchPaths } from "./fs/launch-paths";
+import { openDefaultAppsSettings } from "./fs/default-apps";
+import { maybeShowDefaultPrompt } from "./ui/default-prompt";
 import { registerCommands, runCommand } from "./commands";
 import { createPalette } from "./ui/palette";
 import { initSidebar, toggleSidebar } from "./ui/sidebar";
@@ -889,7 +891,29 @@ const bootstrap = async (): Promise<void> => {
     convStatus.appendChild(convText);
     convSection.appendChild(convStatus);
 
-    body.append(filesSection, editorSection, convSection);
+    // ---- Section: Windows integration ----
+    const winSection = document.createElement("div");
+    winSection.className = "prefs__section";
+    const winTitle = document.createElement("p");
+    winTitle.className = "prefs__section-title";
+    winTitle.textContent = "Windows integration";
+    winSection.appendChild(winTitle);
+
+    const defaultsBtn = document.createElement("button");
+    defaultsBtn.type = "button";
+    defaultsBtn.className = "primary-btn";
+    defaultsBtn.textContent = "Open Default Apps settings…";
+    defaultsBtn.addEventListener("click", () => {
+      void openDefaultAppsSettings();
+    });
+    addRow(
+      winSection,
+      "Set TypeX as default",
+      "Windows doesn't let apps claim defaults silently. This opens Settings → Default apps so you can assign TypeX to Markdown, Word, EPUB, and any other format you handed it.",
+      defaultsBtn,
+    );
+
+    body.append(filesSection, editorSection, convSection, winSection);
 
     showModal({
       title: "Preferences",
@@ -1488,6 +1512,18 @@ const bootstrap = async (): Promise<void> => {
   });
 
   setupAutosave();
+
+  // First-run "make TypeX default" banner. Non-blocking; slides in beneath
+  // the titlebar a moment after the editor settles. No-op if the user has
+  // dismissed it permanently, or if we're not in Tauri.
+  if (isTauri()) {
+    const firstLaunchedExt = launchedWith[0]
+      ? extOf(launchedWith[0])
+      : undefined;
+    window.setTimeout(() => {
+      maybeShowDefaultPrompt({ ext: firstLaunchedExt });
+    }, 1200);
+  }
 };
 
 void bootstrap();

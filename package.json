@@ -24,7 +24,8 @@
     "fetch-pandoc": "node scripts/fetch-pandoc.mjs",
     "icons": "node scripts/generate-icons.mjs",
     "installer-assets": "node scripts/generate-installer-assets.mjs",
-    "file-icons": "node scripts/generate-file-icons.mjs"
+    "file-icons": "node scripts/generate-file-icons.mjs",
+    "wix-file-icons": "node scripts/generate-wix-file-icons.mjs"
   },
   "dependencies": {
     "@milkdown/core": "^7.5.0",
