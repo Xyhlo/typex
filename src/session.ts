@@ -37,6 +37,24 @@ export interface Prefs {
   liveReload: boolean;
   /** Pulse tabs and flash changed regions when external writes land. */
   animateExternalEdits: boolean;
+  /** Phase 4: AI feature master toggle. Off by default. */
+  aiEnabled: boolean;
+  /** Phase 4: selected provider id (e.g. "ollama", "anthropic"). */
+  aiProvider: string;
+  /** Phase 4: selected model id (provider-scoped). */
+  aiModel: string;
+  /**
+   * Phase 4 Wave 3: inline ghost-text autocomplete. Off by default — it's
+   * experimental and noisy for users who don't want AI suggestions as they type.
+   */
+  aiAutocomplete: boolean;
+  /** Debounce before the ghost-text request fires after typing stops (ms). */
+  aiAutocompleteDelayMs: number;
+  /**
+   * System prompt handed to the model for ghost-text autocomplete. Empty
+   * string = use the built-in default. Users can tune this for their vendor.
+   */
+  aiAutocompletePrompt: string;
 }
 
 const DEFAULT_PREFS: Prefs = {
@@ -55,6 +73,12 @@ const DEFAULT_PREFS: Prefs = {
   // per chunk. Users who want the old safety net can turn it off.
   liveReload: true,
   animateExternalEdits: true,
+  aiEnabled: false,
+  aiProvider: '',
+  aiModel: '',
+  aiAutocomplete: false,
+  aiAutocompleteDelayMs: 700,
+  aiAutocompletePrompt: '',
 };
 
 export const loadSession = (): SessionData => {

@@ -27,6 +27,7 @@ import { launchPaths, onLaunchPaths } from "./fs/launch-paths";
 import { openDefaultAppsSettings } from "./fs/default-apps";
 import { maybeShowDefaultPrompt } from "./ui/default-prompt";
 import { registerCommands, runCommand } from "./commands";
+import { initEditorContextMenu } from "./ui/editor-context-menu";
 import { createPalette } from "./ui/palette";
 import { initSidebar, toggleSidebar } from "./ui/sidebar";
 import { initStatusbar } from "./ui/statusbar";
@@ -86,6 +87,17 @@ import {
 } from "./fs/streaming";
 import { initExternalChange } from "./ui/external-change";
 import { showCloneDialog } from "./ui/clone-dialog";
+import {
+  listProviders as aiListProviders,
+  getDetection as aiGetDetection,
+  refreshAll as aiRefreshAll,
+  getActive as aiGetActive,
+  setActive as aiSetActive,
+  complete as aiComplete,
+} from "./ai/manager";
+import { setSecret as aiSetSecret, getSecret as aiGetSecret } from "./ai/secrets";
+import { getCustomModels as aiGetCustomModels, addCustomModel as aiAddCustomModel } from "./ai/custom-models";
+import { initAIIndicator } from "./ui/ai-indicator";
 import { showPopupMenu } from "./ui/recent-menu";
 import {
   getActiveTab,
@@ -107,7 +119,11 @@ const bootstrap = async (): Promise<void> => {
   initSidebar();
   initStatusbar();
   initOutline();
+  initAIIndicator();
   void initWindowControls();
+  // Phase 4: kick a provider detection in the background so Preferences
+  // has fresh state when the user opens it.
+  void aiRefreshAll();
 
   const host = document.getElementById("editor")!;
   const stripEl = document.getElementById("tab-strip")!;
@@ -178,6 +194,33 @@ const bootstrap = async (): Promise<void> => {
     },
   });
   editor.focus();
+
+  // Ghost-text autocomplete lifecycle — a single editor view serves every
+  // tab, so we just attach / detach on the shared instance.
+  const applyAutocompleteToActiveTab = (): void => {
+    const p = loadPrefs();
+    const active = aiGetActive();
+    if (p.aiEnabled && p.aiAutocomplete && active) {
+      editor.attachAIAutocomplete();
+    } else {
+      editor.detachAIAutocomplete();
+    }
+  };
+  applyAutocompleteToActiveTab();
+
+  // Right-click over the editor: if there's a text selection AND AI is on,
+  // show AI tools (Rewrite / Fix / Summarize / Translate). Otherwise the
+  // browser's default menu is untouched.
+  initEditorContextMenu({
+    host,
+    getSelection: () => editor.getSelection(),
+    actions: {
+      rewrite:    () => void runCommand("ai.rewrite"),
+      fixGrammar: () => void runCommand("ai.fix"),
+      summarize:  () => void runCommand("ai.summarize"),
+      translate:  () => void runCommand("ai.translate"),
+    },
+  });
 
   const fileTree = createFileTree(fileTreeEl, {
     onOpenFile: (path) => void openPath(path),
@@ -1294,7 +1337,316 @@ const bootstrap = async (): Promise<void> => {
       }),
     );
 
-    body.append(filesSection, editorSection, gitSection, convSection, winSection);
+    // ---- Section: AI (Phase 4) ----
+    const aiSection = document.createElement("div");
+    aiSection.className = "prefs__section";
+    const aiTitle = document.createElement("p");
+    aiTitle.className = "prefs__section-title";
+    aiTitle.textContent = "AI";
+    aiSection.appendChild(aiTitle);
+
+    addRow(
+      aiSection,
+      "Enable AI commands",
+      "When on, TypeX shows \u201CAI:\u201D commands in the command palette and can stream completions from a local or remote provider. Off by default.",
+      makeToggle(prefs.aiEnabled, (v) => {
+        prefs.aiEnabled = v;
+        savePrefs(prefs);
+        applyAutocompleteToActiveTab();
+        void renderAIBody();
+      }),
+    );
+
+    const aiBody = document.createElement("div");
+    aiBody.className = "prefs__ai-body";
+    aiSection.appendChild(aiBody);
+
+    const renderAIBody = async (): Promise<void> => {
+      aiBody.replaceChildren();
+      if (!prefs.aiEnabled) return;
+      const loading = document.createElement("p");
+      loading.className = "prefs__hint";
+      loading.textContent = "Probing providers\u2026";
+      aiBody.appendChild(loading);
+      await aiRefreshAll();
+      aiBody.replaceChildren();
+      const providers = aiListProviders();
+      const active = aiGetActive();
+
+      /**
+       * Per-provider "Use" button + <select> so we can refresh the Active
+       * badge without tearing down the whole list every time the user picks
+       * a new model.
+       */
+      const useButtons = new Map<string, HTMLButtonElement>();
+      const selects = new Map<string, HTMLSelectElement>();
+      let autocompleteCheck: HTMLInputElement | null = null;
+
+      const refreshActiveUI = (): void => {
+        const a = aiGetActive();
+        for (const [pid, btn] of useButtons) {
+          const sel = selects.get(pid);
+          const selectedModel = sel?.value.split(":")[1];
+          const rowIsActive =
+            a?.providerId === pid && a?.modelId === selectedModel;
+          btn.textContent = a?.providerId === pid ? "Active" : "Use this provider";
+          btn.disabled = rowIsActive;
+        }
+        if (autocompleteCheck) autocompleteCheck.disabled = !a;
+      };
+
+      // Intro: clarify that API + CLI entries for the same vendor are
+      // independent choices, not alternatives that auto-select for you.
+      const intro = document.createElement("p");
+      intro.className = "prefs__hint";
+      intro.innerHTML =
+        "Each row is its own provider. You can pick the API (add a key) " +
+        "<em>or</em> the CLI (uses its own login) for the same vendor \u2014 " +
+        "they're independent, and only one is active at a time.";
+      aiBody.appendChild(intro);
+
+      // Group by vendor so Anthropic API + Claude Code CLI sit under one header.
+      const labelForVendor: Record<string, string> = {
+        ollama: "Ollama (local)",
+        anthropic: "Anthropic",
+        openai: "OpenAI",
+        google: "Google",
+      };
+      const groups = new Map<string, typeof providers>();
+      for (const p of providers) {
+        const v = p.vendor ?? p.id;
+        if (!groups.has(v)) groups.set(v, []);
+        groups.get(v)!.push(p);
+      }
+
+      for (const [vendor, group] of groups) {
+        if (group.length > 1 || labelForVendor[vendor]) {
+          const heading = document.createElement("div");
+          heading.className = "prefs__ai-vendor";
+          heading.textContent = labelForVendor[vendor] ?? vendor;
+          aiBody.appendChild(heading);
+        }
+        for (const p of group) {
+          const state = aiGetDetection(p.id);
+          const row = document.createElement("div");
+          row.className = "prefs__ai-provider";
+
+        const head = document.createElement("div");
+        head.className = "prefs__ai-head";
+        const dot = document.createElement("span");
+        dot.className = "prefs__ai-dot";
+        if (state?.status.available) dot.classList.add("is-ok");
+        else dot.classList.add("is-off");
+        const label = document.createElement("span");
+        label.className = "prefs__ai-label";
+        label.textContent = p.label;
+        const kind = document.createElement("span");
+        kind.className = "prefs__ai-kind";
+        kind.textContent =
+          p.kind === "http-local" ? "local" : p.kind === "http-remote" ? "remote" : "cli";
+        const detail = document.createElement("span");
+        detail.className = "prefs__ai-detail";
+        detail.textContent = state?.status.available
+          ? `${state.models.length} model${state.models.length === 1 ? "" : "s"}`
+          : state?.status.detail ?? "not detected";
+        head.append(dot, label, kind, detail);
+        row.appendChild(head);
+
+        // API key input for remote providers.
+        if (p.kind === "http-remote") {
+          const keyRow = document.createElement("div");
+          keyRow.className = "prefs__ai-keyrow";
+          const keyInput = document.createElement("input");
+          keyInput.type = "password";
+          keyInput.className = "prefs__ai-key";
+          keyInput.placeholder = `${p.label} API key`;
+          keyInput.autocomplete = "off";
+          const keyName = `${p.id}-api-key`;
+          aiGetSecret(keyName).then((v) => {
+            keyInput.value = v ?? "";
+          });
+          const save = document.createElement("button");
+          save.type = "button";
+          save.className = "secondary-btn";
+          save.textContent = "Save key";
+          save.addEventListener("click", async () => {
+            await aiSetSecret(keyName, keyInput.value.trim());
+            await aiRefreshAll();
+            void renderAIBody();
+          });
+          keyRow.append(keyInput, save);
+          row.appendChild(keyRow);
+        }
+
+        // Model picker when available.
+        if (state?.status.available && state.models.length > 0) {
+          const picker = document.createElement("div");
+          picker.className = "prefs__ai-picker";
+          const select = document.createElement("select");
+          select.className = "prefs__ai-select";
+          const populate = (): void => {
+            select.replaceChildren();
+            const combined = [...state.models, ...aiGetCustomModels(p.id)];
+            for (const m of combined) {
+              const opt = document.createElement("option");
+              opt.value = `${p.id}:${m.id}`;
+              opt.textContent = m.note ? `${m.label} \u2014 ${m.note}` : m.label;
+              if (active?.providerId === p.id && active?.modelId === m.id) {
+                opt.selected = true;
+              }
+              select.appendChild(opt);
+            }
+          };
+          populate();
+          const use = document.createElement("button");
+          use.type = "button";
+          use.className = "primary-btn";
+          use.textContent =
+            active?.providerId === p.id ? "Active" : "Use this provider";
+          use.disabled = active?.providerId === p.id && active?.modelId === select.value.split(":")[1];
+          use.addEventListener("click", () => {
+            const [pid, mid] = select.value.split(":");
+            aiSetActive({ providerId: pid, modelId: mid });
+            applyAutocompleteToActiveTab();
+            refreshActiveUI();
+          });
+          select.addEventListener("change", () => {
+            const a = aiGetActive();
+            if (a?.providerId === p.id) {
+              const [pid, mid] = select.value.split(":");
+              aiSetActive({ providerId: pid, modelId: mid });
+              applyAutocompleteToActiveTab();
+              refreshActiveUI();
+            } else {
+              refreshActiveUI();
+            }
+          });
+          const addCustom = document.createElement("button");
+          addCustom.type = "button";
+          addCustom.className = "secondary-btn prefs__ai-custom-btn";
+          addCustom.textContent = "+ Custom\u2026";
+          addCustom.title = "Add a model ID not listed by the vendor";
+          addCustom.addEventListener("click", async () => {
+            const id = await prompt(
+              `Add a custom model for ${p.label}`,
+              "Model ID",
+              "",
+              "e.g. gpt-5-mini, claude-sonnet-4-5, gemini-2.5-flash",
+            );
+            if (!id || !id.trim()) return;
+            aiAddCustomModel(p.id, id.trim());
+            populate();
+            // Auto-select + activate the freshly-added model.
+            select.value = `${p.id}:${id.trim()}`;
+            aiSetActive({ providerId: p.id, modelId: id.trim() });
+            applyAutocompleteToActiveTab();
+            refreshActiveUI();
+          });
+          useButtons.set(p.id, use);
+          selects.set(p.id, select);
+          picker.append(select, addCustom, use);
+          row.appendChild(picker);
+        }
+          aiBody.appendChild(row);
+        }
+      }
+
+      // Inline autocomplete — disabled until a provider + model are active.
+      const acRow = document.createElement("div");
+      acRow.className = "prefs__ai-autocomplete";
+      const acHead = document.createElement("label");
+      acHead.className = "prefs__ai-autocomplete-head";
+      const acCheck = document.createElement("input");
+      acCheck.type = "checkbox";
+      acCheck.checked = prefs.aiAutocomplete;
+      acCheck.disabled = !aiGetActive();
+      autocompleteCheck = acCheck;
+      acCheck.addEventListener("change", () => {
+        prefs.aiAutocomplete = acCheck.checked;
+        savePrefs(prefs);
+        applyAutocompleteToActiveTab();
+      });
+      const acLabel = document.createElement("span");
+      acLabel.textContent = "Inline autocomplete (ghost text after a pause)";
+      acHead.append(acCheck, acLabel);
+      acRow.appendChild(acHead);
+
+      if (!active) {
+        const need = document.createElement("p");
+        need.className = "prefs__hint";
+        need.textContent = "Pick an active provider + model above to enable autocomplete.";
+        acRow.appendChild(need);
+      } else {
+        const delay = document.createElement("div");
+        delay.className = "prefs__ai-autocomplete-delay";
+        const dLabel = document.createElement("span");
+        dLabel.textContent = "Delay";
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = "250";
+        slider.max = "2500";
+        slider.step = "50";
+        slider.value = String(prefs.aiAutocompleteDelayMs);
+        const out = document.createElement("output");
+        out.textContent = `${prefs.aiAutocompleteDelayMs} ms`;
+        slider.addEventListener("input", () => {
+          const ms = Number(slider.value);
+          out.textContent = `${ms} ms`;
+          prefs.aiAutocompleteDelayMs = ms;
+          savePrefs(prefs);
+        });
+        delay.append(dLabel, slider, out);
+        acRow.appendChild(delay);
+
+        const promptLabel = document.createElement("label");
+        promptLabel.className = "prefs__ai-autocomplete-prompt-label";
+        promptLabel.textContent = "System prompt";
+        acRow.appendChild(promptLabel);
+
+        const promptArea = document.createElement("textarea");
+        promptArea.className = "prefs__ai-autocomplete-prompt";
+        promptArea.rows = 5;
+        promptArea.spellcheck = false;
+        promptArea.placeholder = "Leave empty to use the strict built-in default.";
+        promptArea.value = prefs.aiAutocompletePrompt;
+        promptArea.addEventListener("input", () => {
+          prefs.aiAutocompletePrompt = promptArea.value;
+          savePrefs(prefs);
+        });
+        acRow.appendChild(promptArea);
+
+        const resetRow = document.createElement("div");
+        resetRow.className = "prefs__ai-autocomplete-reset";
+        const reset = document.createElement("button");
+        reset.type = "button";
+        reset.className = "secondary-btn";
+        reset.textContent = "Reset to default";
+        reset.addEventListener("click", () => {
+          promptArea.value = "";
+          prefs.aiAutocompletePrompt = "";
+          savePrefs(prefs);
+        });
+        resetRow.appendChild(reset);
+        acRow.appendChild(resetRow);
+
+        const hint = document.createElement("p");
+        hint.className = "prefs__hint";
+        hint.innerHTML =
+          "After the pause, a short continuation appears in dim italic. <code>Tab</code> accepts, <code>Esc</code> dismisses, any keystroke cancels.<br>" +
+          "<strong>Only direct APIs and Ollama support autocomplete</strong> \u2014 CLI agents like Claude Code / Codex / Gemini CLI are chat-tuned and meta-respond.";
+        acRow.appendChild(hint);
+      }
+      aiBody.appendChild(acRow);
+
+      const note = document.createElement("p");
+      note.className = "prefs__hint";
+      note.innerHTML =
+        "Ollama is local \u2014 prompts never leave your machine. API and CLI providers send prompts to the vendor. API keys live in the OS keychain.";
+      aiBody.appendChild(note);
+    };
+    void renderAIBody();
+
+    body.append(filesSection, editorSection, gitSection, aiSection, convSection, winSection);
 
     showModal({
       title: "Preferences",
@@ -1361,6 +1713,81 @@ const bootstrap = async (): Promise<void> => {
     });
   };
 
+  /**
+   * Run an AI command inline — clears the current selection (if any), shows
+   * a pulsing accent glow + streaming caret in its place, and applies chunks
+   * as they arrive. Esc aborts and reverts; Ctrl+Z after finish also reverts
+   * (the transactions group into a single undo step).
+   *
+   * If `requireSelection` is false, the edit starts at the cursor with no
+   * prior text (used by Continue).
+   */
+  const runInlineAI = async (opts: {
+    system: string;
+    prompt: string;
+    requireSelection: boolean;
+    /** Leading text to insert before the first streamed chunk (e.g. a space). */
+    leadIn?: string;
+  }): Promise<void> => {
+    const prefs = loadPrefs();
+    if (!prefs.aiEnabled) { toast("Enable AI in Preferences \u2192 AI"); return; }
+    const active = aiGetActive();
+    if (!active) { toast("Pick a provider + model in Preferences \u2192 AI"); return; }
+    if (opts.requireSelection) {
+      const sel = editor.getSelection();
+      if (!sel || !sel.trim()) { toast("Select some text first"); return; }
+    }
+
+    const handle = editor.beginInlineAIEdit();
+    let leadInWritten = !opts.leadIn;
+
+    const ctrl = new AbortController();
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        ctrl.abort();
+      }
+    };
+    window.addEventListener("keydown", onKey, true);
+
+    let errored = false;
+    try {
+      for await (const chunk of aiComplete({
+        system: opts.system,
+        prompt: opts.prompt,
+        signal: ctrl.signal,
+      })) {
+        if (chunk.text) {
+          if (!leadInWritten) {
+            handle.write(opts.leadIn!);
+            leadInWritten = true;
+          }
+          handle.write(chunk.text);
+        }
+        if (chunk.meta?.error) {
+          errored = true;
+          toast(`AI error: ${String(chunk.meta.error).slice(0, 160)}`);
+        }
+        if (chunk.meta?.cancelled) {
+          handle.abort();
+          return;
+        }
+        if (chunk.done) break;
+      }
+      if (errored) handle.abort();
+      else handle.finish();
+    } catch (err) {
+      if (ctrl.signal.aborted) {
+        handle.abort();
+      } else {
+        handle.abort();
+        toast(`AI error: ${String(err).slice(0, 160)}`);
+      }
+    } finally {
+      window.removeEventListener("keydown", onKey, true);
+    }
+  };
+
   // ---------- Command palette registry ----------
   registerCommands([
     { id: "file.new", title: "New document", section: "File", shortcut: ["Ctrl", "N"], run: createNew },
@@ -1397,6 +1824,155 @@ const bootstrap = async (): Promise<void> => {
     { id: "view.raw.toggle", title: "Toggle raw source mode", subtitle: "Show the raw Markdown text", section: "View", shortcut: ["Ctrl", "/"], run: () => toggleRawMode(viewModeOpts) },
     { id: "view.split.toggle", title: "Toggle split view", subtitle: "Raw on the left, WYSIWYG preview on the right", section: "View", shortcut: ["Ctrl", "Shift", "/"], run: () => toggleSplitMode(viewModeOpts) },
     { id: "git.refresh", title: "Refresh git status", subtitle: "Re-read branch, dirty state, and upstream ahead/behind", section: "Git", run: () => void refreshCurrentGitStatus() },
+    {
+      id: "ai.rewrite",
+      title: "AI: Rewrite selection",
+      subtitle: "Stream a rewrite over the selection. Esc aborts, Ctrl+Z undoes.",
+      section: "AI",
+      run: () => {
+        const sel = editor.getSelection();
+        if (!sel || !sel.trim()) { toast("Select some text first"); return; }
+        void runInlineAI({
+          requireSelection: true,
+          prompt: sel,
+          system:
+            "You are a careful writing assistant. Rewrite the given text for " +
+            "clarity and rhythm. Keep the author's voice, meaning, and markdown " +
+            "formatting. Return ONLY the rewritten prose \u2014 no preamble, no " +
+            "explanation, no quotes, no self-introduction.",
+        });
+      },
+    },
+    {
+      id: "ai.autocomplete.toggle",
+      title: "AI: Toggle inline autocomplete",
+      subtitle: "Ghost-text suggestions after a typing pause. Tab accepts, Esc dismisses.",
+      section: "AI",
+      run: () => {
+        const p = loadPrefs();
+        if (!p.aiEnabled) { toast("Enable AI in Preferences \u2192 AI"); return; }
+        if (!aiGetActive()) { toast("Pick a provider + model in Preferences \u2192 AI"); return; }
+        p.aiAutocomplete = !p.aiAutocomplete;
+        savePrefs(p);
+        applyAutocompleteToActiveTab();
+        toast(p.aiAutocomplete ? "Inline autocomplete on" : "Inline autocomplete off");
+      },
+    },
+    {
+      id: "ai.continue",
+      title: "AI: Continue from here",
+      subtitle: "Stream a continuation at the cursor. Esc aborts, Ctrl+Z undoes.",
+      section: "AI",
+      run: () => {
+        const context = editor.getTextBeforeCursor(2000);
+        if (!context.trim()) { toast("Write something first \u2014 nothing to continue from"); return; }
+        const prev = context.slice(-1);
+        const needsSpace = /\S/.test(prev);
+        void runInlineAI({
+          requireSelection: false,
+          leadIn: needsSpace ? " " : undefined,
+          prompt: context,
+          system:
+            "You are a silent text-completion engine. Continue the user's text " +
+            "naturally in the same voice and register. Emit ONLY the continuation " +
+            "\u2014 no preamble, no restatement, no self-introduction, no markdown " +
+            "fences. Stop at the next natural breakpoint (end of sentence or " +
+            "paragraph).",
+        });
+      },
+    },
+    {
+      id: "ai.summarize",
+      title: "AI: Summarize (to clipboard)",
+      subtitle: "Summarize the selection or the whole document; summary is copied to the clipboard.",
+      section: "AI",
+      run: () => {
+        if (!loadPrefs().aiEnabled) { toast("Enable AI in Preferences \u2192 AI"); return; }
+        if (!aiGetActive()) { toast("Pick a provider + model in Preferences \u2192 AI"); return; }
+        const selected = editor.getSelection();
+        const body = selected && selected.trim() ? selected : editor.getContent().slice(0, 8000);
+        if (!body.trim()) { toast("Nothing to summarize"); return; }
+        const p = progressToast("Summarizing\u2026");
+        void (async () => {
+          let accumulated = "";
+          try {
+            for await (const chunk of aiComplete({
+              system:
+                "Summarize the text in 3 to 5 sentences. Keep the author's voice, " +
+                "preserve essential technical detail, skip filler. Return ONLY the " +
+                "summary \u2014 no preamble, no headings, no quotes, no self-introduction.",
+              prompt: body,
+            })) {
+              if (chunk.text) accumulated += chunk.text;
+              if (chunk.meta?.error) {
+                p.error(`AI error: ${String(chunk.meta.error).slice(0, 160)}`);
+                return;
+              }
+              if (chunk.done) break;
+            }
+            const out = accumulated.trim();
+            if (!out) { p.close(); toast("Nothing came back"); return; }
+            try {
+              await navigator.clipboard.writeText(out);
+              p.success("Summary copied to clipboard");
+            } catch {
+              p.close();
+              toast("Summary ready \u2014 but clipboard write failed");
+            }
+          } catch (err) {
+            p.error(`AI error: ${String(err).slice(0, 160)}`);
+          }
+        })();
+      },
+    },
+    {
+      id: "ai.fix",
+      title: "AI: Fix grammar",
+      subtitle: "Correct grammar/spelling in the selection in place. Esc aborts.",
+      section: "AI",
+      run: () => {
+        const sel = editor.getSelection();
+        if (!sel || !sel.trim()) { toast("Select some text first"); return; }
+        void runInlineAI({
+          requireSelection: true,
+          prompt: sel,
+          system:
+            "Fix spelling, grammar, and punctuation in the text. Do not rewrite " +
+            "for style, tone, or structure \u2014 the author's voice must remain " +
+            "intact. Preserve all markdown formatting. Return ONLY the corrected " +
+            "prose \u2014 no preamble, no explanation, no self-introduction.",
+        });
+      },
+    },
+    {
+      id: "ai.translate",
+      title: "AI: Translate selection\u2026",
+      subtitle: "Translate the selected text in place. You pick the target language.",
+      section: "AI",
+      run: () => {
+        const sel = editor.getSelection();
+        if (!sel || !sel.trim()) { toast("Select some text first"); return; }
+        void (async () => {
+          const target = await prompt(
+            "Translate to\u2026",
+            "Target language",
+            "Spanish",
+            "French, Japanese, Brazilian Portuguese, \u2026",
+          );
+          if (!target || !target.trim()) return;
+          const lang = target.trim();
+          await runInlineAI({
+            requireSelection: true,
+            prompt: sel,
+            system:
+              `Translate the text into ${lang}. Preserve meaning, register, and ` +
+              "all markdown formatting (headings, lists, emphasis, code spans, " +
+              "links). Do not add a preamble, transliteration, or explanation \u2014 " +
+              "return ONLY the translated prose.",
+          });
+        })();
+      },
+    },
     {
       id: "git.commit",
       title: "Commit all changes",

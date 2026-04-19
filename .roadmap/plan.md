@@ -276,21 +276,42 @@ Git stops being a plugin anywhere in the world. Ours is first-party and invisibl
 
 **Done when:** one user can bounce between desktop and an iPad browser on the same vault without thinking about it.
 
-### Phase 4 — "Extensible" (v0.5.x, 8–10 weeks)
+### Phase 4 — "AI for writing" (v0.4.x, 4–6 weeks) — revised from "Extensible"
 
-Quality of API matters more than count. Don't race Obsidian's 1,000 plugins. Ship a better API and prove it.
+Opt-in AI help in the editor, backed by whatever the user already has on their machine. No plugin API yet — that lands later, if ever. AI is the accent, not the product.
 
-| Ship                                                                                                             | Why it matters                               |
-| ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| **Plugin manifest + capability scopes** (`fs`, `network`, `editor.commands`, `ui.panel`, `on-save`, `on-render`) | Calcifies early — design it very carefully.  |
-| **Sandboxed runtime** (Web Worker + structured-clone bridge; later: separate process)                            | Security-by-design beats retrofit.           |
-| **First-party plugins, dogfood-only at first:** markdownlint, Prettier, AI assist, git-blame-panel               | Prove the API before third parties touch it. |
-| **AI as a first-party plugin, multi-backend** (Ollama local, Anthropic, OpenAI; user picks)                      | Not the product — an accent.                 |
-| **Command palette surface** as the main plugin entry point                                                       | Keeps the UI from metastasizing.             |
+| Ship                                                                                              | Why it matters                                                                |
+| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Three backend shapes, one interface**: installed CLIs · Ollama local · direct APIs              | Meets the user where they already are. Zero-config for the common cases.      |
+| **Auto-detection** on PATH + common install dirs for Claude Code, Codex, OpenCode, Pi, paseo      | "Already works with what you have" beats "configure this first."              |
+| **Ollama via HTTP** (`localhost:11434`) with model list from `/api/tags`                          | Local-first default. No cloud, no keys, no round-trip.                        |
+| **Direct APIs** for Anthropic, OpenAI, Gemini — keys stored in OS keychain (never localStorage)  | For users who pay for frontier models directly.                               |
+| **Manual palette commands** — `AI: Rewrite selection`, `Continue from here`, `Summarize`, `Fix grammar`, `Translate` | The demo that convinces people it's useful.                                  |
+| **Inline autocomplete** — ghost text after a pause, `Tab` accepts, `Esc` dismisses                | The feature that makes it feel alive. Off by default.                         |
+| **Streaming everywhere** — adapters yield chunks so the UI types the response in, not waits      | Reuses the Phase-2 streaming caret + flash. Long responses feel instant.      |
+| **Status-bar indicator with pulsing accent** during in-flight requests                            | Acknowledgment on long generations. Cancel with a click.                      |
+| **No telemetry**                                                                                  | Prompts never leave the machine unless the user explicitly chose a cloud API. |
 
-**Risks:** plugin API lock-in. Treat v1 of the API as an RC for a cycle before freezing.
+**Waves:**
 
-**Done when:** you could remove `markdownlint` from core and reinstall it from the plugin panel, and nothing would feel different.
+1. **Backbone.** Provider interface, Ollama adapter, Anthropic adapter, Preferences → AI tab with status dots, `AI: Rewrite selection` end-to-end. Proves the vertical slice.
+2. **CLI adapters.** Detection + invocation for Claude Code, Codex, OpenCode, Pi, paseo. Each CLI is its own investigation — flags, model lists, streaming patterns differ.
+3. **Inline autocomplete.** Ghost-text rendering in Milkdown, debounce, cancellation-on-keystroke, `Tab`-to-accept.
+4. **Remaining commands** (Continue / Summarize / Fix / Translate), remaining backends (OpenAI / Gemini), per-command model overrides.
+
+**Explicitly NOT in this phase:**
+
+- Public plugin API / third-party plugins (deferred indefinitely; re-evaluate after AI ships).
+- Prompt library or template store (defer until usage data).
+- Multimodal / image input.
+
+**Risks:**
+
+- **CLI detection on Windows is fiddly.** Each vendor installs somewhere different (`%LOCALAPPDATA%\Programs\*`, Scoop shims, npm global, etc.). Budget real time for this in Wave 2.
+- **Every CLI has its own streaming shape.** Some write to stdout, some emit SSE, some need a `--json` flag. Each adapter needs its own integration test.
+- **Keychain plumbing.** Tauri 2 needs a Rust-side `keyring` crate binding + two commands. Well-trodden but a dep.
+
+**Done when:** a user installs Ollama, TypeX sees it instantly in Preferences → AI, they pick a local model, and `Ctrl+K → Rewrite selection` streams a better paragraph over the one they highlighted — with a pulsing accent indicator in the status bar during generation. No API key, no sign-in, no configuration step.
 
 ### Phase 5 — "Publishing" (v0.6.x, 4–6 weeks)
 
@@ -363,24 +384,29 @@ Every feature request, at every phase, gets one question:
 
 If no — even if it's a great feature — it's out of scope. That's the knife that keeps us from becoming Obsidian.
 
----
+***
 
 ## Markdown Test
 
 ### Headers & Text
 
 # H1 Header
+
 ## H2 Header
+
 ### H3 Header
 
 This is **bold text** and this is *italic text*. You can also use ~~strikethrough~~ and `inline code`.
 
 ### Lists
 
-- Unordered item one
-- Unordered item two
-  - Nested item
-- Unordered item three
+* Unordered item one
+
+* Unordered item two
+
+  * Nested item
+
+* Unordered item three
 
 1. First ordered item
 2. Second ordered item
@@ -397,11 +423,11 @@ print(greet("World"))
 
 ### Table
 
-| Feature | Status | Priority |
-|---------|--------|----------|
-| WYSIWYG | ✅ Done | High |
-| Git Sync | 🚧 WIP | Medium |
-| AI Assist | 🔜 Planned | Low |
+| Feature   | Status     | Priority |
+| --------- | ---------- | -------- |
+| WYSIWYG   | ✅ Done     | High     |
+| Git Sync  | 🚧 WIP     | Medium   |
+| AI Assist | 🔜 Planned | Low      |
 
 ### Blockquote
 
@@ -411,17 +437,21 @@ print(greet("World"))
 
 [Visit GitHub](https://github.com)
 
----
+***
 
 *End of markdown test.*
 
 ### Task Lists
 
-- [x] Create project structure
-- [x] Setup CI/CD pipeline
-- [ ] Write documentation
-- [ ] Add unit tests
-- [ ] Deploy to production
+* [x] Create project structure
+
+* [x] Setup CI/CD pipeline
+
+* [ ] Write documentation
+
+* [ ] Add unit tests
+
+* [ ] Deploy to production
 
 ### Nested Blockquotes
 
@@ -436,17 +466,18 @@ print(greet("World"))
 Here is a sentence with a footnote reference.[^1] And another one.[^2]
 
 [^1]: This is the first footnote. It can be as long as you want.
+
 [^2]: The second footnote supports **bold** and *italic* too.
 
 ### Horizontal Rules
 
 Three different styles:
 
----
+***
 
 ***
 
-___
+***
 
 ### Definition List
 
@@ -465,10 +496,13 @@ The mass-energy equivalence is given by $E = mc^2$. The area of a circle is $A =
 
 ### Emoji & Symbols
 
-- Checkmarks: ✅ ❌ ⚠️
-- Arrows: → ← ↑ ↓ ↔ ⇒ ⇔
-- Stars: ★ ☆ ✦ ✧
-- Misc: 🔥 💡 🚀 🎯 📝
+* Checkmarks: ✅ ❌ ⚠️
+
+* Arrows: → ← ↑ ↓ ↔ ⇒ ⇔
+
+* Stars: ★ ☆ ✦ ✧
+
+* Misc: 🔥 💡 🚀 🎯 📝
 
 ### Keyboard Shortcuts
 
@@ -476,13 +510,13 @@ Press `Ctrl` + `S` to save, `Ctrl` + `Z` to undo, or `Ctrl` + `Shift` + `P` to o
 
 ### Admonition-Style Blocks
 
-> [!NOTE]
+> \[!NOTE]
 > This is a GitHub-style note block.
 
-> [!WARNING]
+> \[!WARNING]
 > Be careful with this operation — it cannot be undone.
 
-> [!TIP]
+> \[!TIP]
 > Try using the split view for side-by-side editing.
 
 ### YAML Frontmatter
@@ -536,6 +570,6 @@ This is hidden content written in **Markdown** inside an HTML `<details>` tag. I
   <em>This text is centered using HTML.</em>
 </center>
 
----
+***
 
 *That's all for the extended markdown test.*

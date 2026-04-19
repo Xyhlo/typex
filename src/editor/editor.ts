@@ -33,6 +33,13 @@ import {
   hideExternalCaret,
 } from "./external-flash";
 import { streamApply, cancelStreamApply } from "./stream-apply";
+import { ghostTextPlugin } from "./ghost-text";
+import { attachAutocomplete, detachAutocomplete } from "../ai/autocomplete";
+import {
+  inlineAIEditPlugin,
+  beginInlineAIEdit as beginInlineAIEditImpl,
+  type InlineEditHandle,
+} from "./inline-ai-edit";
 
 export type EditorCommand =
   | "bold"
@@ -88,9 +95,25 @@ export interface EditorController {
   destroy: () => Promise<void>;
   run: (cmd: EditorCommand) => void;
   hasSelection: () => boolean;
+  /** Current selection's plain text (empty string if no selection). */
+  getSelection: () => string;
+  /** Replace the current selection with `text`. No-op if no selection. */
+  replaceSelection: (text: string) => void;
+  /** Plain-text content immediately before the cursor, up to `maxChars` long. */
+  getTextBeforeCursor: (maxChars?: number) => string;
   insertText: (text: string) => void;
   selectAll: () => void;
   applyLink: (href: string) => void;
+  /** Start streaming ghost-text suggestions on this editor. Idempotent. */
+  attachAIAutocomplete: () => void;
+  /** Stop autocomplete + cancel any pending request. Called on tab swap / destroy. */
+  detachAIAutocomplete: () => void;
+  /**
+   * Begin an inline AI edit. If there's a selection, it's cleared and the
+   * returned handle's `originalText` holds what was there; if the cursor is
+   * collapsed, the edit anchors at the cursor.
+   */
+  beginInlineAIEdit: () => InlineEditHandle;
 }
 
 export interface CreateEditorOpts {
@@ -123,6 +146,8 @@ export const createEditor = async (
     .use(syntaxHighlight)
     .use(wikilink)
     .use(externalFlashPlugin)
+    .use(ghostTextPlugin)
+    .use(inlineAIEditPlugin)
     .use(commonmark)
     .use(gfm)
     .use(history)
@@ -156,6 +181,38 @@ export const createEditor = async (
       view.dispatch(view.state.tr.insertText(text, from, to));
       view.focus();
     });
+  };
+
+  const getSelection = (): string => {
+    let result = "";
+    editor.action((ctx) => {
+      const view = ctx.get(editorViewCtx);
+      const { from, to } = view.state.selection;
+      if (from === to) return;
+      result = view.state.doc.textBetween(from, to, "\n");
+    });
+    return result;
+  };
+
+  const replaceSelection = (text: string): void => {
+    editor.action((ctx) => {
+      const view = ctx.get(editorViewCtx);
+      const { from, to } = view.state.selection;
+      if (from === to) return;
+      view.dispatch(view.state.tr.insertText(text, from, to));
+      view.focus();
+    });
+  };
+
+  const getTextBeforeCursor = (maxChars = 2000): string => {
+    let result = "";
+    editor.action((ctx) => {
+      const view = ctx.get(editorViewCtx);
+      const cursor = view.state.selection.from;
+      const start = Math.max(0, cursor - maxChars);
+      result = view.state.doc.textBetween(start, cursor, "\n", "\n");
+    });
+    return result;
   };
 
   const selectAll = (): void => {
@@ -404,14 +461,55 @@ export const createEditor = async (
     },
     focus,
     hasSelection,
+    getSelection,
+    replaceSelection,
+    getTextBeforeCursor,
     insertText,
     selectAll,
     applyLink,
     cancelStream() {
       cancelStreamApply(editor);
     },
+    attachAIAutocomplete() {
+      try {
+        editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx);
+          attachAutocomplete(view);
+        });
+      } catch (err) {
+        console.warn("[editor] attachAIAutocomplete failed:", err);
+      }
+    },
+    detachAIAutocomplete() {
+      try {
+        editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx);
+          detachAutocomplete(view);
+        });
+      } catch {
+        /* editor already torn down */
+      }
+    },
+    beginInlineAIEdit() {
+      // Guaranteed non-null — we always return a real handle. If the editor
+      // is torn down mid-stream, the handle's dispatches become no-ops.
+      let result: InlineEditHandle | null = null;
+      editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx);
+        result = beginInlineAIEditImpl(view);
+      });
+      return result as unknown as InlineEditHandle;
+    },
     run: runCmd,
     async destroy() {
+      try {
+        editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx);
+          detachAutocomplete(view);
+        });
+      } catch {
+        /* ignore */
+      }
       await editor.destroy();
     },
   };

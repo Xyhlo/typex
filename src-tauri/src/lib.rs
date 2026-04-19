@@ -1,8 +1,10 @@
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};
 
+mod cli_runner;
 mod git;
 mod pandoc;
+mod secrets;
 mod watcher;
 
 #[derive(Serialize)]
@@ -94,6 +96,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             watcher::register(&app.handle());
+            cli_runner::register(&app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -115,6 +118,14 @@ pub fn run() {
             watcher::fs_watch,
             watcher::fs_watch_roots,
             watcher::fs_unwatch,
+            secrets::secret_set,
+            secrets::secret_get,
+            secrets::secret_has,
+            secrets::secret_delete,
+            cli_runner::cli_which,
+            cli_runner::cli_version,
+            cli_runner::cli_exec_stream,
+            cli_runner::cli_cancel,
         ])
         .run(tauri::generate_context!())
         .expect("error while running TypeX");
