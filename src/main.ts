@@ -697,18 +697,20 @@ const bootstrap = async (): Promise<void> => {
     const pandocLine = pandocReady
       ? `<div class="about__version">Format conversion: ${escapeHtml(pandocVer ?? "Pandoc")} · GPL</div>`
       : `<div class="about__version">Format conversion: <a href="https://pandoc.org/installing.html" target="_blank" rel="noopener">install Pandoc</a> to unlock 40+ formats</div>`;
+    // Mirrors TypeX Design System/assets/logo-mark-{dark,light}.svg —
+    // same radial gradient, same geometry. Gradient stops bind to the active
+    // theme's accent tokens so Ivory Paper swaps automatically.
     body.innerHTML = `
       <div class="about__logo">
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <defs>
-            <radialGradient id="tx-about-mark" cx="30%" cy="30%" r="70%">
+            <radialGradient id="tx-about-mark" cx="30%" cy="30%" r="65%">
               <stop offset="0%"   stop-color="var(--accent-hover)" />
               <stop offset="45%"  stop-color="var(--accent)" />
               <stop offset="100%" stop-color="var(--accent-active)" />
             </radialGradient>
           </defs>
-          <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#tx-about-mark)"/>
-          <rect x="2.5" y="2.5" width="59" height="59" rx="13.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+          <rect width="128" height="128" rx="28" fill="url(#tx-about-mark)"/>
         </svg>
       </div>
       <div class="about__name">TypeX</div>
