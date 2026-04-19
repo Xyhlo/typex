@@ -1,0 +1,145 @@
+/* ============================================================
+   TypeX — Foundations: color + typography
+   Single source of truth for brand color and type tokens.
+   All component files in this design system read from here.
+
+   Mirrors src/styles/themes.css and src/styles/tokens.css so
+   updates to either can be diffed against this file.
+   ============================================================ */
+
+/* ---------------- Typography stacks + scale ---------------- */
+:root {
+  --tx-font-ui:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI Variable",
+    "Segoe UI", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --tx-font-editor: var(--tx-font-ui);
+  --tx-font-serif:
+    "Iowan Old Style", "Apple Garamond", "Palatino Linotype",
+    Baskerville, Georgia, serif;
+  --tx-font-mono:
+    "JetBrains Mono", "SF Mono", "Cascadia Code", "Fira Code",
+    Menlo, Consolas, monospace;
+
+  --tx-fs-xs: 11px;
+  --tx-fs-sm: 12px;
+  --tx-fs-base: 13.5px;
+  --tx-fs-md: 14px;
+  --tx-fs-lg: 16px;
+  --tx-fs-editor: 16.5px;
+  --tx-fs-editor-sm: 14.5px;
+
+  --tx-lh-tight: 1.25;
+  --tx-lh-snug: 1.45;
+  --tx-lh-normal: 1.6;
+  --tx-lh-editor: 1.75;
+
+  --tx-fw-regular: 400;
+  --tx-fw-medium: 500;
+  --tx-fw-semibold: 600;
+  --tx-fw-bold: 700;
+
+  --tx-ls-heading: -0.014em;
+  --tx-ls-hero: -0.02em;
+  --tx-ls-body: 0em;
+  --tx-ls-micro: 0.04em;
+
+  --tx-content-narrow: 72ch;
+  --tx-content-wide: 110ch;
+}
+
+/* ---------------- Obsidian Ink (dark, default) ---------------- */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --tx-bg-shell:    #0f0e12;
+  --tx-bg-app:      #141318;
+  --tx-bg-content:  #17161c;
+  --tx-bg-raised:   #1d1c24;
+  --tx-bg-overlay:  #24222c;
+  --tx-bg-elevated: #2b2934;
+  --tx-bg-inset:    #0d0c10;
+
+  --tx-border:        rgba(255, 255, 255, 0.07);
+  --tx-border-strong: rgba(255, 255, 255, 0.12);
+  --tx-border-subtle: rgba(255, 255, 255, 0.04);
+  --tx-border-focus:  rgba(139, 124, 255, 0.55);
+
+  --tx-fg:          #ebe7dd;
+  --tx-fg-heading:  #f6f3ea;
+  --tx-fg-muted:    #a6a1a9;
+  --tx-fg-subtle:   #6f6a76;
+  --tx-fg-faint:    #4a4651;
+  --tx-fg-on-accent:#fbfaf6;
+
+  --tx-accent:        #8b7cff;
+  --tx-accent-hover:  #9d90ff;
+  --tx-accent-active: #786aec;
+  --tx-accent-muted:  rgba(139, 124, 255, 0.15);
+  --tx-accent-soft:   rgba(139, 124, 255, 0.08);
+  --tx-accent-ring:   rgba(139, 124, 255, 0.40);
+
+  --tx-success: #6eda9a;
+  --tx-warning: #e4b46d;
+  --tx-danger:  #ef6f78;
+  --tx-info:    #6fc7e4;
+
+  --tx-hl-keyword: #c792ea;
+  --tx-hl-string:  #d1b786;
+  --tx-hl-number:  #e49a8e;
+  --tx-hl-comment: #6f6a76;
+  --tx-hl-func:    #92bfff;
+  --tx-hl-type:    #8bd7a7;
+  --tx-hl-meta:    #a6a1a9;
+  --tx-hl-tag:     #ef6f78;
+  --tx-hl-attr:    #c792ea;
+  --tx-hl-punc:    #a6a1a9;
+}
+
+/* ---------------- Ivory Paper (light) ---------------- */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --tx-bg-shell:    #eeebe4;
+  --tx-bg-app:      #f5f2eb;
+  --tx-bg-content:  #fbfaf6;
+  --tx-bg-raised:   #ffffff;
+  --tx-bg-overlay:  rgba(0, 0, 0, 0.04);
+  --tx-bg-elevated: #ffffff;
+  --tx-bg-inset:    #f3f0e8;
+
+  --tx-border:        rgba(28, 26, 32, 0.09);
+  --tx-border-strong: rgba(28, 26, 32, 0.18);
+  --tx-border-subtle: rgba(28, 26, 32, 0.05);
+  --tx-border-focus:  rgba(91, 77, 224, 0.55);
+
+  --tx-fg:          #1c1b22;
+  --tx-fg-heading:  #0e0d13;
+  --tx-fg-muted:    #5a5863;
+  --tx-fg-subtle:   #8a8891;
+  --tx-fg-faint:    #b8b6be;
+  --tx-fg-on-accent:#ffffff;
+
+  --tx-accent:        #5b4de0;
+  --tx-accent-hover:  #4b3ed1;
+  --tx-accent-active: #3d32b3;
+  --tx-accent-muted:  rgba(91, 77, 224, 0.10);
+  --tx-accent-soft:   rgba(91, 77, 224, 0.05);
+  --tx-accent-ring:   rgba(91, 77, 224, 0.32);
+
+  --tx-success: #2b8a57;
+  --tx-warning: #a7751f;
+  --tx-danger:  #c63444;
+  --tx-info:    #2e82a6;
+
+  --tx-hl-keyword: #8139af;
+  --tx-hl-string:  #8a6414;
+  --tx-hl-number:  #a94422;
+  --tx-hl-comment: #8a8891;
+  --tx-hl-func:    #2a5fa8;
+  --tx-hl-type:    #246b3f;
+  --tx-hl-meta:    #5a5863;
+  --tx-hl-tag:     #c63444;
+  --tx-hl-attr:    #8139af;
+  --tx-hl-punc:    #5a5863;
+}

@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>TypeX — Design System</title>
+<link rel="stylesheet" href="foundations/colors_and_type.css"/>
+<link rel="stylesheet" href="foundations/spacing.css"/>
+<link rel="stylesheet" href="foundations/radii.css"/>
+<link rel="stylesheet" href="foundations/shadows.css"/>
+<link rel="stylesheet" href="foundations/animations.css"/>
+<link rel="stylesheet" href="components/buttons.css"/>
+<link rel="stylesheet" href="components/cards.css"/>
+<link rel="stylesheet" href="components/inputs.css"/>
+<link rel="stylesheet" href="components/navigation.css"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--tx-bg-app); color: var(--tx-fg); font-family: var(--tx-font-ui); -webkit-font-smoothing: antialiased; transition: background var(--tx-motion-panel), color var(--tx-motion-panel); }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: var(--tx-sp-9) var(--tx-sp-7); }
+
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--tx-sp-7);
+    margin-bottom: var(--tx-sp-10);
+  }
+  .hero__brand {
+    display: inline-flex; align-items: center; gap: var(--tx-sp-4);
+  }
+  .tx-mark-hero {
+    width: 64px; height: 64px; border-radius: 14px;
+    background: radial-gradient(circle at 30% 30%, #a89bff, #8b7cff 45%, #6656d6 100%);
+    box-shadow: 0 0 32px var(--tx-accent-soft);
+  }
+  [data-theme="light"] .tx-mark-hero {
+    background: radial-gradient(circle at 30% 30%, #8071ff, #5b4de0 45%, #3d32b3 100%);
+  }
+  h1 { font-size: clamp(2.2rem, 4vw, 3rem); font-weight: 700; letter-spacing: var(--tx-ls-hero); margin: 0; color: var(--tx-fg-heading); }
+  .hero__sub { color: var(--tx-fg-muted); margin-top: var(--tx-sp-1); }
+
+  .section {
+    padding: var(--tx-sp-8) 0;
+    border-bottom: 1px solid var(--tx-border-subtle);
+  }
+  .section__kicker {
+    font-family: var(--tx-font-mono); font-size: var(--tx-fs-xs);
+    letter-spacing: var(--tx-ls-micro); text-transform: uppercase;
+    color: var(--tx-accent); margin: 0 0 var(--tx-sp-2);
+  }
+  .section__title { font-size: 1.6rem; font-weight: 600; letter-spacing: var(--tx-ls-heading); color: var(--tx-fg-heading); margin: 0 0 var(--tx-sp-2); }
+  .section__sub { color: var(--tx-fg-muted); max-width: 60ch; margin: 0 0 var(--tx-sp-6); line-height: var(--tx-lh-normal); }
+
+  .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--tx-sp-3); }
+  .swatch { background: var(--tx-bg-raised); border: 1px solid var(--tx-border); border-radius: var(--tx-radius-md); padding: var(--tx-sp-3); }
+  .swatch__chip { height: 56px; border-radius: var(--tx-radius-sm); margin-bottom: var(--tx-sp-2); border: 1px solid var(--tx-border-subtle); }
+  .swatch__name { font-family: var(--tx-font-mono); font-size: var(--tx-fs-xs); color: var(--tx-fg); }
+  .swatch__hex  { font-family: var(--tx-font-mono); font-size: var(--tx-fs-xs); color: var(--tx-fg-subtle); }
+
+  .type-row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--tx-sp-5); padding: var(--tx-sp-3) 0; border-bottom: 1px solid var(--tx-border-subtle); }
+  .type-row:last-child { border-bottom: 0; }
+  .type-row__sample { color: var(--tx-fg); }
+  .type-row__meta { font-family: var(--tx-font-mono); font-size: var(--tx-fs-xs); color: var(--tx-fg-subtle); flex-shrink: 0; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--tx-sp-4); }
+
+  .code-block { font-family: var(--tx-font-mono); font-size: 13px; background: var(--tx-bg-inset); border: 1px solid var(--tx-border); border-radius: var(--tx-radius-md); padding: var(--tx-sp-4); color: var(--tx-fg); white-space: pre; overflow: auto; line-height: 1.55; }
+  .hl-k { color: var(--tx-hl-keyword); } .hl-s { color: var(--tx-hl-string); } .hl-n { color: var(--tx-hl-number); } .hl-f { color: var(--tx-hl-func); } .hl-t { color: var(--tx-hl-type); } .hl-c { color: var(--tx-hl-comment); font-style: italic; }
+
+  .stack-row { display: flex; align-items: center; gap: var(--tx-sp-3); flex-wrap: wrap; }
+
+  .theme-btn {
+    padding: 9px 14px;
+    font-size: var(--tx-fs-sm);
+    color: var(--tx-fg);
+    background: transparent;
+    border: 1px solid var(--tx-border-strong);
+    border-radius: var(--tx-radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color var(--tx-motion-press), color var(--tx-motion-press), background var(--tx-motion-press);
+  }
+  .theme-btn:hover { border-color: var(--tx-accent); color: var(--tx-accent); background: var(--tx-accent-muted); }
+
+  a { color: var(--tx-accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero__brand">
+        <div class="tx-mark-hero"></div>
+        <div>
+          <h1>TypeX · Design System</h1>
+          <p class="hero__sub">v0.1 · Brand foundations, components, and patterns. Single source of truth for color, type, motion, and chrome.</p>
+        </div>
+      </div>
+      <button class="theme-btn" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'">Flip theme</button>
+    </header>
+
+    <!-- Colors ----------------------------------------------------------- -->
+    <section class="section">
+      <p class="section__kicker">Foundations · Color</p>
+      <h2 class="section__title">Surfaces</h2>
+      <p class="section__sub">Paper-adjacent neutrals. Warm charcoal in Obsidian Ink; cream in Ivory Paper. Both themes share the same semantic token names.</p>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-bg-shell)"></div>   <div class="swatch__name">--tx-bg-shell</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-bg-app)"></div>     <div class="swatch__name">--tx-bg-app</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-bg-content)"></div> <div class="swatch__name">--tx-bg-content</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-bg-raised)"></div>  <div class="swatch__name">--tx-bg-raised</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-bg-overlay)"></div> <div class="swatch__name">--tx-bg-overlay</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-bg-inset)"></div>   <div class="swatch__name">--tx-bg-inset</div></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section__title">Accent + semantic</h2>
+      <div class="swatches">
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-accent)"></div>       <div class="swatch__name">--tx-accent</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-accent-hover)"></div> <div class="swatch__name">--tx-accent-hover</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-success)"></div>      <div class="swatch__name">--tx-success</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-warning)"></div>      <div class="swatch__name">--tx-warning</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-danger)"></div>       <div class="swatch__name">--tx-danger</div></div>
+        <div class="swatch"><div class="swatch__chip" style="background: var(--tx-info)"></div>         <div class="swatch__name">--tx-info</div></div>
+      </div>
+    </section>
+
+    <!-- Typography ------------------------------------------------------- -->
+    <section class="section">
+      <p class="section__kicker">Foundations · Typography</p>
+      <h2 class="section__title">Scale</h2>
+      <div class="type-row"><div class="type-row__sample" style="font-size: 2em; font-weight: 700; letter-spacing: var(--tx-ls-hero); color: var(--tx-fg-heading);">Heading 1</div><div class="type-row__meta">H1 · 2em · 700 · −0.02em</div></div>
+      <div class="type-row"><div class="type-row__sample" style="font-size: 1.6em; font-weight: 600; letter-spacing: var(--tx-ls-heading); color: var(--tx-fg-heading);">Heading 2</div><div class="type-row__meta">H2 · 1.6em · 600</div></div>
+      <div class="type-row"><div class="type-row__sample" style="font-size: 1.3em; font-weight: 600; color: var(--tx-fg-heading);">Heading 3</div><div class="type-row__meta">H3 · 1.3em · 600</div></div>
+      <div class="type-row"><div class="type-row__sample" style="font-size: 16.5px; line-height: 1.75; color: var(--tx-fg);">Body paragraph — Inter 16.5px / 1.75 line-height. The writing is the subject; everything else gets out of the way.</div><div class="type-row__meta">BODY · 16.5 · 1.75</div></div>
+      <div class="type-row"><div class="type-row__sample" style="font-size: var(--tx-fs-sm); color: var(--tx-fg-muted);">Muted secondary copy, 12 px.</div><div class="type-row__meta">SMALL · 12 · muted</div></div>
+      <div class="type-row"><div class="type-row__sample" style="font-family: var(--tx-font-mono); font-size: 13px; color: var(--tx-fg);">JetBrains Mono · 13px · code.</div><div class="type-row__meta">MONO · 13</div></div>
+    </section>
+
+    <!-- Buttons ---------------------------------------------------------- -->
+    <section class="section">
+      <p class="section__kicker">Components</p>
+      <h2 class="section__title">Buttons</h2>
+      <div class="stack-row">
+        <button class="tx-btn tx-btn--primary">Download</button>
+        <button class="tx-btn tx-btn--primary tx-btn--lg">Download</button>
+        <button class="tx-btn tx-btn--ghost">Open file…</button>
+        <button class="tx-btn tx-btn--subtle">Cancel</button>
+        <button class="tx-btn tx-btn--danger">Delete</button>
+        <button class="tx-btn tx-btn--ghost" disabled>Disabled</button>
+      </div>
+    </section>
+
+    <!-- Inputs ----------------------------------------------------------- -->
+    <section class="section">
+      <h2 class="section__title">Inputs</h2>
+      <div class="grid">
+        <div>
+          <div class="tx-field">
+            <label class="tx-field__label">Find in document</label>
+            <input class="tx-input" placeholder="Search…" />
+          </div>
+        </div>
+        <div class="stack-row" style="gap: var(--tx-sp-4);">
+          <label class="stack-row"><input class="tx-checkbox" type="checkbox" checked/> <span>Autosave</span></label>
+          <label class="stack-row"><input class="tx-toggle" type="checkbox" checked/> <span>Focus mode</span></label>
+        </div>
+        <div>
+          <div class="tx-segmented" role="tablist">
+            <button class="tx-segmented__btn" aria-selected="true">Vertical</button>
+            <button class="tx-segmented__btn">Horizontal</button>
+          </div>
+        </div>
+        <div class="stack-row">
+          <kbd class="tx-kbd">Ctrl</kbd><span style="color: var(--tx-fg-muted)">+</span><kbd class="tx-kbd">K</kbd>
+          <span style="color: var(--tx-fg-subtle); font-family: var(--tx-font-mono); font-size: 12px;">command palette</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cards ------------------------------------------------------------ -->
+    <section class="section">
+      <h2 class="section__title">Cards &amp; notices</h2>
+      <div class="grid">
+        <article class="tx-card tx-card--hover">
+          <p class="tx-card__kicker">Feature</p>
+          <h3 class="tx-card__title">Live WYSIWYG markdown</h3>
+          <p class="tx-card__body">Built on ProseMirror. Syntax transforms into formatting as you type — no separate preview pane.</p>
+        </article>
+        <div class="tx-notice">
+          <div>
+            <strong style="color: var(--tx-fg-heading)">Heads up</strong>
+            <p style="margin: 4px 0 0; color: var(--tx-fg-muted); font-size: 14px;">File associations were registered. First-run WebView2 install takes ~15 seconds.</p>
+          </div>
+        </div>
+        <div class="tx-notice tx-notice--success">
+          <div>
+            <strong style="color: var(--tx-fg-heading)">Saved</strong>
+            <p style="margin: 4px 0 0; color: var(--tx-fg-muted); font-size: 14px;">quiet-things.md · just now</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation ------------------------------------------------------- -->
+    <section class="section">
+      <h2 class="section__title">Navigation</h2>
+      <div class="grid">
+        <div>
+          <nav class="tx-menubar" style="padding: 6px; background: var(--tx-bg-shell); border: 1px solid var(--tx-border); border-radius: var(--tx-radius-md);">
+            <button class="tx-menubar__btn">File</button>
+            <button class="tx-menubar__btn" aria-expanded="true">Edit</button>
+            <button class="tx-menubar__btn">View</button>
+            <button class="tx-menubar__btn">Insert</button>
+            <button class="tx-menubar__btn">Format</button>
+          </nav>
+          <div class="tx-menu" style="margin-top: var(--tx-sp-2);">
+            <div class="tx-menu__section">File</div>
+            <div class="tx-menu__item">New document <span class="tx-menu__shortcut">Ctrl+N</span></div>
+            <div class="tx-menu__item tx-menu__item--checked">Autosave <span class="tx-menu__shortcut">Off</span></div>
+            <div class="tx-menu__separator"></div>
+            <div class="tx-menu__item">Save as… <span class="tx-menu__shortcut">Ctrl+Shift+S</span></div>
+            <div class="tx-menu__item tx-menu__item--disabled">Revert file</div>
+          </div>
+        </div>
+        <div class="tx-tabs" style="padding: 0 var(--tx-sp-2); background: var(--tx-bg-shell); border: 1px solid var(--tx-border); border-radius: var(--tx-radius-md);">
+          <div class="tx-tab" aria-selected="true"><span class="tx-tab__dot"></span>quiet-things.md</div>
+          <div class="tx-tab">draft-02.md</div>
+          <div class="tx-tab">README.md</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Syntax highlighting --------------------------------------------- -->
+    <section class="section">
+      <h2 class="section__title">Syntax highlighting</h2>
+      <div class="code-block"><span class="hl-k">const</span> <span class="hl-f">advance</span> = (m: <span class="hl-t">Mood</span>): <span class="hl-t">Mood</span> =&gt; {
+  <span class="hl-k">switch</span> (m) {
+    <span class="hl-k">case</span> <span class="hl-s">"blank"</span>:   <span class="hl-k">return</span> <span class="hl-s">"flowing"</span>;
+    <span class="hl-k">case</span> <span class="hl-s">"flowing"</span>: <span class="hl-k">return</span> <span class="hl-s">"done"</span>;
+    <span class="hl-k">case</span> <span class="hl-s">"done"</span>:    <span class="hl-k">return</span> <span class="hl-s">"blank"</span>; <span class="hl-c">// loop</span>
+  }
+};
+</div>
+    </section>
+
+    <section class="section">
+      <p class="section__kicker">More</p>
+      <h2 class="section__title">See also</h2>
+      <ul style="color: var(--tx-fg-muted); line-height: 1.8;">
+        <li><a href="brand/logo-variations.svg">Logo family</a> — mark sizes, horizontal + vertical lockups, monochrome, favicon.</li>
+        <li><a href="brand/loading-animations.html">Loading animations</a> — 20 branded loaders.</li>
+        <li><a href="../design/typex-design-system.svg">Single-sheet SVG</a> — drag into Figma to produce a .fig file.</li>
+        <li><a href="../marketing/index.html">Marketing landing page</a> — tech-focused, built on these tokens.</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

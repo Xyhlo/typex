@@ -31,7 +31,7 @@ import { initStatusbar } from "./ui/statusbar";
 import { initOutline } from "./ui/outline";
 import { initWindowControls } from "./ui/window-controls";
 import { createTabsController } from "./ui/tabs";
-import { toast } from "./ui/toast";
+import { toast, progressToast } from "./ui/toast";
 import { initTheme, toggleTheme, applyTheme } from "./theme";
 import { createFileTree } from "./ui/file-tree";
 import { createMenubar, type MenuEntry } from "./ui/menubar";
@@ -86,16 +86,23 @@ const bootstrap = async (): Promise<void> => {
   appEl.dataset.typewriter = String(prefs.typewriter);
   setState({ readingMode: prefs.readingMode, editorFont: prefs.editorFont });
 
+  const editorHost = document.getElementById("editor-host")!;
+
   const tabs = createTabsController(stripEl, async (tab) => {
     if (!editor || !tab) {
       if (!tab) currentTabId = null;
       return;
     }
     if (tab.id === currentTabId) return;
+    // Micro-fade while content is swapped so the switch doesn't pop.
+    editorHost.dataset.swapping = "true";
     applyingExternalContent = true;
     await editor.setContent(tab.content);
     applyingExternalContent = false;
     currentTabId = tab.id;
+    requestAnimationFrame(() => {
+      editorHost.dataset.swapping = "false";
+    });
     editor.focus();
   });
 
@@ -160,15 +167,15 @@ const bootstrap = async (): Promise<void> => {
           showPandocMissingModal();
           return;
         }
-        toast(`Converting from ${fmt.label}…`);
+        const progress = progressToast(`Converting from ${fmt.label}…`);
         try {
           content = await pandocImport(path, fmt.pandocName);
           sourceFormat = fmt.pandocName;
           sourceExt = ext;
-          toast(`Imported ${basename(path)}`);
+          progress.success(`Imported ${basename(path)}`);
         } catch (err) {
           console.error("[typex] pandoc import failed:", err);
-          toast(`Import failed: ${String(err).slice(0, 140)}`);
+          progress.error(`Import failed: ${String(err).slice(0, 140)}`);
           return;
         }
       }
@@ -268,8 +275,20 @@ const bootstrap = async (): Promise<void> => {
       showPandocMissingModal();
       return;
     }
+    if (isFormatConverted) {
+      const progress = progressToast(`Saving as ${ext.toUpperCase()}…`);
+      try {
+        await writeTabToDisk(active);
+        updateTab(active.id, { savedContent: active.content });
+        pushRecentFile(active.path);
+        progress.success(`Saved ${active.title}`);
+      } catch (err) {
+        console.error(err);
+        progress.error(`Couldn't save: ${String(err).slice(0, 120)}`);
+      }
+      return;
+    }
     try {
-      if (isFormatConverted) toast(`Saving as ${ext.toUpperCase()}…`);
       await writeTabToDisk(active);
       updateTab(active.id, { savedContent: active.content });
       pushRecentFile(active.path);
@@ -361,17 +380,17 @@ const bootstrap = async (): Promise<void> => {
     const finalPath = chosen.toLowerCase().endsWith(`.${format.ext}`)
       ? chosen
       : `${chosen}.${format.ext}`;
+    const progress = progressToast(`Exporting to ${format.label}…`);
     try {
-      toast(`Exporting to ${format.label}…`);
       if (isNative) {
         await saveFile(finalPath, active.content);
       } else {
         await pandocExport(active.content, format.pandocName, finalPath);
       }
-      toast(`Exported to ${basename(finalPath)}`);
+      progress.success(`Exported to ${basename(finalPath)}`);
     } catch (err) {
       console.error("[typex] export failed:", err);
-      toast(`Export failed: ${String(err).slice(0, 140)}`);
+      progress.error(`Export failed: ${String(err).slice(0, 140)}`);
     }
   };
 
@@ -467,20 +486,23 @@ const bootstrap = async (): Promise<void> => {
       "Revert",
     );
     if (!ok) return;
+    const ext = extOf(active.path);
+    const isFormatConverted = !isMarkdownExt(ext) && !!ext;
+    if (isFormatConverted && !pandocReady) {
+      showPandocMissingModal();
+      return;
+    }
+    const progress = isFormatConverted
+      ? progressToast(`Reverting from ${ext.toUpperCase()}…`)
+      : null;
     try {
-      const ext = extOf(active.path);
       let content: string;
-      if (isMarkdownExt(ext) || !ext) {
+      if (!isFormatConverted) {
         content = await readFile(active.path);
       } else {
-        // Non-markdown file — reimport through Pandoc.
         const fmt = getImportFormat(ext);
         if (!fmt) {
-          toast(`Cannot revert .${ext} — no converter`);
-          return;
-        }
-        if (!pandocReady) {
-          showPandocMissingModal();
+          progress?.error(`Cannot revert .${ext} — no converter`);
           return;
         }
         content = await pandocImport(active.path, fmt.pandocName);
@@ -489,10 +511,13 @@ const bootstrap = async (): Promise<void> => {
       applyingExternalContent = true;
       await editor.setContent(content);
       applyingExternalContent = false;
-      toast(`Reverted ${active.title}`);
+      if (progress) progress.success(`Reverted ${active.title}`);
+      else toast(`Reverted ${active.title}`);
     } catch (err) {
       console.error(err);
-      toast(`Couldn't revert: ${String(err).slice(0, 120)}`);
+      const msg = `Couldn't revert: ${String(err).slice(0, 120)}`;
+      if (progress) progress.error(msg);
+      else toast(msg);
     }
   };
 
@@ -673,7 +698,19 @@ const bootstrap = async (): Promise<void> => {
       ? `<div class="about__version">Format conversion: ${escapeHtml(pandocVer ?? "Pandoc")} · GPL</div>`
       : `<div class="about__version">Format conversion: <a href="https://pandoc.org/installing.html" target="_blank" rel="noopener">install Pandoc</a> to unlock 40+ formats</div>`;
     body.innerHTML = `
-      <div class="about__logo"></div>
+      <div class="about__logo">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <radialGradient id="tx-about-mark" cx="30%" cy="30%" r="70%">
+              <stop offset="0%"   stop-color="var(--accent-hover)" />
+              <stop offset="45%"  stop-color="var(--accent)" />
+              <stop offset="100%" stop-color="var(--accent-active)" />
+            </radialGradient>
+          </defs>
+          <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#tx-about-mark)"/>
+          <rect x="2.5" y="2.5" width="59" height="59" rx="13.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+        </svg>
+      </div>
       <div class="about__name">TypeX</div>
       <div class="about__version">Version 0.1.0</div>
       ${pandocLine}

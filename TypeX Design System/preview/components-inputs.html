@@ -1,0 +1,20 @@
+<!doctype html><html data-theme="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.r{color:var(--fg-subtle);font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+.input{width:320px;padding:7px 10px;font-size:13px;background:#0d0c10;border:1px solid rgba(255,255,255,0.07);border-radius:5px;color:#ebe7dd;font-family:var(--font-ui)}
+.input:focus{outline:0;border-color:rgba(139,124,255,0.55);box-shadow:0 0 0 3px rgba(139,124,255,0.4)}
+.focused{border-color:rgba(139,124,255,0.55);box-shadow:0 0 0 3px rgba(139,124,255,0.4)}
+.toggle-row{display:flex;align-items:center;gap:10px;margin-top:14px}
+.toggle{position:relative;width:36px;height:20px;background:#8b7cff;border:1px solid #786aec;border-radius:999px;cursor:pointer}
+.toggle::after{content:"";position:absolute;top:1px;left:17px;width:16px;height:16px;background:#fbfaf6;border-radius:50%}
+.toggle-off{background:#0d0c10;border:1px solid rgba(255,255,255,0.12)}
+.toggle-off::after{left:1px;background:#a6a1a9}
+</style></head><body>
+<div class="r">Inputs · focus · toggle</div>
+<input class="input" value="Find in document…" style="color:#a6a1a9">
+<div style="height:10px"></div>
+<input class="input focused" value="rotation@0.2.5">
+<div class="toggle-row">
+  <div class="toggle"></div><span style="font-size:13px;color:#ebe7dd">Autosave</span>
+  <div class="toggle toggle-off" style="margin-left:24px"></div><span style="font-size:13px;color:#a6a1a9">Typewriter mode</span>
+</div>
+</body></html>

@@ -148,6 +148,21 @@ ROADMAP.md        Beta scope + future pillars
 
 ---
 
+## Design system
+
+TypeX ships with a living design system at [`design-system/`](./design-system/).
+Open [`design-system/index.html`](./design-system/index.html) for the overview
+(with theme toggle, token swatches, type specimens, and component gallery).
+
+Also included:
+
+- [`design-system/brand/logo.svg`](./design-system/brand/logo.svg) — primary mark.
+- [`design-system/brand/logo-variations.svg`](./design-system/brand/logo-variations.svg) — mark sizes, lockups, monochrome, favicon.
+- [`design-system/brand/loading-animations.html`](./design-system/brand/loading-animations.html) — 20 branded loaders.
+- [`design/typex-design-system.svg`](./design/typex-design-system.svg) — single-sheet SVG (drag into Figma to save as `.fig`).
+- [`marketing/index.html`](./marketing/index.html) — standalone tech-focused landing page built on the design-system tokens.
+- [`.save-points/`](./.save-points/) — iteration checkpoints (see `.save-points/README.md`).
+
 ## Roadmap
 
 See [ROADMAP.md](./ROADMAP.md) for the full product vision. In short:

@@ -1,0 +1,83 @@
+/* ============================================================
+   TypeX — Components: cards
+   Paper-adjacent surfaces. Three elevation stops — flat,
+   raised, floating. Plus a hover-lift modifier.
+   ============================================================ */
+
+.tx-card {
+  background: var(--tx-bg-raised);
+  border: 1px solid var(--tx-border);
+  border-radius: var(--tx-radius-lg);
+  padding: var(--tx-sp-5);
+  color: var(--tx-fg);
+}
+
+.tx-card--flat {
+  background: transparent;
+  border-color: var(--tx-border-subtle);
+}
+
+.tx-card--floating {
+  background: var(--tx-bg-elevated);
+  box-shadow: var(--tx-shadow-md);
+  border-color: var(--tx-border-strong);
+}
+
+.tx-card--hover {
+  transition:
+    border-color var(--tx-motion-panel),
+    transform var(--tx-motion-panel),
+    box-shadow var(--tx-motion-panel);
+}
+.tx-card--hover:hover {
+  border-color: var(--tx-border-strong);
+  transform: translateY(-3px);
+  box-shadow: var(--tx-shadow-md);
+}
+
+.tx-card__kicker {
+  font-family: var(--tx-font-mono);
+  font-size: var(--tx-fs-xs);
+  letter-spacing: var(--tx-ls-micro);
+  text-transform: uppercase;
+  color: var(--tx-fg-subtle);
+  margin: 0 0 var(--tx-sp-2);
+}
+
+.tx-card__title {
+  font-size: 1.15rem;
+  font-weight: var(--tx-fw-semibold);
+  letter-spacing: var(--tx-ls-heading);
+  color: var(--tx-fg-heading);
+  margin: 0 0 var(--tx-sp-2);
+}
+
+.tx-card__body {
+  color: var(--tx-fg-muted);
+  font-size: 0.95rem;
+  line-height: var(--tx-lh-normal);
+  margin: 0;
+}
+
+/* --- Notice card (inline callout) --- */
+.tx-notice {
+  padding: var(--tx-sp-4) var(--tx-sp-5);
+  border-radius: var(--tx-radius-md);
+  border: 1px solid var(--tx-border);
+  background: var(--tx-bg-raised);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--tx-sp-3);
+  align-items: start;
+}
+.tx-notice::before {
+  content: "";
+  width: 3px;
+  align-self: stretch;
+  background: var(--tx-accent);
+  border-radius: var(--tx-radius-xs);
+}
+.tx-notice--success::before { background: var(--tx-success); }
+.tx-notice--warning::before { background: var(--tx-warning); }
+.tx-notice--danger::before  { background: var(--tx-danger); }
+.tx-notice--info::before    { background: var(--tx-info); }

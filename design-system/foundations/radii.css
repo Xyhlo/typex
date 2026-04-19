@@ -1,0 +1,14 @@
+/* ============================================================
+   TypeX — Foundations: radii
+   Paper-adjacent chrome prefers modest curvature. Use `pill`
+   only for indicator chips and toggle handles.
+   ============================================================ */
+
+:root {
+  --tx-radius-xs:   3px;   /* inline tags, code chips */
+  --tx-radius-sm:   5px;   /* compact buttons, menu items */
+  --tx-radius-md:   8px;   /* cards, code blocks */
+  --tx-radius-lg:   12px;  /* modals, elevated surfaces */
+  --tx-radius-xl:   16px;  /* marketing hero cards */
+  --tx-radius-pill: 999px; /* toggles, status dots, chips */
+}

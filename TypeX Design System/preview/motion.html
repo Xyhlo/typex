@@ -1,0 +1,33 @@
+<!doctype html><html data-theme="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+.r{color:var(--fg-subtle);font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px}
+.row{display:flex;gap:26px;align-items:flex-start}
+.col{flex:1}
+.b{height:6px;border-radius:3px;margin-bottom:8px}
+.b1{width:100%;background:#8b7cff;animation:a1 1.2s var(--ease-standard) infinite alternate}
+.b2{width:100%;background:#8b7cff;animation:a1 1.2s cubic-bezier(0.16,1,0.3,1) infinite alternate}
+.b3{width:100%;background:#8b7cff;animation:a1 1.2s cubic-bezier(0.2,0,0,1.2) infinite alternate}
+@keyframes a1{0%{transform:translateX(0)}100%{transform:translateX(20px)}}
+.lbl{font-family:var(--font-mono);font-size:10px;color:var(--fg-subtle);margin-bottom:4px}
+.val{font-family:var(--font-mono);font-size:11px;color:#a6a1a9}
+.dur{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.pill{padding:3px 10px;border-radius:999px;background:#1d1c24;border:1px solid rgba(255,255,255,0.07);font-family:var(--font-mono);font-size:10px;color:#ebe7dd}
+</style></head><body>
+<div class="r">Motion — easings & durations</div>
+<div class="row">
+  <div class="col">
+    <div class="lbl">standard · (0.2, 0, 0, 1)</div><div class="b b1"></div>
+    <div class="val">hovers, state changes</div>
+  </div>
+  <div class="col">
+    <div class="lbl">out · (0.16, 1, 0.3, 1)</div><div class="b b2"></div>
+    <div class="val">menus, palette, toasts</div>
+  </div>
+  <div class="col">
+    <div class="lbl">emphasized · (0.2, 0, 0, 1.2)</div><div class="b b3"></div>
+    <div class="val">playful overshoot</div>
+  </div>
+</div>
+<div class="dur">
+  <div class="pill">xs · 90ms</div><div class="pill">sm · 160ms</div><div class="pill">md · 220ms</div><div class="pill">lg · 320ms</div><div class="pill">xl · 480ms</div>
+</div>
+</body></html>

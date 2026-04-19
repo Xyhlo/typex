@@ -1,0 +1,105 @@
+/* ============================================================
+   TypeX — Components: buttons
+   .tx-btn is the base. Modifiers: --primary, --ghost, --danger,
+   --lg, --sm. All read from foundations tokens; no literals.
+   ============================================================ */
+
+.tx-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tx-sp-2);
+  padding: 10px 18px;
+  font-family: var(--tx-font-ui);
+  font-size: 14px;
+  font-weight: var(--tx-fw-medium);
+  letter-spacing: 0;
+  line-height: 1;
+  color: var(--tx-fg);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--tx-radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    background var(--tx-motion-press),
+    border-color var(--tx-motion-press),
+    color var(--tx-motion-press),
+    transform var(--tx-motion-press),
+    box-shadow var(--tx-motion-press);
+}
+
+.tx-btn:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 3px var(--tx-accent-ring);
+}
+
+.tx-btn:disabled,
+.tx-btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* --- Size modifiers --- */
+.tx-btn--sm { padding: 6px 12px; font-size: 13px; border-radius: var(--tx-radius-sm); }
+.tx-btn--lg { padding: 13px 24px; font-size: 15px; border-radius: var(--tx-radius-lg); }
+
+/* --- Primary --- */
+.tx-btn--primary {
+  color: var(--tx-fg-on-accent);
+  background: var(--tx-accent);
+  box-shadow: 0 0 0 1px var(--tx-accent-active) inset, var(--tx-shadow-xs);
+}
+.tx-btn--primary:hover {
+  background: var(--tx-accent-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px var(--tx-accent-active) inset,
+    var(--tx-shadow-sm),
+    0 0 20px var(--tx-accent-soft);
+}
+.tx-btn--primary:active {
+  transform: translateY(0);
+  background: var(--tx-accent-active);
+}
+
+/* --- Ghost --- */
+.tx-btn--ghost {
+  color: var(--tx-fg);
+  border-color: var(--tx-border-strong);
+}
+.tx-btn--ghost:hover {
+  color: var(--tx-accent);
+  border-color: var(--tx-accent);
+  background: var(--tx-accent-muted);
+}
+
+/* --- Subtle (in-app secondary, no border) --- */
+.tx-btn--subtle {
+  color: var(--tx-fg-muted);
+}
+.tx-btn--subtle:hover {
+  background: var(--tx-bg-overlay);
+  color: var(--tx-fg);
+}
+
+/* --- Danger --- */
+.tx-btn--danger {
+  color: #ffffff;
+  background: var(--tx-danger);
+}
+.tx-btn--danger:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* --- Icon-only --- */
+.tx-btn--icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--tx-radius-md);
+}
+.tx-btn--icon.tx-btn--sm { width: 28px; height: 28px; border-radius: var(--tx-radius-sm); }

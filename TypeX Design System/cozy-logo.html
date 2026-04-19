@@ -1,0 +1,444 @@
+<!doctype html>
+<html data-theme="dark">
+<head>
+<meta charset="utf-8">
+<title>TypeX · Cozy Logo Exploration</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,600;1,9..144,700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:var(--bg-shell); color:var(--fg); font-family:var(--font-ui); -webkit-font-smoothing:antialiased; }
+  *{box-sizing:border-box}
+  .page{max-width:1240px; margin:0 auto; padding:56px 40px 96px;}
+  .head{display:flex; align-items:baseline; gap:16px; margin-bottom:12px; flex-wrap:wrap;}
+  h1{font-size:34px; font-weight:700; letter-spacing:-0.68px; margin:0; color:var(--fg-heading);}
+  .sub{color:var(--fg-muted); font-size:14px; margin:0;}
+  .eyebrow{font-family:var(--font-mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--fg-subtle);}
+  .toggle{margin-left:auto; font-family:var(--font-mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; padding:6px 12px; border-radius:var(--radius-pill); background:var(--bg-overlay); border:1px solid var(--border); color:var(--fg-muted); cursor:pointer;}
+  .toggle:hover{color:var(--fg);}
+
+  .intro{color:var(--fg-muted); font-size:15.5px; line-height:1.6; max-width:62ch; margin:0 0 40px;}
+  .intro em{color:var(--accent); font-style:italic;}
+
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--border-subtle); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); overflow:hidden;}
+  .card{background:var(--bg-content); padding:36px 32px; display:flex; flex-direction:column; gap:24px;}
+  .card__head{display:flex; align-items:baseline; gap:12px;}
+  .card__num{font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; color:var(--fg-subtle);}
+  .card__name{font-size:17px; font-weight:600; color:var(--fg-heading); letter-spacing:-0.2px;}
+  .card__note{color:var(--fg-muted); font-size:13px; line-height:1.6; max-width:50ch;}
+  .card__stage{height:220px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-md); background:var(--bg-inset); position:relative; overflow:hidden;}
+  .card__stage.cream{background:#f6efe4;}
+  .card__mini{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border-subtle); border-radius:var(--radius-sm); overflow:hidden;}
+  .mini{background:var(--bg-inset); padding:16px; display:flex; align-items:center; justify-content:center; height:96px;}
+  .mini.cream{background:#f6efe4;}
+  .mini__label{position:absolute; top:6px; left:10px; font-family:var(--font-mono); font-size:9px; letter-spacing:.1em; color:var(--fg-faint); text-transform:uppercase;}
+  .mini{position:relative;}
+
+  /* indigo defaults */
+  .indigo{color:#8b7cff;}
+  [data-theme="light"] .indigo{color:#5b4de0;}
+
+  /* ============================================================ */
+  /*  01 — Fraunces slab lockup: warm, bookish, playful italic X   */
+  /* ============================================================ */
+  .lg01{font-family:"Fraunces", Georgia, serif; font-size:68px; font-weight:700; color:#f3ede0; letter-spacing:-0.02em; line-height:1; font-feature-settings:"ss01","ss02"; display:flex; align-items:baseline; gap:2px;}
+  .lg01 em{font-style:italic; color:#ffb08a; font-weight:700; padding-right:2px;}
+  .cream .lg01{color:#1c1b22;}
+  .cream .lg01 em{color:#d9663e;}
+  /* small wordmark */
+  .lg01--sm{font-size:28px;}
+
+  /* ============================================================ */
+  /*  02 — Sticker squircle: cream patch + cozy italic X           */
+  /* ============================================================ */
+  .lg02-lockup{display:flex; align-items:center; gap:16px;}
+  .lg02{width:92px; height:92px; border-radius:26px; background:#f5ead4; border:1.5px solid rgba(28,27,34,.08); box-shadow:0 6px 0 rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.6); display:flex; align-items:center; justify-content:center; font-family:"Fraunces", serif; font-weight:700; font-style:italic; font-size:56px; color:#c65d36; line-height:1; letter-spacing:-0.02em; transform:rotate(-4deg);}
+  .cream .lg02{background:#1c1b22; box-shadow:0 6px 0 rgba(0,0,0,.22); color:#ffb08a; border-color:rgba(255,255,255,.08);}
+  .lg02--sm{width:44px; height:44px; border-radius:14px; font-size:26px; box-shadow:0 3px 0 rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.5);}
+  .lg02-word{font-family:"Nunito", sans-serif; font-weight:800; font-size:36px; color:#f3ede0; letter-spacing:-0.02em;}
+  .cream .lg02-word{color:#1c1b22;}
+
+  /* ============================================================ */
+  /*  03 — Quilted X: two rounded pill strokes, interlocked        */
+  /* ============================================================ */
+  .lg03{display:flex; align-items:center; gap:16px;}
+  .lg03 svg{width:96px; height:96px;}
+  .lg03 .word{font-family:"Nunito", sans-serif; font-weight:700; font-size:36px; color:#f3ede0; letter-spacing:-0.02em;}
+  .cream .lg03 .word{color:#1c1b22;}
+
+  /* ============================================================ */
+  /*  04 — Cat-ear X: tiny ears on the apex, winking               */
+  /* ============================================================ */
+  .lg04{display:flex; align-items:center; gap:16px;}
+  .lg04 svg{width:104px; height:104px;}
+  .lg04 .word{font-family:"Fraunces", serif; font-weight:600; font-style:italic; font-size:36px; color:#f3ede0; letter-spacing:-0.01em;}
+  .cream .lg04 .word{color:#1c1b22;}
+
+  /* ============================================================ */
+  /*  05 — Stitch X: embroidered dashed stroke                     */
+  /* ============================================================ */
+  .lg05{display:flex; align-items:center; gap:20px;}
+  .lg05 svg{width:104px; height:104px;}
+  .lg05 .word{font-family:"Nunito", sans-serif; font-weight:800; font-size:36px; color:#f3ede0; letter-spacing:-0.02em;}
+  .cream .lg05 .word{color:#1c1b22;}
+
+  /* ============================================================ */
+  /*  06 — Steam mug: the X is the handle; steam rises slowly      */
+  /* ============================================================ */
+  .lg06{display:flex; align-items:center; gap:16px;}
+  .lg06 svg{width:120px; height:108px; overflow:visible;}
+  .lg06 .word{font-family:"Fraunces", serif; font-weight:600; font-style:italic; font-size:36px; color:#f3ede0;}
+  .cream .lg06 .word{color:#1c1b22;}
+  .lg06 .steam{animation:steam 3s var(--ease-standard) infinite;}
+  .lg06 .steam:nth-child(2){animation-delay:.6s}
+  .lg06 .steam:nth-child(3){animation-delay:1.2s}
+  @keyframes steam{0%{opacity:0; transform:translate(0,4px);}30%{opacity:.7;}100%{opacity:0; transform:translate(-2px,-18px);}}
+
+  /* ============================================================ */
+  /*  07 — Pillow squircle: soft dent + smile                      */
+  /* ============================================================ */
+  .lg07{display:flex; align-items:center; gap:16px;}
+  .lg07 svg{width:102px; height:102px;}
+  .lg07 .word{font-family:"Nunito", sans-serif; font-weight:700; font-size:36px; color:#f3ede0;}
+  .cream .lg07 .word{color:#1c1b22;}
+
+  /* ============================================================ */
+  /*  08 — Serif X with sparkle — the "hand-set" feel              */
+  /* ============================================================ */
+  .lg08{display:flex; align-items:baseline; gap:10px; font-family:"Fraunces", serif;}
+  .lg08 .x{font-size:88px; font-weight:700; font-style:italic; color:#ffb08a; line-height:1; position:relative; display:inline-block;}
+  .lg08 .x::after{content:"✦"; position:absolute; top:-6px; right:-20px; font-size:22px; color:#f3ede0; font-style:normal;}
+  .cream .lg08 .x{color:#d9663e;}
+  .cream .lg08 .x::after{color:#1c1b22;}
+  .lg08 .word{font-size:42px; font-weight:600; color:#f3ede0; letter-spacing:-0.01em;}
+  .cream .lg08 .word{color:#1c1b22;}
+
+  .cozy-palette{margin:56px 0 0; padding:28px 32px; background:var(--bg-content); border:1px solid var(--border-subtle); border-radius:var(--radius-lg);}
+  .cozy-palette h3{margin:0 0 4px; font-size:16px; color:var(--fg-heading);}
+  .cozy-palette p{color:var(--fg-muted); font-size:13px; margin:0 0 18px;}
+  .swatches{display:flex; gap:14px; flex-wrap:wrap;}
+  .sw{display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--bg-raised); border:1px solid var(--border-subtle); border-radius:var(--radius-md);}
+  .sw .chip{width:24px; height:24px; border-radius:6px; border:1px solid rgba(0,0,0,.08);}
+  .sw .name{font-size:12px; font-weight:500; color:var(--fg);}
+  .sw .hex{font-family:var(--font-mono); font-size:11px; color:var(--fg-subtle);}
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="head">
+    <h1>Cozy logo directions</h1>
+    <p class="sub">Playful, warm, a little hand-made.</p>
+    <button class="toggle" id="toggle">◐ Obsidian Ink</button>
+  </div>
+
+  <p class="intro">A warmer palette than the indigo tech-brand — cream paper, terracotta accent, soft shadows. The italic <em>X</em> stays the signature across every variant, but the voice shifts from "quiet editor" to "cozy writing nook." Each card shows the lockup, the mark by itself, and the lockup at a small size.</p>
+
+  <div class="grid">
+
+    <!-- 01 -->
+    <div class="card">
+      <div class="card__head"><span class="card__num">01</span><span class="card__name">Warm slab</span></div>
+      <div class="card__note">Fraunces at a chunky weight with its playful italic X — a bookish, serif-y wordmark that feels like the cover of a beloved notebook. No separate mark needed.</div>
+      <div class="card__stage"><div class="lg01">Type<em>X</em></div></div>
+      <div class="card__mini">
+        <div class="mini"><span class="mini__label">Small — 28px</span><div class="lg01 lg01--sm">Type<em>X</em></div></div>
+        <div class="mini cream"><span class="mini__label">Light surface</span><div class="lg01">Type<em>X</em></div></div>
+      </div>
+    </div>
+
+    <!-- 02 -->
+    <div class="card">
+      <div class="card__head"><span class="card__num">02</span><span class="card__name">Sticker</span></div>
+      <div class="card__note">A squircle patch — cream fill, terracotta italic X, a drop-shadow like a fridge magnet. Tilted four degrees on purpose; perfection isn't cozy. Works as a mark on its own.</div>
+      <div class="card__stage">
+        <div class="lg02-lockup">
+          <div class="lg02">X</div>
+          <div class="lg02-word">TypeX</div>
+        </div>
+      </div>
+      <div class="card__mini">
+        <div class="mini"><span class="mini__label">Favicon — 44px</span><div class="lg02 lg02--sm">X</div></div>
+        <div class="mini cream"><span class="mini__label">Light surface</span>
+          <div class="lg02-lockup"><div class="lg02">X</div><div class="lg02-word">TypeX</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 -->
+    <div class="card">
+      <div class="card__head"><span class="card__num">03</span><span class="card__name">Quilted X</span></div>
+      <div class="card__note">Two rounded pill-strokes crossed like a friendship bracelet. The overlap is explicit — you can see the loop — which reads warmer than a flat X.</div>
+      <div class="card__stage">
+        <div class="lg03">
+          <svg viewBox="0 0 96 96">
+            <defs>
+              <linearGradient id="q1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#ffb08a"/><stop offset="1" stop-color="#d9663e"/>
+              </linearGradient>
+              <linearGradient id="q2" x1="1" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#f5ead4"/><stop offset="1" stop-color="#e7d4a8"/>
+              </linearGradient>
+            </defs>
+            <rect x="14" y="40" width="68" height="16" rx="8" transform="rotate(45 48 48)" fill="url(#q2)" stroke="rgba(28,27,34,.18)" stroke-width="1.5"/>
+            <rect x="14" y="40" width="68" height="16" rx="8" transform="rotate(-45 48 48)" fill="url(#q1)" stroke="rgba(28,27,34,.18)" stroke-width="1.5"/>
+          </svg>
+          <div class="word">TypeX</div>
+        </div>
+      </div>
+      <div class="card__mini">
+        <div class="mini"><span class="mini__label">Mark only</span>
+          <svg viewBox="0 0 96 96" style="width:40px;height:40px">
+            <rect x="14" y="40" width="68" height="16" rx="8" transform="rotate(45 48 48)" fill="#f5ead4"/>
+            <rect x="14" y="40" width="68" height="16" rx="8" transform="rotate(-45 48 48)" fill="#ffb08a"/>
+          </svg>
+        </div>
+        <div class="mini cream"><span class="mini__label">Light surface</span>
+          <div class="lg03">
+            <svg viewBox="0 0 96 96" style="width:60px;height:60px">
+              <rect x="14" y="40" width="68" height="16" rx="8" transform="rotate(45 48 48)" fill="#1c1b22"/>
+              <rect x="14" y="40" width="68" height="16" rx="8" transform="rotate(-45 48 48)" fill="#d9663e"/>
+            </svg>
+            <div class="word">TypeX</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 -->
+    <div class="card">
+      <div class="card__head"><span class="card__num">04</span><span class="card__name">Little Fox X</span></div>
+      <div class="card__note">Tiny triangular ears on the top of the X — the logo becomes a shy creature peeking out. Keep it subtle; ears are ~10% of the mark's height so it still reads as a letter.</div>
+      <div class="card__stage">
+        <div class="lg04">
+          <svg viewBox="0 0 104 104">
+            <!-- body: rounded X -->
+            <g stroke="#ffb08a" stroke-width="14" stroke-linecap="round" fill="none">
+              <line x1="28" y1="40" x2="80" y2="92"/>
+              <line x1="80" y1="40" x2="28" y2="92"/>
+            </g>
+            <!-- ears -->
+            <path d="M 22 38 L 28 20 L 34 38 Z" fill="#ffb08a"/>
+            <path d="M 74 38 L 80 20 L 86 38 Z" fill="#ffb08a"/>
+            <!-- ear insides -->
+            <path d="M 26 34 L 28 26 L 30 34 Z" fill="#c65d36"/>
+            <path d="M 78 34 L 80 26 L 82 34 Z" fill="#c65d36"/>
+            <!-- winking dot -->
+            <circle cx="54" cy="62" r="2.5" fill="#f3ede0"/>
+          </svg>
+          <div class="word">TypeX</div>
+        </div>
+      </div>
+      <div class="card__mini">
+        <div class="mini"><span class="mini__label">Mark only</span>
+          <svg viewBox="0 0 104 104" style="width:48px;height:48px">
+            <g stroke="#ffb08a" stroke-width="14" stroke-linecap="round" fill="none">
+              <line x1="28" y1="40" x2="80" y2="92"/><line x1="80" y1="40" x2="28" y2="92"/>
+            </g>
+            <path d="M 22 38 L 28 20 L 34 38 Z" fill="#ffb08a"/>
+            <path d="M 74 38 L 80 20 L 86 38 Z" fill="#ffb08a"/>
+          </svg>
+        </div>
+        <div class="mini cream"><span class="mini__label">Light surface</span>
+          <div class="lg04">
+            <svg viewBox="0 0 104 104" style="width:64px;height:64px">
+              <g stroke="#d9663e" stroke-width="14" stroke-linecap="round" fill="none">
+                <line x1="28" y1="40" x2="80" y2="92"/><line x1="80" y1="40" x2="28" y2="92"/>
+              </g>
+              <path d="M 22 38 L 28 20 L 34 38 Z" fill="#d9663e"/>
+              <path d="M 74 38 L 80 20 L 86 38 Z" fill="#d9663e"/>
+              <path d="M 26 34 L 28 26 L 30 34 Z" fill="#1c1b22"/>
+              <path d="M 78 34 L 80 26 L 82 34 Z" fill="#1c1b22"/>
+            </svg>
+            <div class="word">TypeX</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 -->
+    <div class="card">
+      <div class="card__head"><span class="card__num">05</span><span class="card__name">Stitch</span></div>
+      <div class="card__note">Embroidered X — dashed stroke, warm thread, like a sampler. The cross-stitch metaphor leans into the "hand-made writing tool" idea.</div>
+      <div class="card__stage">
+        <div class="lg05">
+          <svg viewBox="0 0 104 104">
+            <rect x="8" y="8" width="88" height="88" rx="18" fill="none" stroke="#ffb08a" stroke-width="2" stroke-dasharray="5 4" opacity=".7"/>
+            <g stroke="#ffb08a" stroke-width="7" stroke-linecap="round" stroke-dasharray="3 5" fill="none">
+              <line x1="30" y1="30" x2="74" y2="74"/>
+              <line x1="74" y1="30" x2="30" y2="74"/>
+            </g>
+          </svg>
+          <div class="word">TypeX</div>
+        </div>
+      </div>
+      <div class="card__mini">
+        <div class="mini"><span class="mini__label">Mark only</span>
+          <svg viewBox="0 0 104 104" style="width:44px;height:44px">
+            <g stroke="#ffb08a" stroke-width="7" stroke-linecap="round" stroke-dasharray="3 5" fill="none">
+              <line x1="30" y1="30" x2="74" y2="74"/><line x1="74" y1="30" x2="30" y2="74"/>
+            </g>
+          </svg>
+        </div>
+        <div class="mini cream"><span class="mini__label">Light surface</span>
+          <div class="lg05">
+            <svg viewBox="0 0 104 104" style="width:60px;height:60px">
+              <rect x="8" y="8" width="88" height="88" rx="18" fill="none" stroke="#d9663e" stroke-width="2" stroke-dasharray="5 4" opacity=".6"/>
+              <g stroke="#d9663e" stroke-width="7" stroke-linecap="round" stroke-dasharray="3 5" fill="none">
+                <line x1="30" y1="30" x2="74" y2="74"/><line x1="74" y1="30" x2="30" y2="74"/>
+              </g>
+            </svg>
+            <div class="word">TypeX</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06 -->
+    <div class="card">
+      <div class="card__head"><span class="card__num">06</span><span class="card__name">Steam &amp; ink</span></div>
+      <div class="card__note">A mug whose handle <em>is</em> the X. Steam rises in three slow puffs. The most narrative of the bunch — works best as an animated splash or about-page illustration.</div>
+      <div class="card__stage">
+        <div class="lg06">
+          <svg viewBox="0 0 120 108">
+            <!-- steam -->
+            <g fill="none" stroke="#ffb08a" stroke-width="3" stroke-linecap="round">
+              <path class="steam" d="M 40 24 q 5 -8 0 -18 q -5 -8 0 -18"/>
+              <path class="steam" d="M 54 24 q -5 -8 0 -18 q 5 -8 0 -18"/>
+              <path class="steam" d="M 68 24 q 5 -8 0 -18 q -5 -8 0 -18"/>
+            </g>
+            <!-- mug body -->
+            <rect x="24" y="36" width="60" height="58" rx="10" fill="#f5ead4" stroke="rgba(28,27,34,.15)" stroke-width="1.5"/>
+            <rect x="24" y="36" width="60" height="6" fill="#ffb08a" opacity=".7"/>
+            <!-- handle as X -->
+            <g fill="none" stroke="#ffb08a" stroke-width="7" stroke-linecap="round">
+              <line x1="84" y1="52" x2="104" y2="78"/>
+              <line x1="104" y1="52" x2="84" y2="78"/>
+            </g>
+          </svg>
+          <div class="word">TypeX</div>
+        </div>
+      </div>
+      <div class="card__mini">
+        <div class="mini"><span class="mini__label">Mark only</span>
+          <svg viewBox="0 0 120 108" style="width:56px;height:50px">
+            <rect x="24" y="36" width="60" height="58" rx="10" fill="#f5ead4"/>
+            <rect x="24" y="36" width="60" height="6" fill="#ffb08a"/>
+            <g fill="none" stroke="#ffb08a" stroke-width="7" stroke-linecap="round">
+              <line x1="84" y1="52" x2="104" y2="78"/><line x1="104" y1="52" x2="84" y2="78"/>
+            </g>
+          </svg>
+        </div>
+        <div class="mini cream"><span class="mini__label">Light surface</span>
+          <div class="lg06">
+            <svg viewBox="0 0 120 108" style="width:70px;height:60px">
+              <rect x="24" y="36" width="60" height="58" rx="10" fill="#1c1b22"/>
+              <rect x="24" y="36" width="60" height="6" fill="#d9663e"/>
+              <g fill="none" stroke="#d9663e" stroke-width="7" stroke-linecap="round">
+                <line x1="84" y1="52" x2="104" y2="78"/><line x1="104" y1="52" x2="84" y2="78"/>
+              </g>
+            </svg>
+            <div class="word">TypeX</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 07 -->
+    <div class="card">
+      <div class="card__head"><span class="card__num">07</span><span class="card__name">Pillow</span></div>
+      <div class="card__note">A soft squircle with a gentle dent at the center — a throw pillow. Two dots and a quiet curve sketch the faintest face. Cozy without being overtly a character.</div>
+      <div class="card__stage">
+        <div class="lg07">
+          <svg viewBox="0 0 102 102">
+            <defs>
+              <radialGradient id="pil" cx="40%" cy="35%" r="70%">
+                <stop offset="0" stop-color="#f7eadb"/><stop offset="1" stop-color="#e9d4b2"/>
+              </radialGradient>
+              <filter id="pilShadow"><feGaussianBlur stdDeviation="0.7"/></filter>
+            </defs>
+            <path d="M 16 8 Q 8 8, 8 16 L 8 86 Q 8 94, 16 94 L 86 94 Q 94 94, 94 86 L 94 16 Q 94 8, 86 8 Z" fill="url(#pil)" stroke="rgba(28,27,34,.18)" stroke-width="1.5"/>
+            <!-- dent -->
+            <ellipse cx="51" cy="54" rx="14" ry="6" fill="rgba(28,27,34,.07)"/>
+            <!-- X -->
+            <g stroke="#c65d36" stroke-width="6" stroke-linecap="round" fill="none">
+              <line x1="38" y1="40" x2="64" y2="66"/>
+              <line x1="64" y1="40" x2="38" y2="66"/>
+            </g>
+          </svg>
+          <div class="word">TypeX</div>
+        </div>
+      </div>
+      <div class="card__mini">
+        <div class="mini"><span class="mini__label">Mark only</span>
+          <svg viewBox="0 0 102 102" style="width:46px;height:46px">
+            <rect x="8" y="8" width="86" height="86" rx="22" fill="#f5ead4" stroke="rgba(28,27,34,.18)" stroke-width="1.5"/>
+            <ellipse cx="51" cy="54" rx="14" ry="6" fill="rgba(28,27,34,.08)"/>
+            <g stroke="#c65d36" stroke-width="6" stroke-linecap="round"><line x1="38" y1="40" x2="64" y2="66"/><line x1="64" y1="40" x2="38" y2="66"/></g>
+          </svg>
+        </div>
+        <div class="mini cream"><span class="mini__label">Light surface</span>
+          <div class="lg07">
+            <svg viewBox="0 0 102 102" style="width:62px;height:62px">
+              <rect x="8" y="8" width="86" height="86" rx="22" fill="#1c1b22"/>
+              <ellipse cx="51" cy="54" rx="14" ry="6" fill="rgba(255,255,255,.08)"/>
+              <g stroke="#ffb08a" stroke-width="6" stroke-linecap="round"><line x1="38" y1="40" x2="64" y2="66"/><line x1="64" y1="40" x2="38" y2="66"/></g>
+            </svg>
+            <div class="word">TypeX</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08 -->
+    <div class="card">
+      <div class="card__head"><span class="card__num">08</span><span class="card__name">Hand-set</span></div>
+      <div class="card__note">A single Fraunces italic X with a small sparkle, set next to "TypeX" in a chunky weight. Evokes an old printer's mark. The sparkle is ornament, not indicator.</div>
+      <div class="card__stage">
+        <div class="lg08">
+          <div class="x">X</div>
+          <div class="word">TypeX</div>
+        </div>
+      </div>
+      <div class="card__mini">
+        <div class="mini"><span class="mini__label">Mark only</span>
+          <div class="lg08"><div class="x" style="font-size:48px">X</div></div>
+        </div>
+        <div class="mini cream"><span class="mini__label">Light surface</span>
+          <div class="lg08"><div class="x" style="font-size:48px">X</div><div class="word" style="font-size:24px">TypeX</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cozy-palette">
+    <h3>Cozy palette</h3>
+    <p>Warmer, softer, more tactile than the Obsidian Ink indigo. Pick the one or two that survive the final lockup.</p>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:#f5ead4"></div><div><div class="name">Oat Paper</div><div class="hex">#f5ead4</div></div></div>
+      <div class="sw"><div class="chip" style="background:#f3ede0"></div><div><div class="name">Cream</div><div class="hex">#f3ede0</div></div></div>
+      <div class="sw"><div class="chip" style="background:#ffb08a"></div><div><div class="name">Peach</div><div class="hex">#ffb08a</div></div></div>
+      <div class="sw"><div class="chip" style="background:#d9663e"></div><div><div class="name">Terracotta</div><div class="hex">#d9663e</div></div></div>
+      <div class="sw"><div class="chip" style="background:#c65d36"></div><div><div class="name">Baked Clay</div><div class="hex">#c65d36</div></div></div>
+      <div class="sw"><div class="chip" style="background:#1c1b22"></div><div><div class="name">Ink</div><div class="hex">#1c1b22</div></div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const root = document.documentElement;
+  const t = document.getElementById("toggle");
+  const saved = localStorage.getItem("typex-cozy-theme") || "dark";
+  root.setAttribute("data-theme", saved);
+  const paint = () => { t.textContent = root.getAttribute("data-theme") === "dark" ? "◐ Obsidian Ink" : "◑ Ivory Paper"; };
+  paint();
+  t.addEventListener("click", () => {
+    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("typex-cozy-theme", next);
+    paint();
+  });
+</script>
+</body>
+</html>

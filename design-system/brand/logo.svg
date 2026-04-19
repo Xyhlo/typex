@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  TypeX primary mark.
+  Rounded square ~22% corner radius, radial indigo gradient centered at 30%/30%.
+  Inner 1px highlight, outer 10px soft glow at 8% accent opacity.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="tx-mark" cx="30%" cy="30%" r="70%">
+      <stop offset="0%"   stop-color="#a89bff"/>
+      <stop offset="45%"  stop-color="#8b7cff"/>
+      <stop offset="100%" stop-color="#6656d6"/>
+    </radialGradient>
+    <filter id="tx-mark-glow" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#tx-mark-glow)">
+    <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#tx-mark)"/>
+    <rect x="2.5" y="2.5" width="59" height="59" rx="13.5" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+  </g>
+</svg>

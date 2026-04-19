@@ -1,0 +1,37 @@
+/* ============================================================
+   TypeX — Foundations: motion
+   Five duration stops, three easings. Intent aliases on top
+   (`--tx-motion-hover`, `--tx-motion-panel`, …) so component
+   CSS reads as "use hover motion" rather than "use 160ms."
+   All durations collapse to 0ms under prefers-reduced-motion.
+   ============================================================ */
+
+:root {
+  --tx-dur-xs: 90ms;   /* ghost button feedback, chip hover      */
+  --tx-dur-sm: 160ms;  /* button press, link underline, toggle   */
+  --tx-dur-md: 220ms;  /* dropdowns, tabs, theme swaps           */
+  --tx-dur-lg: 320ms;  /* panels, full-modal reveals             */
+  --tx-dur-xl: 480ms;  /* hero fade-in, scroll reveals           */
+
+  --tx-ease-standard:   cubic-bezier(0.2, 0, 0, 1);
+  --tx-ease-emphasized: cubic-bezier(0.2, 0, 0, 1.2);
+  --tx-ease-out:        cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Intent-based aliases — components should reach for these */
+  --tx-motion-hover:     var(--tx-dur-xs) var(--tx-ease-standard);
+  --tx-motion-press:     var(--tx-dur-sm) var(--tx-ease-standard);
+  --tx-motion-panel:     var(--tx-dur-md) var(--tx-ease-standard);
+  --tx-motion-reveal:    var(--tx-dur-lg) var(--tx-ease-out);
+  --tx-motion-hero:      var(--tx-dur-xl) var(--tx-ease-out);
+  --tx-motion-emphasized:var(--tx-dur-md) var(--tx-ease-emphasized);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --tx-dur-xs: 0ms;
+    --tx-dur-sm: 0ms;
+    --tx-dur-md: 0ms;
+    --tx-dur-lg: 0ms;
+    --tx-dur-xl: 0ms;
+  }
+}

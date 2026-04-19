@@ -1,0 +1,187 @@
+/* ============================================================
+   TypeX — Components: navigation
+   Menubar, dropdowns, tabs, sidebar items, breadcrumbs,
+   title bar. All target TypeX's app chrome and the marketing
+   page's sticky header.
+   ============================================================ */
+
+/* ---------------- Sticky top bar (marketing) ---------------- */
+.tx-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--tx-sp-4) var(--tx-sp-7);
+  gap: var(--tx-sp-7);
+  background: color-mix(in srgb, var(--tx-bg-shell) 82%, transparent);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-bottom: 1px solid var(--tx-border-subtle);
+}
+.tx-topbar__nav {
+  display: flex;
+  gap: var(--tx-sp-1);
+}
+.tx-topbar__link {
+  padding: 6px 12px;
+  font-size: var(--tx-fs-md);
+  color: var(--tx-fg-muted);
+  text-decoration: none;
+  border-radius: var(--tx-radius-sm);
+  transition:
+    color var(--tx-motion-hover),
+    background var(--tx-motion-hover);
+}
+.tx-topbar__link:hover {
+  color: var(--tx-fg);
+  background: var(--tx-bg-overlay);
+}
+
+/* ---------------- Menubar (File / Edit / View …) ---------------- */
+.tx-menubar {
+  display: flex;
+  align-items: stretch;
+  gap: 1px;
+}
+.tx-menubar__btn {
+  padding: 6px 12px;
+  font-family: var(--tx-font-ui);
+  font-size: var(--tx-fs-sm);
+  color: var(--tx-fg-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--tx-radius-sm);
+  cursor: default;
+  transition:
+    color var(--tx-motion-hover),
+    background var(--tx-motion-hover);
+}
+.tx-menubar__btn:hover,
+.tx-menubar__btn[aria-expanded="true"] {
+  color: var(--tx-fg);
+  background: var(--tx-bg-overlay);
+}
+
+/* ---------------- Dropdown menu ---------------- */
+.tx-menu {
+  min-width: 240px;
+  max-width: 360px;
+  padding: 6px;
+  background: var(--tx-bg-elevated);
+  border: 1px solid var(--tx-border);
+  border-radius: var(--tx-radius-md);
+  box-shadow: var(--tx-shadow-lg);
+  font-size: var(--tx-fs-sm);
+  color: var(--tx-fg);
+}
+.tx-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--tx-sp-3);
+  padding: 7px 10px 7px 28px;
+  border-radius: var(--tx-radius-sm);
+  cursor: default;
+  position: relative;
+  transition:
+    background var(--tx-motion-hover),
+    color var(--tx-motion-hover);
+}
+.tx-menu__item:hover,
+.tx-menu__item[aria-selected="true"] {
+  background: var(--tx-accent-muted);
+}
+.tx-menu__item--checked::before {
+  content: "✓";
+  position: absolute;
+  left: 10px;
+  color: var(--tx-accent);
+  font-weight: var(--tx-fw-semibold);
+}
+.tx-menu__item--disabled {
+  color: var(--tx-fg-faint);
+  pointer-events: none;
+}
+.tx-menu__shortcut {
+  margin-left: auto;
+  font-family: var(--tx-font-mono);
+  font-size: var(--tx-fs-xs);
+  color: var(--tx-fg-subtle);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.tx-menu__separator {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--tx-border-subtle);
+}
+.tx-menu__section {
+  padding: 4px 10px 2px;
+  font-family: var(--tx-font-mono);
+  font-size: var(--tx-fs-xs);
+  letter-spacing: var(--tx-ls-micro);
+  text-transform: uppercase;
+  color: var(--tx-fg-subtle);
+}
+
+/* ---------------- Tabs ---------------- */
+.tx-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  min-height: 32px;
+  padding: 4px 0 0;
+}
+.tx-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tx-sp-2);
+  min-width: 120px;
+  max-width: 220px;
+  height: 28px;
+  padding: 0 var(--tx-sp-3);
+  font-size: var(--tx-fs-sm);
+  color: var(--tx-fg-muted);
+  background: transparent;
+  border-radius: var(--tx-radius-sm) var(--tx-radius-sm) 0 0;
+  cursor: default;
+  transition:
+    background var(--tx-motion-panel),
+    color var(--tx-motion-panel);
+}
+.tx-tab:hover { background: var(--tx-bg-overlay); color: var(--tx-fg); }
+.tx-tab[aria-selected="true"] {
+  background: var(--tx-bg-content);
+  color: var(--tx-fg);
+}
+.tx-tab__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tx-accent);
+  flex-shrink: 0;
+}
+
+/* ---------------- Sidebar list ---------------- */
+.tx-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--tx-sp-2);
+  padding: 4px 8px;
+  font-size: var(--tx-fs-sm);
+  color: var(--tx-fg-muted);
+  border-radius: var(--tx-radius-sm);
+  cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    background var(--tx-motion-hover),
+    color var(--tx-motion-hover);
+}
+.tx-sidebar-item:hover { background: var(--tx-bg-overlay); color: var(--tx-fg); }
+.tx-sidebar-item[aria-selected="true"] {
+  background: var(--tx-accent-muted);
+  color: var(--tx-fg);
+}

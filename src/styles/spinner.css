@@ -1,0 +1,93 @@
+/* ============================================================
+   Spinners — functional, not decorative. Used by progress
+   toasts and anywhere an in-app op may take > 100 ms.
+   Tokens match design-system/brand/loading-animations.html.
+   ============================================================ */
+
+/* Ring spinner (#08 from the loader catalog) — the default.
+   Compact, readable next to a single line of toast text. */
+.tx-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-overlay);
+  border-top-color: var(--accent);
+  animation: tx-spinner-rot 0.9s linear infinite;
+  flex-shrink: 0;
+}
+.tx-spinner--lg {
+  width: 22px;
+  height: 22px;
+  border-width: 2.5px;
+}
+@keyframes tx-spinner-rot {
+  to { transform: rotate(360deg); }
+}
+
+/* Progress toast variant — persistent, status-bar-like,
+   has a spinner on the left and can transform into a
+   success or error state when the op completes. */
+.toast--progress {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  animation-duration: var(--dur-md);
+  animation-timing-function: var(--ease-out);
+  animation-fill-mode: both;
+}
+.toast--progress .tx-spinner {
+  border-color: var(--bg-overlay);
+  border-top-color: var(--accent);
+}
+.toast--success {
+  /* Green checkmark replaces the spinner. */
+  border-color: var(--success);
+}
+.toast--success .tx-spinner,
+.toast--error   .tx-spinner {
+  display: none;
+}
+.toast--success::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3 8.5 L6.5 12 L13 4.5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.toast--error::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--danger);
+  flex-shrink: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 4 L12 12 M12 4 L4 12' stroke='white' stroke-width='2' stroke-linecap='round'/></svg>");
+  background-size: 12px 12px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Editor boot reveal — content fades up on first mount.
+   Honors prefers-reduced-motion via the tokens. */
+.editor-host {
+  animation: tx-editor-fade-in var(--dur-lg) var(--ease-out);
+}
+@keyframes tx-editor-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Tab-switch micro-fade — applied by setContent path. */
+.editor-host[data-swapping="true"] .editor {
+  opacity: 0.4;
+  transition: opacity var(--dur-sm) var(--ease-standard);
+}
+.editor-host .editor {
+  transition: opacity var(--dur-sm) var(--ease-standard);
+}

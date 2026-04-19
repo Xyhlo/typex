@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  TypeX — full logo family.
+  Each group is labeled so Figma (or any SVG tool) preserves the hierarchy
+  on import. Swap colors by replacing url(#tx-mark) with:
+    url(#tx-mark-light)     → deeper indigo (Ivory Paper contexts)
+    #f6f3ea                 → monochrome white (dark backgrounds)
+    #0e0d13                 → monochrome black (light backgrounds)
+
+  Structure:
+    - Mark sizes: 16 / 24 / 32 / 64 / 128
+    - Lockups: horizontal (mark + wordmark), vertical (mark over wordmark)
+    - Monochrome: white on black, black on cream
+    - Favicon: 32×32 with background plate for OS corners that crop
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" font-family="Inter, -apple-system, 'Segoe UI', sans-serif">
+
+  <defs>
+    <radialGradient id="tx-mark" cx="30%" cy="30%" r="70%">
+      <stop offset="0%"   stop-color="#a89bff"/>
+      <stop offset="45%"  stop-color="#8b7cff"/>
+      <stop offset="100%" stop-color="#6656d6"/>
+    </radialGradient>
+    <radialGradient id="tx-mark-light" cx="30%" cy="30%" r="70%">
+      <stop offset="0%"   stop-color="#8071ff"/>
+      <stop offset="45%"  stop-color="#5b4de0"/>
+      <stop offset="100%" stop-color="#3d32b3"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Page background: warm charcoal for review -->
+  <rect width="1200" height="900" fill="#0f0e12"/>
+  <text x="40" y="34" font-family="'JetBrains Mono', monospace" font-size="11" letter-spacing="2" fill="#6f6a76">TYPEX · LOGO FAMILY</text>
+
+  <!-- ══════════════ Mark sizes ══════════════ -->
+  <g id="Marks / Sizes" transform="translate(40, 80)">
+    <text font-family="'JetBrains Mono', monospace" font-size="10" fill="#6f6a76">MARK · SIZES</text>
+
+    <g id="Mark 16" transform="translate(0, 40)">
+      <rect width="16" height="16" rx="3.5" fill="url(#tx-mark)"/>
+      <text y="36" font-size="10" fill="#6f6a76">16</text>
+    </g>
+    <g id="Mark 24" transform="translate(50, 40)">
+      <rect width="24" height="24" rx="5" fill="url(#tx-mark)"/>
+      <text y="44" font-size="10" fill="#6f6a76">24</text>
+    </g>
+    <g id="Mark 32" transform="translate(110, 40)">
+      <rect width="32" height="32" rx="7" fill="url(#tx-mark)"/>
+      <text y="52" font-size="10" fill="#6f6a76">32</text>
+    </g>
+    <g id="Mark 64" transform="translate(180, 40)">
+      <rect width="64" height="64" rx="14" fill="url(#tx-mark)"/>
+      <text y="84" font-size="10" fill="#6f6a76">64</text>
+    </g>
+    <g id="Mark 128" transform="translate(280, 40)">
+      <rect width="128" height="128" rx="28" fill="url(#tx-mark)"/>
+      <text y="148" font-size="10" fill="#6f6a76">128 — installer + icons</text>
+    </g>
+
+    <!-- Light-theme mark -->
+    <g id="Mark 128 Light" transform="translate(460, 40)">
+      <rect width="128" height="128" rx="28" fill="url(#tx-mark-light)"/>
+      <text y="148" font-size="10" fill="#6f6a76">128 · Ivory Paper variant</text>
+    </g>
+  </g>
+
+  <!-- ══════════════ Horizontal lockup ══════════════ -->
+  <g id="Lockup / Horizontal" transform="translate(40, 300)">
+    <text font-family="'JetBrains Mono', monospace" font-size="10" fill="#6f6a76">LOCKUP · HORIZONTAL</text>
+
+    <g transform="translate(0, 30)">
+      <rect width="48" height="48" rx="10.5" fill="url(#tx-mark)"/>
+      <text x="66" y="34" font-size="36" font-weight="700" letter-spacing="-1.2" fill="#f6f3ea">TypeX</text>
+    </g>
+    <g transform="translate(0, 110)">
+      <rect width="32" height="32" rx="7" fill="url(#tx-mark)"/>
+      <text x="44" y="24" font-size="24" font-weight="700" letter-spacing="-0.8" fill="#f6f3ea">TypeX</text>
+    </g>
+    <g transform="translate(0, 170)">
+      <rect width="20" height="20" rx="4.5" fill="url(#tx-mark)"/>
+      <text x="28" y="15" font-size="15" font-weight="600" letter-spacing="-0.3" fill="#f6f3ea">TypeX</text>
+    </g>
+  </g>
+
+  <!-- ══════════════ Vertical lockup ══════════════ -->
+  <g id="Lockup / Vertical" transform="translate(500, 300)">
+    <text font-family="'JetBrains Mono', monospace" font-size="10" fill="#6f6a76">LOCKUP · VERTICAL</text>
+    <g transform="translate(40, 40)">
+      <rect width="80" height="80" rx="17.5" fill="url(#tx-mark)"/>
+      <text y="124" font-size="28" font-weight="700" letter-spacing="-0.8" fill="#f6f3ea">TypeX</text>
+      <text y="146" font-size="10" fill="#a6a1a9" letter-spacing="1">Markdown, typeset.</text>
+    </g>
+  </g>
+
+  <!-- ══════════════ Monochrome ══════════════ -->
+  <g id="Monochrome" transform="translate(40, 540)">
+    <text font-family="'JetBrains Mono', monospace" font-size="10" fill="#6f6a76">MONOCHROME</text>
+
+    <!-- White on dark -->
+    <g transform="translate(0, 30)">
+      <rect width="180" height="120" rx="12" fill="#141318"/>
+      <g transform="translate(30, 44)">
+        <rect width="32" height="32" rx="7" fill="#f6f3ea"/>
+        <text x="44" y="24" font-size="22" font-weight="700" letter-spacing="-0.6" fill="#f6f3ea">TypeX</text>
+      </g>
+    </g>
+
+    <!-- Black on cream -->
+    <g transform="translate(210, 30)">
+      <rect width="180" height="120" rx="12" fill="#fbfaf6"/>
+      <g transform="translate(30, 44)">
+        <rect width="32" height="32" rx="7" fill="#0e0d13"/>
+        <text x="44" y="24" font-size="22" font-weight="700" letter-spacing="-0.6" fill="#0e0d13">TypeX</text>
+      </g>
+    </g>
+
+    <!-- Outline / stroke -->
+    <g transform="translate(420, 30)">
+      <rect width="180" height="120" rx="12" fill="#141318" stroke="#2a241f"/>
+      <g transform="translate(30, 44)">
+        <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="6.5" fill="none" stroke="#f6f3ea" stroke-width="1.5"/>
+        <text x="44" y="24" font-size="22" font-weight="600" letter-spacing="-0.6" fill="#f6f3ea">TypeX</text>
+      </g>
+    </g>
+
+    <!-- Mark only, tonal -->
+    <g transform="translate(630, 30)">
+      <rect width="180" height="120" rx="12" fill="#141318"/>
+      <rect x="74" y="44" width="32" height="32" rx="7" fill="#a6a1a9"/>
+    </g>
+  </g>
+
+  <!-- ══════════════ Favicon ══════════════ -->
+  <g id="Favicon" transform="translate(900, 540)">
+    <text font-family="'JetBrains Mono', monospace" font-size="10" fill="#6f6a76">FAVICON · 32 + 16</text>
+
+    <!-- 32px favicon (on chrome background) -->
+    <g transform="translate(0, 30)">
+      <rect width="32" height="32" rx="6" fill="#0f0e12"/>
+      <rect x="4" y="4" width="24" height="24" rx="5" fill="url(#tx-mark)"/>
+    </g>
+
+    <!-- 16px favicon (pixel-precise, no inner inset) -->
+    <g transform="translate(48, 38)">
+      <rect width="16" height="16" rx="3.5" fill="url(#tx-mark)"/>
+    </g>
+
+    <!-- Rounded-tile variant (for macOS / iOS) -->
+    <g transform="translate(80, 30)">
+      <rect width="32" height="32" rx="7.2" fill="url(#tx-mark)"/>
+    </g>
+
+    <text x="0" y="78" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6f6a76">32 chrome · 16 pixel · 32 tile</text>
+  </g>
+
+  <!-- ══════════════ Usage notes ══════════════ -->
+  <g id="Usage Notes" transform="translate(40, 740)" font-size="12" fill="#a6a1a9">
+    <text font-family="'JetBrains Mono', monospace" font-size="10" letter-spacing="2" fill="#6f6a76">USAGE</text>
+    <text y="24">• Minimum size of the radial mark is 14 px. Below that, use the monochrome or outline variant.</text>
+    <text y="42">• Clear space: 0.5× mark-width on all sides.</text>
+    <text y="60">• Never recolor the gradient. Swap to url(#tx-mark-light) for cream backgrounds; swap to solid fill for monochrome contexts.</text>
+    <text y="78">• The wordmark is Inter 700 with -0.02em letter-spacing at hero sizes, -0.014em at body sizes.</text>
+  </g>
+</svg>

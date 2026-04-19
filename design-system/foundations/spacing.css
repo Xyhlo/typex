@@ -1,0 +1,23 @@
+/* ============================================================
+   TypeX — Foundations: spacing
+   4px base grid. `--tx-sp-N` where N*4 = pixel value; plus two
+   "leap" steps (9 = 56, 10 = 72) for section-level gaps.
+   ============================================================ */
+
+:root {
+  --tx-sp-0:  0;
+  --tx-sp-1:  4px;
+  --tx-sp-2:  8px;
+  --tx-sp-3:  12px;
+  --tx-sp-4:  16px;
+  --tx-sp-5:  20px;
+  --tx-sp-6:  24px;
+  --tx-sp-7:  32px;
+  --tx-sp-8:  40px;
+  --tx-sp-9:  56px;
+  --tx-sp-10: 72px;
+
+  /* Content metrics used by editor + marketing */
+  --tx-content-pad-y: var(--tx-sp-9);
+  --tx-content-pad-x: var(--tx-sp-7);
+}

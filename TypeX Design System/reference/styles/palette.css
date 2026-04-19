@@ -1,0 +1,142 @@
+/* ============================================================
+   Command palette — centered modal with fuzzy list.
+   ============================================================ */
+
+.palette {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-palette);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 14vh;
+  animation: palette-in var(--dur-md) var(--ease-out);
+}
+
+.palette__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+}
+
+[data-theme="light"] .palette__backdrop {
+  background: rgba(28, 26, 32, 0.22);
+}
+
+.palette__dialog {
+  position: relative;
+  width: min(640px, 92vw);
+  max-height: 60vh;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: palette-dialog-in var(--dur-md) var(--ease-out);
+}
+
+.palette__input {
+  width: 100%;
+  padding: var(--sp-4) var(--sp-5);
+  font-size: var(--fs-md);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--fg);
+}
+.palette__input::placeholder { color: var(--fg-subtle); }
+
+.palette__list {
+  flex: 1;
+  overflow: auto;
+  padding: var(--sp-2);
+}
+
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 10px var(--sp-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--fg);
+  font-size: var(--fs-md);
+  transition: background var(--dur-xs) var(--ease-standard);
+}
+
+.palette-item.is-selected {
+  background: var(--accent-muted);
+}
+
+.palette-item__icon {
+  color: var(--fg-subtle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+}
+.palette-item.is-selected .palette-item__icon {
+  color: var(--accent);
+}
+
+.palette-item__label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.palette-item__title { color: var(--fg); }
+.palette-item__subtitle {
+  font-size: var(--fs-xs);
+  color: var(--fg-subtle);
+}
+
+.palette-item__shortcut {
+  display: inline-flex;
+  gap: 4px;
+  color: var(--fg-subtle);
+  font-size: var(--fs-xs);
+  font-family: var(--font-mono);
+}
+.palette-item__shortcut kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: var(--bg-overlay);
+  color: var(--fg-muted);
+}
+
+.palette__empty {
+  padding: var(--sp-6);
+  text-align: center;
+  color: var(--fg-subtle);
+  font-size: var(--fs-sm);
+}
+
+@keyframes palette-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes palette-dialog-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.palette.is-closing {
+  animation: palette-out var(--dur-sm) var(--ease-standard) forwards;
+}
+.palette.is-closing .palette__dialog {
+  animation: palette-dialog-out var(--dur-sm) var(--ease-standard) forwards;
+}
+@keyframes palette-out {
+  from { opacity: 1; } to { opacity: 0; }
+}
+@keyframes palette-dialog-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.985) translateY(-4px); }
+}

@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 3000" font-family="Inter, -apple-system, &#39;Segoe UI&#39;, sans-serif">
+
+  
+  <defs>
+    <radialGradient id="markGradient" cx="30%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#9d90ff"></stop>
+      <stop offset="45%" stop-color="#8b7cff"></stop>
+      <stop offset="100%" stop-color="#786aec"></stop>
+    </radialGradient>
+    <radialGradient id="markGradientLight" cx="30%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#8071ff"></stop>
+      <stop offset="45%" stop-color="#5b4de0"></stop>
+      <stop offset="100%" stop-color="#3d32b3"></stop>
+    </radialGradient>
+    <linearGradient id="heroStroke" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#8b7cff"></stop>
+      <stop offset="1" stop-color="#8b7cff" stop-opacity="0"></stop>
+    </linearGradient>
+  </defs>
+
+  
+  <g id="Cover">
+    <rect width="1400" height="400" fill="#0f0e12"></rect>
+    
+    <g transform="translate(560, 130)">
+      <rect width="80" height="80" rx="18" fill="url(#markGradient)"></rect>
+    </g>
+    <text x="660" y="205" font-size="96" font-weight="700" letter-spacing="-3" fill="#f6f3ea">TypeX</text>
+    <text x="660" y="250" font-size="20" fill="#a6a1a9">A Markdown editor that puts typography first.</text>
+    <text x="660" y="298" font-family="&#39;JetBrains Mono&#39;, ui-monospace, monospace" font-size="11" letter-spacing="2" fill="#6f6a76">
+      V0.1.0 · WINDOWS · MIT · BY AMPTIS
+    </text>
+  </g>
+
+  
+  <g id="Brand Mark" transform="translate(0, 400)">
+    <rect width="1400" height="260" fill="#141318"></rect>
+    <text x="80" y="48" font-family="&#39;JetBrains Mono&#39;" font-size="11" letter-spacing="2" fill="#6f6a76">BRAND MARK</text>
+    <text x="80" y="72" font-size="22" font-weight="600" fill="#f6f3ea">Rounded-square with radial indigo gradient</text>
+
+    
+    <g transform="translate(80, 110)">
+      <rect width="16" height="16" rx="4" fill="url(#markGradient)"></rect>
+      <text x="0" y="50" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">16×16</text>
+    </g>
+    
+    <g transform="translate(180, 110)">
+      <rect width="32" height="32" rx="7" fill="url(#markGradient)"></rect>
+      <text x="0" y="60" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">32×32</text>
+    </g>
+    
+    <g transform="translate(280, 110)">
+      <rect width="64" height="64" rx="14" fill="url(#markGradient)"></rect>
+      <text x="0" y="90" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">64×64</text>
+    </g>
+    
+    <g transform="translate(410, 110)">
+      <rect width="128" height="128" rx="28" fill="url(#markGradient)"></rect>
+      <text x="0" y="154" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">128×128 — installer + icons</text>
+    </g>
+    
+    <g transform="translate(600, 110)">
+      <rect width="128" height="128" rx="28" fill="url(#markGradientLight)"></rect>
+      <text x="0" y="154" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">Light-theme variant</text>
+    </g>
+    
+    <g transform="translate(800, 140)">
+      <text font-size="72" font-weight="700" letter-spacing="-2.4" fill="#f6f3ea">TypeX</text>
+      <text y="32" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">Wordmark — Inter 700, tracking -0.03em</text>
+    </g>
+  </g>
+
+  
+  <g id="Color / Obsidian Ink (Dark)" transform="translate(0, 660)">
+    <rect width="1400" height="420" fill="#141318"></rect>
+    <text x="80" y="48" font-family="&#39;JetBrains Mono&#39;" font-size="11" letter-spacing="2" fill="#6f6a76">COLOR · OBSIDIAN INK (DARK)</text>
+    <text x="80" y="72" font-size="22" font-weight="600" fill="#f6f3ea">Warm charcoal surfaces, indigo accent, parchment text</text>
+
+    
+    <g id="Dark / Surfaces" transform="translate(80, 110)">
+      <text font-size="12" fill="#a6a1a9">Surfaces</text>
+      <g transform="translate(0, 20)">
+        <g>  <rect width="100" height="70" rx="8" fill="#0f0e12" stroke="#2a241f"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--bg-shell</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#0f0e12</text></g>
+        <g transform="translate(120,0)"><rect width="100" height="70" rx="8" fill="#141318"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--bg-app</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#141318</text></g>
+        <g transform="translate(240,0)"><rect width="100" height="70" rx="8" fill="#17161c"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--bg-content</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#17161c</text></g>
+        <g transform="translate(360,0)"><rect width="100" height="70" rx="8" fill="#1d1c24"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--bg-raised</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#1d1c24</text></g>
+        <g transform="translate(480,0)"><rect width="100" height="70" rx="8" fill="#24222c"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--bg-overlay</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#24222c</text></g>
+        <g transform="translate(600,0)"><rect width="100" height="70" rx="8" fill="#2b2934"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--bg-elevated</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#2b2934</text></g>
+      </g>
+    </g>
+
+    
+    <g id="Dark / Text" transform="translate(80, 240)">
+      <text font-size="12" fill="#a6a1a9">Text</text>
+      <g transform="translate(0, 20)">
+        <g><rect width="100" height="40" rx="6" fill="#ebe7dd"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--fg</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#ebe7dd</text></g>
+        <g transform="translate(120,0)"><rect width="100" height="40" rx="6" fill="#f6f3ea"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--fg-heading</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#f6f3ea</text></g>
+        <g transform="translate(240,0)"><rect width="100" height="40" rx="6" fill="#a6a1a9"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--fg-muted</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#a6a1a9</text></g>
+        <g transform="translate(360,0)"><rect width="100" height="40" rx="6" fill="#6f6a76"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--fg-subtle</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#6f6a76</text></g>
+        <g transform="translate(480,0)"><rect width="100" height="40" rx="6" fill="#4a4651"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--fg-faint</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#4a4651</text></g>
+      </g>
+    </g>
+
+    
+    <g id="Dark / Accent + Semantic" transform="translate(80, 340)">
+      <text font-size="12" fill="#a6a1a9">Accent · Semantic</text>
+      <g transform="translate(0, 20)">
+        <g><rect width="100" height="40" rx="6" fill="#8b7cff"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--accent</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#8b7cff</text></g>
+        <g transform="translate(120,0)"><rect width="100" height="40" rx="6" fill="#6eda9a"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--success</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#6eda9a</text></g>
+        <g transform="translate(240,0)"><rect width="100" height="40" rx="6" fill="#e4b46d"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--warning</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#e4b46d</text></g>
+        <g transform="translate(360,0)"><rect width="100" height="40" rx="6" fill="#ef6f78"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--danger</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#ef6f78</text></g>
+        <g transform="translate(480,0)"><rect width="100" height="40" rx="6" fill="#6fc7e4"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#a6a1a9">--info</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">#6fc7e4</text></g>
+      </g>
+    </g>
+  </g>
+
+  
+  <g id="Color / Ivory Paper (Light)" transform="translate(0, 1080)">
+    <rect width="1400" height="420" fill="#f5f2eb"></rect>
+    <text x="80" y="48" font-family="&#39;JetBrains Mono&#39;" font-size="11" letter-spacing="2" fill="#8a8891">COLOR · IVORY PAPER (LIGHT)</text>
+    <text x="80" y="72" font-size="22" font-weight="600" fill="#0e0d13">Cream surfaces, deeper indigo, warm near-black text</text>
+
+    <g id="Light / Surfaces" transform="translate(80, 110)">
+      <text font-size="12" fill="#5a5863">Surfaces</text>
+      <g transform="translate(0, 20)">
+        <g>  <rect width="100" height="70" rx="8" fill="#eeebe4" stroke="rgba(28,26,32,0.12)"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--bg-shell</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#eeebe4</text></g>
+        <g transform="translate(120,0)"><rect width="100" height="70" rx="8" fill="#f5f2eb" stroke="rgba(28,26,32,0.12)"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--bg-app</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#f5f2eb</text></g>
+        <g transform="translate(240,0)"><rect width="100" height="70" rx="8" fill="#fbfaf6" stroke="rgba(28,26,32,0.12)"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--bg-content</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#fbfaf6</text></g>
+        <g transform="translate(360,0)"><rect width="100" height="70" rx="8" fill="#ffffff" stroke="rgba(28,26,32,0.12)"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--bg-raised</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#ffffff</text></g>
+        <g transform="translate(480,0)"><rect width="100" height="70" rx="8" fill="#f3f0e8" stroke="rgba(28,26,32,0.12)"></rect><text y="88" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--bg-inset</text><text y="104" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#f3f0e8</text></g>
+      </g>
+    </g>
+
+    <g id="Light / Text" transform="translate(80, 240)">
+      <text font-size="12" fill="#5a5863">Text</text>
+      <g transform="translate(0, 20)">
+        <g><rect width="100" height="40" rx="6" fill="#1c1b22"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--fg</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#1c1b22</text></g>
+        <g transform="translate(120,0)"><rect width="100" height="40" rx="6" fill="#0e0d13"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--fg-heading</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#0e0d13</text></g>
+        <g transform="translate(240,0)"><rect width="100" height="40" rx="6" fill="#5a5863"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--fg-muted</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#5a5863</text></g>
+        <g transform="translate(360,0)"><rect width="100" height="40" rx="6" fill="#8a8891"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--fg-subtle</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#8a8891</text></g>
+        <g transform="translate(480,0)"><rect width="100" height="40" rx="6" fill="#b8b6be"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--fg-faint</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#b8b6be</text></g>
+      </g>
+    </g>
+
+    <g id="Light / Accent + Semantic" transform="translate(80, 340)">
+      <text font-size="12" fill="#5a5863">Accent · Semantic</text>
+      <g transform="translate(0, 20)">
+        <g><rect width="100" height="40" rx="6" fill="#5b4de0"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--accent</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#5b4de0</text></g>
+        <g transform="translate(120,0)"><rect width="100" height="40" rx="6" fill="#2b8a57"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--success</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#2b8a57</text></g>
+        <g transform="translate(240,0)"><rect width="100" height="40" rx="6" fill="#a7751f"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--warning</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#a7751f</text></g>
+        <g transform="translate(360,0)"><rect width="100" height="40" rx="6" fill="#c63444"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--danger</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#c63444</text></g>
+        <g transform="translate(480,0)"><rect width="100" height="40" rx="6" fill="#2e82a6"></rect><text y="58" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#5a5863">--info</text><text y="74" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#8a8891">#2e82a6</text></g>
+      </g>
+    </g>
+  </g>
+
+  
+  <g id="Typography" transform="translate(0, 1500)">
+    <rect width="1400" height="500" fill="#17161c"></rect>
+    <text x="80" y="48" font-family="&#39;JetBrains Mono&#39;" font-size="11" letter-spacing="2" fill="#6f6a76">TYPOGRAPHY</text>
+    <text x="80" y="72" font-size="22" font-weight="600" fill="#f6f3ea">Inter for UI. JetBrains Mono for code. Em-based heading scale.</text>
+
+    
+    <g transform="translate(80, 110)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">H1 · 2em · 700 · tracking -0.02em</text>
+      <text y="38" font-size="36" font-weight="700" letter-spacing="-0.7" fill="#f6f3ea">The headline reads fast.</text>
+    </g>
+    <g transform="translate(80, 180)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">H2 · 1.6em · 600</text>
+      <text y="36" font-size="29" font-weight="600" letter-spacing="-0.4" fill="#f6f3ea">Section titles stay calm.</text>
+    </g>
+    <g transform="translate(80, 240)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">H3 · 1.3em · 600</text>
+      <text y="32" font-size="23" font-weight="600" fill="#f6f3ea">Subheads for paragraphs.</text>
+    </g>
+
+    
+    <g transform="translate(700, 110)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">BODY · Inter 16.5 · line-height 1.75</text>
+      <text y="30" font-size="16.5" fill="#ebe7dd">Good tools recede; they make the page feel like</text>
+      <text y="58" font-size="16.5" fill="#ebe7dd">paper and the keyboard feel like ink. Inline</text>
+      <text y="86" font-size="16.5" fill="#ebe7dd" font-style="italic">italics lean the right amount.</text>
+
+      <text y="134" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">CODE · JetBrains Mono 15</text>
+      <rect y="150" width="600" height="100" rx="8" fill="#1a1921" stroke="#2b2934"></rect>
+      <text x="14" y="178" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#c792ea">const</text>
+      <text x="60" y="178" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#92bfff">advance</text>
+      <text x="130" y="178" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#ebe7dd">= (m: </text>
+      <text x="170" y="178" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#8bd7a7">Mood</text>
+      <text x="210" y="178" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#ebe7dd">): </text>
+      <text x="234" y="178" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#8bd7a7">Mood</text>
+      <text x="276" y="178" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#ebe7dd">=&gt; {</text>
+      <text x="30" y="200" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#c792ea">return</text>
+      <text x="92" y="200" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#d1b786">&#34;flowing&#34;</text>
+      <text x="168" y="200" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#ebe7dd">;</text>
+      <text x="14" y="222" font-family="&#39;JetBrains Mono&#39;" font-size="13" fill="#ebe7dd">};</text>
+    </g>
+
+    <g transform="translate(80, 340)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">KBD</text>
+      <g transform="translate(0, 14)">
+        <rect width="46" height="26" rx="5" fill="#24222c" stroke="#2b2934" stroke-width="1.5"></rect>
+        <text x="12" y="17.5" dy=".35em" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#ebe7dd">Ctrl</text>
+      </g>
+      <text x="52" y="32" font-size="14" fill="#a6a1a9">+</text>
+      <g transform="translate(62, 14)">
+        <rect width="26" height="26" rx="5" fill="#24222c" stroke="#2b2934" stroke-width="1.5"></rect>
+        <text x="11" y="17.5" dy=".35em" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#ebe7dd">K</text>
+      </g>
+
+      <text x="200" font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">QUOTE</text>
+      <g transform="translate(200, 14)">
+        <rect width="400" height="40" rx="4" fill="rgba(139,124,255,0.04)"></rect>
+        <rect width="3" height="40" fill="#8b7cff"></rect>
+        <text x="18" y="27" font-size="13" font-style="italic" fill="#c6c2ca">The best words in the best order. — Coleridge</text>
+      </g>
+    </g>
+  </g>
+
+  
+  <g id="Components" transform="translate(0, 2000)">
+    <rect width="1400" height="380" fill="#141318"></rect>
+    <text x="80" y="48" font-family="&#39;JetBrains Mono&#39;" font-size="11" letter-spacing="2" fill="#6f6a76">COMPONENTS</text>
+    <text x="80" y="72" font-size="22" font-weight="600" fill="#f6f3ea">Buttons, menu items, tabs, code blocks, kbd</text>
+
+    
+    <g transform="translate(80, 110)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">BUTTONS</text>
+      <g transform="translate(0, 20)">
+        <rect width="150" height="40" rx="10" fill="#8b7cff"></rect>
+        <text x="75" y="26" dy=".35em" text-anchor="middle" font-size="14" font-weight="500" fill="#fbfaf6">Download</text>
+      </g>
+      <g transform="translate(170, 20)">
+        <rect width="150" height="40" rx="10" fill="transparent" stroke="#1d1c24" stroke-width="1.5"></rect>
+        <text x="75" y="26" dy=".35em" text-anchor="middle" font-size="14" fill="#ebe7dd">Open file…</text>
+      </g>
+      <g transform="translate(340, 20)">
+        <rect width="80" height="40" rx="10" fill="transparent" stroke="#1d1c24" stroke-width="1.5"></rect>
+        <text x="40" y="26" dy=".35em" text-anchor="middle" font-size="13" fill="#a6a1a9">Cancel</text>
+      </g>
+    </g>
+
+    
+    <g transform="translate(80, 195)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">TABS</text>
+      <g transform="translate(0, 16)">
+        <rect x="0" y="4" width="140" height="28" rx="5 5 0 0" fill="#17161c"></rect>
+        <circle cx="14" cy="18" r="3" fill="#8b7cff"></circle>
+        <text x="24" y="22" font-size="12" fill="#ebe7dd">quiet-things.md</text>
+        <rect x="144" y="4" width="140" height="28" rx="5 5 0 0" fill="transparent"></rect>
+        <text x="158" y="22" font-size="12" fill="#a6a1a9">draft-02.md</text>
+        <text x="292" y="22" font-size="14" fill="#6f6a76">+</text>
+      </g>
+    </g>
+
+    
+    <g transform="translate(500, 110)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">MENU ITEMS</text>
+      <g transform="translate(0, 16)">
+        <rect width="260" height="34" rx="6" fill="rgba(139,124,255,0.15)"></rect>
+        <text x="28" y="22" font-size="13" fill="#ebe7dd">Save as…</text>
+        <text x="196" y="22" font-family="&#39;JetBrains Mono&#39;" font-size="11" fill="#6f6a76">Ctrl+Shift+S</text>
+      </g>
+      <g transform="translate(0, 54)">
+        <text x="28" y="22" font-size="13" fill="#ebe7dd">Close tab</text>
+        <text x="196" y="22" font-family="&#39;JetBrains Mono&#39;" font-size="11" fill="#6f6a76">Ctrl+W</text>
+      </g>
+      <g transform="translate(0, 92)">
+        <rect x="6" width="248" height="1" fill="rgba(255,255,255,0.04)"></rect>
+      </g>
+      <g transform="translate(0, 108)">
+        <path d="M10 8 L14 13 L22 4" stroke="#8b7cff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+        <text x="28" y="12" font-size="13" fill="#ebe7dd">Focus mode</text>
+        <text x="196" y="12" font-family="&#39;JetBrains Mono&#39;" font-size="11" fill="#6f6a76">Ctrl+.</text>
+      </g>
+    </g>
+
+    
+    <g transform="translate(900, 110)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">FORMAT CHIPS</text>
+      <g transform="translate(0, 20)">
+        <rect width="48" height="22" rx="11" fill="#0d0c10" stroke="#2a241f"></rect>
+        <text x="24" y="15" text-anchor="middle" font-family="&#39;JetBrains Mono&#39;" font-size="11" fill="#a6a1a9">.docx</text>
+        <g transform="translate(56, 0)">
+          <rect width="48" height="22" rx="11" fill="#0d0c10" stroke="#2a241f"></rect>
+          <text x="24" y="15" text-anchor="middle" font-family="&#39;JetBrains Mono&#39;" font-size="11" fill="#a6a1a9">.epub</text>
+        </g>
+        <g transform="translate(112, 0)">
+          <rect width="48" height="22" rx="11" fill="#0d0c10" stroke="#2a241f"></rect>
+          <text x="24" y="15" text-anchor="middle" font-family="&#39;JetBrains Mono&#39;" font-size="11" fill="#a6a1a9">.tex</text>
+        </g>
+      </g>
+    </g>
+
+    
+    <g transform="translate(500, 260)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">INPUT</text>
+      <g transform="translate(0, 16)">
+        <rect width="300" height="36" rx="6" fill="#0d0c10" stroke="#8b7cff" stroke-opacity="0.55"></rect>
+        <text x="12" y="23" font-size="13" fill="#a6a1a9">Find in document…</text>
+      </g>
+    </g>
+
+    
+    <g transform="translate(900, 260)">
+      <text font-family="&#39;JetBrains Mono&#39;" font-size="10" fill="#6f6a76">TOGGLE</text>
+      <g transform="translate(0, 18)">
+        <rect width="36" height="20" rx="10" fill="#8b7cff" stroke="#786aec"></rect>
+        <circle cx="27" cy="10" r="8" fill="#fbfaf6"></circle>
+      </g>
+      <text x="44" y="32" font-size="13" fill="#ebe7dd">Autosave</text>
+    </g>
+  </g>
+
+  
+  <g id="App Preview / Obsidian Ink" transform="translate(0, 2380)">
+    <rect width="1400" height="620" fill="#141318"></rect>
+    <text x="80" y="48" font-family="&#39;JetBrains Mono&#39;" font-size="11" letter-spacing="2" fill="#6f6a76">APP PREVIEW · OBSIDIAN INK</text>
+    <text x="80" y="72" font-size="22" font-weight="600" fill="#f6f3ea">Full window — titlebar, tabs, sidebar, editor, statusbar</text>
+
+    
+    <g transform="translate(80, 96)">
+      <rect width="1240" height="500" rx="12" fill="#0f0e12" stroke="#24222c"></rect>
+
+      
+      <g>
+        <rect width="1240" height="36" rx="12 12 0 0" fill="#0f0e12"></rect>
+        
+        <rect x="16" y="11" width="14" height="14" rx="4" fill="url(#markGradient)"></rect>
+        <text x="36" y="21" font-size="12" font-weight="600" fill="#ebe7dd">TypeX</text>
+        
+        <g font-size="12" fill="#a6a1a9" transform="translate(84, 21)">
+          <text>File</text>
+          <text x="50">Edit</text>
+          <text x="96">View</text>
+          <text x="150">Insert</text>
+          <text x="208">Format</text>
+          <text x="266">Tools</text>
+          <text x="310">Help</text>
+        </g>
+        
+        <g transform="translate(1148, 11)" fill="#a6a1a9">
+          <text x="0" y="10" font-size="14">—</text>
+          <text x="26" y="9" font-size="10">▢</text>
+          <text x="52" y="10" font-size="13">✕</text>
+        </g>
+      </g>
+
+      
+      <g transform="translate(0, 36)">
+        <rect width="1240" height="32" fill="#0f0e12"></rect>
+        <g transform="translate(10, 4)">
+          <rect width="180" height="28" rx="5 5 0 0" fill="#17161c"></rect>
+          <circle cx="14" cy="14" r="3" fill="#8b7cff"></circle>
+          <text x="24" y="18" font-size="12" fill="#ebe7dd">quiet-things.md</text>
+        </g>
+        <g transform="translate(192, 4)">
+          <text x="14" y="18" font-size="12" fill="#a6a1a9">draft-02.md</text>
+        </g>
+      </g>
+
+      
+      <g transform="translate(0, 68)">
+        
+        <rect width="260" height="402" fill="#1d1c24"></rect>
+        <g transform="translate(12, 18)" font-size="11">
+          <text fill="#6f6a76" letter-spacing="1.2">FILES</text>
+          <g transform="translate(0, 24)" font-size="12" fill="#a6a1a9">
+            <text y="0">▸ notes/</text>
+            <text y="22" fill="#a6a1a9">▾ drafts/</text>
+            <text x="16" y="44">field-notes.md</text>
+            <g transform="translate(10, 58)">
+              <rect x="-6" width="160" height="22" rx="4" fill="rgba(139,124,255,0.15)"></rect>
+              <text x="0" y="16" fill="#ebe7dd">quiet-things.md</text>
+            </g>
+            <text x="16" y="100">roadmap.md</text>
+            <text y="122">▸ sources/</text>
+            <text y="144">README.md</text>
+          </g>
+        </g>
+
+        
+        <g transform="translate(260, 0)">
+          <rect width="980" height="402" fill="#17161c"></rect>
+          <g transform="translate(60, 38)">
+            <text font-size="26" font-weight="700" fill="#f6f3ea">Field Notes on Quiet Things</text>
+            <rect y="10" width="36" height="2" rx="1" fill="url(#heroStroke)"></rect>
+            <text y="60" font-size="14" fill="#ebe7dd">A short reader to stress-test the typographic system —</text>
+            <text y="82" font-size="14" fill="#ebe7dd">headings, inline marks, code, quotes, and the spaces between.</text>
+            <g transform="translate(0, 110)">
+              <rect width="3" height="36" fill="#8b7cff"></rect>
+              <rect width="700" height="36" fill="rgba(139,124,255,0.04)" x="0"></rect>
+              <text x="16" y="24" font-size="13" font-style="italic" fill="#c6c2ca">&#34;The best words in the best order.&#34; — Coleridge</text>
+            </g>
+            <text y="180" font-size="20" font-weight="600" fill="#f6f3ea">Code, with taste</text>
+            <rect y="196" width="700" height="108" rx="8" fill="#1a1921" stroke="#24222c"></rect>
+            <text x="14" y="218" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#c792ea">type</text>
+            <text x="46" y="218" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#8bd7a7"> Mood</text>
+            <text x="86" y="218" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#ebe7dd"> = </text>
+            <text x="108" y="218" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#d1b786">&#34;blank&#34;</text>
+            <text x="162" y="218" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#ebe7dd"> | </text>
+            <text x="180" y="218" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#d1b786">&#34;flowing&#34;</text>
+            <text x="248" y="218" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#ebe7dd"> | </text>
+            <text x="266" y="218" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#d1b786">&#34;done&#34;</text>
+            <text x="312" y="218" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#ebe7dd">;</text>
+
+            <text x="14" y="244" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#c792ea">const</text>
+            <text x="54" y="244" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#92bfff"> advance</text>
+            <text x="116" y="244" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#ebe7dd"> = (m: </text>
+            <text x="156" y="244" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#8bd7a7">Mood</text>
+            <text x="194" y="244" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#ebe7dd">): </text>
+            <text x="218" y="244" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#8bd7a7">Mood</text>
+            <text x="258" y="244" font-family="&#39;JetBrains Mono&#39;" font-size="12" fill="#ebe7dd"> =&gt; { … };</text>
+          </g>
+        </g>
+      </g>
+
+      
+      <g transform="translate(0, 470)">
+        <rect width="1240" height="30" fill="#141318"></rect>
+        <text x="14" y="18" font-family="&#39;JetBrains Mono&#39;" font-size="10" letter-spacing="1.2" fill="#6f6a76">quiet-things.md</text>
+        <text x="1000" y="18" font-size="10" letter-spacing="1.2" fill="#6f6a76">342 WORDS · 2 MIN · MARKDOWN</text>
+      </g>
+    </g>
+  </g>
+
+</svg>

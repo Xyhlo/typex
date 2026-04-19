@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="theme-color" content="#0f0e12"/>
+<title>TypeX — A Markdown editor that puts typography first.</title>
+<meta name="description" content="A WYSIWYG Markdown editor with two hand-tuned themes, 40+ format import/export via bundled Pandoc, and syntax-highlighted code blocks. Tauri + Milkdown. 44 MB installer. MIT.">
+<meta property="og:title" content="TypeX — A Markdown editor that puts typography first."/>
+<meta property="og:description" content="Two themes, 40+ formats, syntax-highlighted code. Tech-first Markdown editor built on Tauri + Milkdown."/>
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <!-- ───────────── Top bar ───────────── -->
+  <header class="tx-topbar">
+    <a href="/" class="brand">
+      <span class="brand__mark" aria-hidden="true"></span>
+      <span class="brand__word">TypeX</span>
+    </a>
+    <nav class="tx-topbar__nav" aria-label="Primary">
+      <a class="tx-topbar__link" href="#architecture">Architecture</a>
+      <a class="tx-topbar__link" href="#tokens">Design tokens</a>
+      <a class="tx-topbar__link" href="#performance">Performance</a>
+      <a class="tx-topbar__link" href="#faq">FAQ</a>
+      <a class="tx-topbar__link" href="https://github.com/Xyhlo/typex" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <div style="display:inline-flex; align-items:center; gap: var(--tx-sp-2);">
+      <button class="tx-btn tx-btn--subtle tx-btn--icon tx-btn--sm" id="themeBtn" aria-label="Toggle theme" title="Toggle theme">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+      <a class="tx-btn tx-btn--primary" href="#download">Download</a>
+    </div>
+  </header>
+
+  <!-- ───────────── Hero ───────────── -->
+  <section class="hero">
+    <div class="hero__glow" aria-hidden="true"></div>
+    <div class="hero__inner">
+      <div class="hero__eyebrow">v0.1.0 beta · windows · mit</div>
+      <h1 class="hero__title">TypeX</h1>
+      <p class="hero__tag">A Markdown editor that puts typography first.</p>
+      <p class="hero__sub">Two hand-tuned themes. Forty-plus formats. Syntax-highlighted code. No compromises on the feel of typing.</p>
+      <div class="hero__ctas">
+        <a class="tx-btn tx-btn--primary tx-btn--lg" href="#download">Download MSI</a>
+        <a class="tx-btn tx-btn--ghost tx-btn--lg" href="https://github.com/Xyhlo/typex" target="_blank" rel="noopener">Read the source</a>
+      </div>
+      <div class="hero__meta">
+        <span>44 MB installer</span><span class="dot">·</span>
+        <span>Pandoc 3.9 bundled</span><span class="dot">·</span>
+        <span>~200 ms cold launch</span><span class="dot">·</span>
+        <span>No telemetry</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── Metrics ───────────── -->
+  <section id="performance" class="reveal">
+    <div class="section-head">
+      <span class="kicker">By the numbers</span>
+      <h2 class="section-title">Small installer. Big envelope.</h2>
+      <p class="section-sub">The Rust backend is small; the Pandoc sidecar does the heavy lifting only when you ask for it.</p>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="metric__value">44 MB</div><div class="metric__label">Installer</div></div>
+      <div class="metric"><div class="metric__value">~200 ms</div><div class="metric__label">Cold launch</div></div>
+      <div class="metric"><div class="metric__value">40+</div><div class="metric__label">Formats</div></div>
+      <div class="metric"><div class="metric__value">17</div><div class="metric__label">File associations</div></div>
+      <div class="metric"><div class="metric__value">2</div><div class="metric__label">Themes</div></div>
+      <div class="metric"><div class="metric__value">0</div><div class="metric__label">Trackers</div></div>
+    </div>
+  </section>
+
+  <!-- ───────────── Architecture ───────────── -->
+  <section id="architecture" class="reveal">
+    <div class="section-head">
+      <span class="kicker">Architecture</span>
+      <h2 class="section-title">A small, deliberate stack.</h2>
+      <p class="section-sub">Tauri for the shell, Milkdown on ProseMirror for the editor, Pandoc as a sidecar for format conversion, Lowlight for syntax highlighting via decorations (never DOM mutation).</p>
+    </div>
+
+    <div class="arch">
+      <div class="arch-grid">
+        <div class="arch-node">
+          <p class="arch-node__title">Shell</p>
+          <p class="arch-node__name">Tauri 2 · Rust</p>
+          <p class="arch-node__body">Native webview, custom frameless window, single-instance routing, file associations on install.</p>
+        </div>
+        <div class="arch-node">
+          <p class="arch-node__title">Editor core</p>
+          <p class="arch-node__name">Milkdown · ProseMirror</p>
+          <p class="arch-node__body">Live WYSIWYG Markdown. Custom plugins for markdown-aware paste and view-hooks (typewriter + focus).</p>
+        </div>
+        <div class="arch-node">
+          <p class="arch-node__title">Format converter</p>
+          <p class="arch-node__name">Pandoc · sidecar binary</p>
+          <p class="arch-node__body">Bundled ~220 MB on disk, invoked as a separate process. GPL stays at the Pandoc boundary.</p>
+        </div>
+        <div class="arch-node">
+          <p class="arch-node__title">Syntax highlighting</p>
+          <p class="arch-node__name">Lowlight · Decorations</p>
+          <p class="arch-node__body">Tokenize via hljs AST, paint ProseMirror decorations. No DOM mutation — cursor and selection stay honest during edits.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── Code showcase ───────────── -->
+  <section class="reveal">
+    <div class="section-head">
+      <span class="kicker">Code, with taste</span>
+      <h2 class="section-title">Every language gets its own palette.</h2>
+      <p class="section-sub">Paste code; TypeX detects the language, wraps it in a fenced block, and colours it using the theme's syntax tokens.</p>
+    </div>
+    <div class="code"><span class="hl-c">// Type-state machine, colored via --tx-hl-* tokens.</span>
+<span class="hl-k">type</span> <span class="hl-t">Mood</span> = <span class="hl-s">"blank"</span> | <span class="hl-s">"flowing"</span> | <span class="hl-s">"stuck"</span> | <span class="hl-s">"done"</span>;
+
+<span class="hl-k">const</span> <span class="hl-f">advance</span> = (m: <span class="hl-t">Mood</span>): <span class="hl-t">Mood</span> =&gt; {
+  <span class="hl-k">switch</span> (m) {
+    <span class="hl-k">case</span> <span class="hl-s">"blank"</span>:   <span class="hl-k">return</span> <span class="hl-s">"flowing"</span>;
+    <span class="hl-k">case</span> <span class="hl-s">"flowing"</span>: <span class="hl-k">return</span> <span class="hl-n">Math</span>.random() &lt; <span class="hl-n">0.2</span> ? <span class="hl-s">"stuck"</span> : <span class="hl-s">"done"</span>;
+    <span class="hl-k">case</span> <span class="hl-s">"stuck"</span>:   <span class="hl-k">return</span> <span class="hl-s">"flowing"</span>;
+    <span class="hl-k">case</span> <span class="hl-s">"done"</span>:    <span class="hl-k">return</span> <span class="hl-s">"blank"</span>;
+  }
+};</div>
+  </section>
+
+  <!-- ───────────── Features (bento) ───────────── -->
+  <section class="reveal">
+    <div class="section-head">
+      <span class="kicker">What it does</span>
+      <h2 class="section-title">Six things that matter.</h2>
+      <p class="section-sub">Everything else is scaffolding.</p>
+    </div>
+    <div class="feature-grid">
+      <article class="tx-card tx-card--hover">
+        <p class="tx-card__kicker">Editor</p>
+        <h3 class="tx-card__title">Live WYSIWYG markdown</h3>
+        <p class="tx-card__body">Built on ProseMirror. Syntax transforms into formatting as you type — no separate preview pane, no context switch.</p>
+      </article>
+      <article class="tx-card tx-card--hover">
+        <p class="tx-card__kicker">Themes</p>
+        <h3 class="tx-card__title">Obsidian Ink + Ivory Paper</h3>
+        <p class="tx-card__body">Two hand-tuned themes sharing the same semantic contract. Warm neutrals, confident indigo accent, typography calibrated for long-form reading.</p>
+      </article>
+      <article class="tx-card tx-card--hover">
+        <p class="tx-card__kicker">Formats</p>
+        <h3 class="tx-card__title">40+ formats, one editor</h3>
+        <p class="tx-card__body">Open .docx, .odt, .epub, .rtf, .tex, .rst, .adoc, .org, and more. Save back to any of them. Pandoc bundled.</p>
+      </article>
+      <article class="tx-card tx-card--hover">
+        <p class="tx-card__kicker">Code</p>
+        <h3 class="tx-card__title">Syntax-highlighted blocks</h3>
+        <p class="tx-card__body">Lowlight AST → ProseMirror decorations. Your code is coloured without a single DOM mutation, so cursor and selection stay honest.</p>
+      </article>
+      <article class="tx-card tx-card--hover">
+        <p class="tx-card__kicker">Chrome</p>
+        <h3 class="tx-card__title">A real menu bar</h3>
+        <p class="tx-card__body">File / Edit / View / Insert / Format / Tools / Help with Alt-accelerators, submenus, checkmarks, shortcut hints — not a dressed-up popover.</p>
+      </article>
+      <article class="tx-card tx-card--hover">
+        <p class="tx-card__kicker">Keyboard</p>
+        <h3 class="tx-card__title">Command palette</h3>
+        <p class="tx-card__body">Ctrl+K opens every action in the app. Fuzzy-scored with structural matching. Every shortcut is in the menu; every menu is in the palette.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ───────────── Design tokens ───────────── -->
+  <section id="tokens" class="reveal">
+    <div class="section-head">
+      <span class="kicker">Design tokens</span>
+      <h2 class="section-title">Two themes, one semantic contract.</h2>
+      <p class="section-sub">Every token — surface, fg, accent, hl — exists in both Obsidian Ink and Ivory Paper. Flip the theme toggle top-right and watch everything rebind.</p>
+    </div>
+
+    <!-- Side-by-side theme preview -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--tx-sp-4);">
+      <article class="tx-card" style="background: linear-gradient(135deg, #0f0e12, #1d1c24); color: #ebe7dd; border-color: rgba(255,255,255,0.08);">
+        <p class="tx-card__kicker" style="color: #6f6a76">Obsidian Ink</p>
+        <div style="display: inline-flex; gap: 6px; margin-bottom: var(--tx-sp-3);">
+          <span style="width: 22px; height: 22px; border-radius: 6px; background:#0f0e12; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08)"></span>
+          <span style="width: 22px; height: 22px; border-radius: 6px; background:#17161c; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08)"></span>
+          <span style="width: 22px; height: 22px; border-radius: 6px; background:#8b7cff;"></span>
+          <span style="width: 22px; height: 22px; border-radius: 6px; background:#ebe7dd;"></span>
+        </div>
+        <h3 style="font-size: 1.4rem; font-weight: 600; letter-spacing: -0.018em; color:#f6f3ea; margin: 0 0 var(--tx-sp-2);">Deep, warm charcoal.</h3>
+        <p style="color: #a6a1a9; font-size: 0.95rem; line-height: 1.6; margin: 0;">Off-white body text reads easier than pure white on tired eyes. Indigo for the accent is the same hue you see in Ivory Paper — just brighter.</p>
+      </article>
+      <article class="tx-card" style="background: linear-gradient(135deg, #fbfaf6, #eeebe4); color: #1c1b22; border-color: rgba(28,26,32,0.12);">
+        <p class="tx-card__kicker" style="color: #8a8891">Ivory Paper</p>
+        <div style="display: inline-flex; gap: 6px; margin-bottom: var(--tx-sp-3);">
+          <span style="width: 22px; height: 22px; border-radius: 6px; background:#eeebe4; box-shadow: inset 0 0 0 1px rgba(28,26,32,0.1)"></span>
+          <span style="width: 22px; height: 22px; border-radius: 6px; background:#fbfaf6; box-shadow: inset 0 0 0 1px rgba(28,26,32,0.1)"></span>
+          <span style="width: 22px; height: 22px; border-radius: 6px; background:#5b4de0;"></span>
+          <span style="width: 22px; height: 22px; border-radius: 6px; background:#1c1b22;"></span>
+        </div>
+        <h3 style="font-size: 1.4rem; font-weight: 600; letter-spacing: -0.018em; color:#0e0d13; margin: 0 0 var(--tx-sp-2);">Cream, not screen-white.</h3>
+        <p style="color: #5a5863; font-size: 0.95rem; line-height: 1.6; margin: 0;">A deeper indigo for legibility. Warm near-black text that reads like a freshly printed page.</p>
+      </article>
+    </div>
+
+    <div style="margin-top: var(--tx-sp-7);">
+      <p style="font-family: var(--tx-font-mono); font-size: 12px; color: var(--tx-fg-subtle); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 var(--tx-sp-3);">Consume in your own CSS</p>
+      <div class="code"><span class="hl-c">/* Every token is a CSS custom property. Flip --data-theme and the */
+/* whole tree re-binds without a repaint. */</span>
+<span class="hl-g">.call-to-action</span> {
+  background:    <span class="hl-f">var</span>(--tx-accent);
+  color:         <span class="hl-f">var</span>(--tx-fg-on-accent);
+  padding:       <span class="hl-f">var</span>(--tx-sp-3) <span class="hl-f">var</span>(--tx-sp-5);
+  border-radius: <span class="hl-f">var</span>(--tx-radius-md);
+  box-shadow:    <span class="hl-f">var</span>(--tx-shadow-sm);
+  transition:    background <span class="hl-f">var</span>(--tx-motion-press);
+}</div>
+    </div>
+  </section>
+
+  <!-- ───────────── Download ───────────── -->
+  <section id="download" class="reveal">
+    <div class="section-head">
+      <span class="kicker">Install</span>
+      <h2 class="section-title">Ship it to your disk.</h2>
+      <p class="section-sub">Windows 10 and 11, x64. The installer bundles everything the app needs — including Pandoc for the 40-plus-format support.</p>
+    </div>
+    <div class="download-box">
+      <div class="download-box__meta">
+        <div class="title">TypeX 0.1.0 — Windows (x64)</div>
+        <div class="sub">MSI installer · 44 MB download · ~225 MB on disk</div>
+      </div>
+      <a class="tx-btn tx-btn--primary tx-btn--lg" href="https://github.com/Xyhlo/typex/releases/latest/download/TypeX_0.1.0_x64_en-US.msi">Download MSI</a>
+    </div>
+    <ul style="list-style: none; padding: 0; max-width: 620px; margin: var(--tx-sp-5) auto 0; color: var(--tx-fg-muted); font-size: 0.94rem; background: var(--tx-bg-raised); border: 1px solid var(--tx-border); border-radius: var(--tx-radius-md); overflow: hidden;">
+      <li style="padding: 12px 20px; border-bottom: 1px solid var(--tx-border-subtle);"><span style="color: var(--tx-accent); margin-right: 10px;">→</span> Registers as an "Open with" option for 17 format groups.</li>
+      <li style="padding: 12px 20px; border-bottom: 1px solid var(--tx-border-subtle);"><span style="color: var(--tx-accent); margin-right: 10px;">→</span> Auto-installs WebView2 on first run if it isn't already present.</li>
+      <li style="padding: 12px 20px; border-bottom: 1px solid var(--tx-border-subtle);"><span style="color: var(--tx-accent); margin-right: 10px;">→</span> Single-instance: double-clicking another file routes to the running window.</li>
+      <li style="padding: 12px 20px;"><span style="color: var(--tx-accent); margin-right: 10px;">→</span> macOS and Linux builds coming in a future release.</li>
+    </ul>
+  </section>
+
+  <!-- ───────────── FAQ ───────────── -->
+  <section id="faq" class="reveal">
+    <div class="section-head">
+      <span class="kicker">FAQ</span>
+      <h2 class="section-title">Short answers.</h2>
+    </div>
+    <div class="faq">
+      <details class="faq-item">
+        <summary>Why Tauri instead of Electron?</summary>
+        <p>Tauri uses the platform's own webview (WebView2 on Windows) instead of bundling Chromium. That's why the installer is 44 MB instead of 120+, and cold launch is ~200 ms instead of a second. The Rust backend is small and handles file dialogs, Pandoc invocation, and single-instance routing.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Why bundle Pandoc? It's huge.</summary>
+        <p>Pandoc is the only realistic answer to "handle 40+ document formats." We invoke it as a sidecar binary (separate process), so the GPL applies to Pandoc itself but doesn't propagate to TypeX. The binary compresses from ~220 MB to ~40 MB inside the MSI. Without Pandoc, users would have to install it separately; the bundled version makes the 40-format promise actually hold on first launch.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How does syntax highlighting work if it doesn't mutate the DOM?</summary>
+        <p>Lowlight (the AST-only variant of highlight.js) tokenizes code into a HAST tree. We walk that tree and emit ProseMirror <code>Decoration.inline</code> objects with <code>hljs-*</code> classes at the right positions. ProseMirror paints the decorations over the text without changing it. The cursor, selection, and edit history stay correct during editing.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Is there telemetry?</summary>
+        <p>None. No analytics, no crash reporting, no usage metrics. Recent files, workspace, prefs, and session are stored in localStorage on your machine and never leave it.</p>
+      </details>
+      <details class="faq-item">
+        <summary>macOS / Linux?</summary>
+        <p>Planned. Windows first because the file-association story is the most mature there; macOS needs a native path for Reminders-style features and Linux has its own desktop integration quirks. Priority in the roadmap.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I ship my own themes?</summary>
+        <p>Every visual decision is a CSS custom property prefixed <code>--tx-</code>. Drop a file in <code>&lt;workspace&gt;/.typex/themes/*.css</code> that overrides the tokens and TypeX picks it up on restart. See the design system folder in the repo for the full token list.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ───────────── Footer ───────────── -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span class="brand__word">TypeX</span>
+        <span style="margin-left: 12px; color: var(--tx-fg-subtle);">· MIT · Built by <a href="https://amptis.com" style="color: inherit;">Amptis</a></span>
+      </div>
+      <nav class="footer__links">
+        <a href="https://github.com/Xyhlo/typex">GitHub</a>
+        <a href="https://github.com/Xyhlo/typex/issues">Report a bug</a>
+        <a href="../design-system/">Design system</a>
+        <a href="https://pandoc.org">Pandoc (GPL)</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    // Theme toggle
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      const root = document.documentElement;
+      root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+    });
+
+    // Scroll reveal
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('is-in');
+            io.unobserve(e.target);
+          }
+        }
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+    } else {
+      document.querySelectorAll('.reveal').forEach((el) => el.classList.add('is-in'));
+    }
+  </script>
+</body>
+</html>

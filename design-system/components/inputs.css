@@ -1,0 +1,183 @@
+/* ============================================================
+   TypeX — Components: form inputs
+   Text fields, textareas, checkboxes, toggles, segmented
+   controls, kbd chips. All styled against foundations tokens.
+   ============================================================ */
+
+/* ---------------- Text field + textarea ---------------- */
+.tx-input {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  font-family: var(--tx-font-ui);
+  font-size: var(--tx-fs-md);
+  line-height: 1.4;
+  color: var(--tx-fg);
+  background: var(--tx-bg-inset);
+  border: 1px solid var(--tx-border);
+  border-radius: var(--tx-radius-sm);
+  transition:
+    border-color var(--tx-motion-press),
+    box-shadow var(--tx-motion-press),
+    background var(--tx-motion-press);
+}
+.tx-input::placeholder { color: var(--tx-fg-subtle); }
+.tx-input:focus {
+  outline: 0;
+  border-color: var(--tx-border-focus);
+  box-shadow: 0 0 0 3px var(--tx-accent-ring);
+}
+.tx-input:disabled {
+  color: var(--tx-fg-faint);
+  cursor: not-allowed;
+}
+textarea.tx-input { min-height: 6rem; resize: vertical; }
+
+.tx-input--lg { padding: 12px 14px; font-size: var(--tx-fs-lg); }
+
+/* ---------------- Label + help text ---------------- */
+.tx-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tx-sp-2);
+}
+.tx-field__label {
+  font-size: var(--tx-fs-sm);
+  color: var(--tx-fg-muted);
+}
+.tx-field__help {
+  font-size: var(--tx-fs-xs);
+  color: var(--tx-fg-subtle);
+  line-height: var(--tx-lh-normal);
+}
+
+/* ---------------- Checkbox ---------------- */
+.tx-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--tx-border-strong);
+  border-radius: var(--tx-radius-xs);
+  background: var(--tx-bg-inset);
+  cursor: pointer;
+  position: relative;
+  transition:
+    border-color var(--tx-motion-press),
+    background var(--tx-motion-press);
+}
+.tx-checkbox:hover { border-color: var(--tx-accent); }
+.tx-checkbox:checked {
+  background: var(--tx-accent);
+  border-color: var(--tx-accent);
+}
+.tx-checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--tx-fg-on-accent);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* ---------------- Toggle (iOS-style pill) ---------------- */
+.tx-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--tx-bg-inset);
+  border: 1px solid var(--tx-border-strong);
+  border-radius: var(--tx-radius-pill);
+  cursor: pointer;
+  transition:
+    background var(--tx-motion-press),
+    border-color var(--tx-motion-press);
+}
+.tx-toggle::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 16px;
+  height: 16px;
+  background: var(--tx-fg-muted);
+  border-radius: 50%;
+  transition:
+    transform var(--tx-motion-press),
+    background var(--tx-motion-press);
+}
+.tx-toggle:checked {
+  background: var(--tx-accent);
+  border-color: var(--tx-accent-active);
+}
+.tx-toggle:checked::after {
+  transform: translateX(16px);
+  background: var(--tx-fg-on-accent);
+}
+
+/* ---------------- Segmented control ---------------- */
+.tx-segmented {
+  display: inline-flex;
+  padding: 2px;
+  background: var(--tx-bg-inset);
+  border: 1px solid var(--tx-border);
+  border-radius: var(--tx-radius-md);
+  gap: 2px;
+}
+.tx-segmented__btn {
+  padding: 5px 12px;
+  font-size: var(--tx-fs-sm);
+  color: var(--tx-fg-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--tx-radius-sm);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background var(--tx-motion-press), color var(--tx-motion-press);
+}
+.tx-segmented__btn:hover { color: var(--tx-fg); }
+.tx-segmented__btn[aria-selected="true"] {
+  background: var(--tx-bg-elevated);
+  color: var(--tx-fg);
+  box-shadow: var(--tx-shadow-xs);
+}
+
+/* ---------------- Kbd (keyboard key) ---------------- */
+.tx-kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: var(--tx-font-mono);
+  font-size: var(--tx-fs-xs);
+  color: var(--tx-fg);
+  background: var(--tx-bg-inset);
+  border: 1px solid var(--tx-border);
+  border-bottom-width: 2px;
+  border-radius: var(--tx-radius-xs);
+  line-height: 1.2;
+}
+
+/* ---------------- Chip ---------------- */
+.tx-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font-family: var(--tx-font-mono);
+  font-size: var(--tx-fs-xs);
+  color: var(--tx-fg-muted);
+  background: var(--tx-bg-inset);
+  border: 1px solid var(--tx-border);
+  border-radius: var(--tx-radius-pill);
+  transition:
+    color var(--tx-motion-hover),
+    border-color var(--tx-motion-hover);
+}
+.tx-chip:hover {
+  color: var(--tx-accent);
+  border-color: var(--tx-accent-muted);
+}

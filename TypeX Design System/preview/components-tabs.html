@@ -1,0 +1,21 @@
+<!doctype html><html data-theme="dark"><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css"><style>
+body{padding:0;background:#0f0e12}
+.r{color:#6f6a76;font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:14px 22px 10px}
+.tabs{display:flex;align-items:stretch;gap:2px;padding:0 10px;background:#0f0e12;border-top:1px solid rgba(255,255,255,0.04);height:32px;padding-top:4px}
+.tab{display:flex;align-items:center;gap:8px;padding:0 12px;height:28px;min-width:140px;font-size:12px;color:#a6a1a9;border-radius:5px 5px 0 0;cursor:default;position:relative}
+.tab:hover{color:#ebe7dd;background:#24222c}
+.active{color:#ebe7dd;background:#17161c}
+.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:#17161c}
+.dot{width:6px;height:6px;border-radius:50%;background:#8b7cff}
+.x{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;color:#6f6a76;font-size:14px;line-height:1;border-radius:3px;margin-left:auto}
+.plus{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;color:#6f6a76;align-self:center}
+.plus svg{width:14px;height:14px}
+</style></head><body>
+<div class="r">Tabs — active · dirty · hover · new</div>
+<div class="tabs">
+  <div class="tab active"><div class="dot"></div>quiet-things.md<span class="x">×</span></div>
+  <div class="tab">draft-02.md<span class="x">×</span></div>
+  <div class="tab" style="background:#24222c;color:#ebe7dd">README.md<span class="x">×</span></div>
+  <div class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
+</div>
+</body></html>
