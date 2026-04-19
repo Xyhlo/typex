@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>TypeX · File-type icons</title>
+<style>
+  :root {
+    --bg: #0f0e12; --raised: #1d1c24; --fg: #ebe7dd; --muted: #6f6a76;
+    --accent: #8b7cff; --border: rgba(255,255,255,0.08);
+  }
+  html, body { margin: 0; background: var(--bg); color: var(--fg);
+    font-family: Inter, -apple-system, "Segoe UI", sans-serif; }
+  body { min-height: 100vh; padding: 48px 32px; }
+  .page { max-width: 1120px; margin: 0 auto; }
+  h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; color: #f6f3ea; }
+  .sub { color: var(--muted); margin: 0 0 32px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .sizes {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  .sizes img { image-rendering: pixelated; }
+  .label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .label strong { color: var(--fg); display: block; margin-bottom: 2px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>TypeX · File-type icons</h1>
+  <p class="sub">20 icon designs · 26 extensions · rendered at 32, 64, 128 px. Each .ico also carries 16, 48, 256.</p>
+  <div class="grid">
+    <div class="card"><div class="sizes"><img src="ext-md.ico" width="32"><img src="ext-md.ico" width="64"><img src="ext-md.ico" width="128"></div><div class="label"><strong>MD</strong>.md .markdown .mdx</div></div>
+    <div class="card"><div class="sizes"><img src="ext-txt.ico" width="32"><img src="ext-txt.ico" width="64"><img src="ext-txt.ico" width="128"></div><div class="label"><strong>TXT</strong>.txt</div></div>
+    <div class="card"><div class="sizes"><img src="ext-docx.ico" width="32"><img src="ext-docx.ico" width="64"><img src="ext-docx.ico" width="128"></div><div class="label"><strong>DOCX</strong>.docx</div></div>
+    <div class="card"><div class="sizes"><img src="ext-odt.ico" width="32"><img src="ext-odt.ico" width="64"><img src="ext-odt.ico" width="128"></div><div class="label"><strong>ODT</strong>.odt</div></div>
+    <div class="card"><div class="sizes"><img src="ext-rtf.ico" width="32"><img src="ext-rtf.ico" width="64"><img src="ext-rtf.ico" width="128"></div><div class="label"><strong>RTF</strong>.rtf</div></div>
+    <div class="card"><div class="sizes"><img src="ext-html.ico" width="32"><img src="ext-html.ico" width="64"><img src="ext-html.ico" width="128"></div><div class="label"><strong>HTML</strong>.html .htm</div></div>
+    <div class="card"><div class="sizes"><img src="ext-epub.ico" width="32"><img src="ext-epub.ico" width="64"><img src="ext-epub.ico" width="128"></div><div class="label"><strong>EPUB</strong>.epub</div></div>
+    <div class="card"><div class="sizes"><img src="ext-rst.ico" width="32"><img src="ext-rst.ico" width="64"><img src="ext-rst.ico" width="128"></div><div class="label"><strong>RST</strong>.rst</div></div>
+    <div class="card"><div class="sizes"><img src="ext-adoc.ico" width="32"><img src="ext-adoc.ico" width="64"><img src="ext-adoc.ico" width="128"></div><div class="label"><strong>ADOC</strong>.adoc .asciidoc</div></div>
+    <div class="card"><div class="sizes"><img src="ext-tex.ico" width="32"><img src="ext-tex.ico" width="64"><img src="ext-tex.ico" width="128"></div><div class="label"><strong>TEX</strong>.tex .latex</div></div>
+    <div class="card"><div class="sizes"><img src="ext-org.ico" width="32"><img src="ext-org.ico" width="64"><img src="ext-org.ico" width="128"></div><div class="label"><strong>ORG</strong>.org</div></div>
+    <div class="card"><div class="sizes"><img src="ext-textile.ico" width="32"><img src="ext-textile.ico" width="64"><img src="ext-textile.ico" width="128"></div><div class="label"><strong>TXTL</strong>.textile</div></div>
+    <div class="card"><div class="sizes"><img src="ext-wiki.ico" width="32"><img src="ext-wiki.ico" width="64"><img src="ext-wiki.ico" width="128"></div><div class="label"><strong>WIKI</strong>.wiki .mediawiki</div></div>
+    <div class="card"><div class="sizes"><img src="ext-muse.ico" width="32"><img src="ext-muse.ico" width="64"><img src="ext-muse.ico" width="128"></div><div class="label"><strong>MUSE</strong>.muse</div></div>
+    <div class="card"><div class="sizes"><img src="ext-t2t.ico" width="32"><img src="ext-t2t.ico" width="64"><img src="ext-t2t.ico" width="128"></div><div class="label"><strong>T2T</strong>.t2t</div></div>
+    <div class="card"><div class="sizes"><img src="ext-ipynb.ico" width="32"><img src="ext-ipynb.ico" width="64"><img src="ext-ipynb.ico" width="128"></div><div class="label"><strong>IPYNB</strong>.ipynb</div></div>
+    <div class="card"><div class="sizes"><img src="ext-bib.ico" width="32"><img src="ext-bib.ico" width="64"><img src="ext-bib.ico" width="128"></div><div class="label"><strong>BIB</strong>.bib</div></div>
+    <div class="card"><div class="sizes"><img src="ext-fb2.ico" width="32"><img src="ext-fb2.ico" width="64"><img src="ext-fb2.ico" width="128"></div><div class="label"><strong>FB2</strong>.fb2</div></div>
+    <div class="card"><div class="sizes"><img src="ext-opml.ico" width="32"><img src="ext-opml.ico" width="64"><img src="ext-opml.ico" width="128"></div><div class="label"><strong>OPML</strong>.opml</div></div>
+    <div class="card"><div class="sizes"><img src="ext-man.ico" width="32"><img src="ext-man.ico" width="64"><img src="ext-man.ico" width="128"></div><div class="label"><strong>MAN</strong>.man</div></div>
+  </div>
+</div>
+</body>
+</html>

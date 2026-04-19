@@ -1448,6 +1448,13 @@ const bootstrap = async (): Promise<void> => {
   const launchedWith = await launchPaths();
 
   if (launchedWith.length > 0 && isTauri()) {
+    // Launched from Explorer / "Open with" / CLI — the user asked to see
+    // one specific file, not the workspace. Collapse the sidebar so the
+    // editor gets the full width. User can always hit Ctrl+\ to bring it
+    // back; this is a session-only default that doesn't persist.
+    setState({ sidebarCollapsed: true });
+    appEl.dataset.sidebar = "collapsed";
+
     const welcomeTab = initialTab;
     for (const p of launchedWith) {
       await openPath(p);

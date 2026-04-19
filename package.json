@@ -23,7 +23,8 @@
     "tauri:build": "tauri build",
     "fetch-pandoc": "node scripts/fetch-pandoc.mjs",
     "icons": "node scripts/generate-icons.mjs",
-    "installer-assets": "node scripts/generate-installer-assets.mjs"
+    "installer-assets": "node scripts/generate-installer-assets.mjs",
+    "file-icons": "node scripts/generate-file-icons.mjs"
   },
   "dependencies": {
     "@milkdown/core": "^7.5.0",
