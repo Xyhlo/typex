@@ -1,559 +1,221 @@
 # TypeX — Roadmap
 
-> Your writing stays as plain files in a git repo. The editor is fast enough that you forget it's there.
+## Thesis
 
-That's the whole thing. Everything below is what falls out of that decision.
+**Obsidian is configured. Typora is abandoned. TypeX is just open-and-write.**
 
-## Current state — v0.4.0 (shipped)
+We're building the Markdown editor for people who want to write — not configure a second brain, not hunt a plugin marketplace, not wait a second for Electron to boot. Native, opinionated, finished.
+
+We're not trying to be a platform. We're trying to be a pen.
+
+### Who we're for
+
+- **Typora refugees.** Typora went paid in 2021, then effectively stopped shipping. There's a live population actively shopping for "Typora, but maintained."
+- **Obsidian dropouts.** People who tried Obsidian, drowned in plugins and config, closed it.
+- **Technical bloggers + academics + doc writers.** Folks who publish what they write and need git + Pandoc + AI without assembling them from extensions.
+
+### Who we're not for
+
+- Developers who want a code editor with markdown support. (Use VS Code.)
+- Knowledge gardeners who want a graph / canvas / PKM second brain. (Use Obsidian.)
+- Anyone who wants a mobile-first writing app. (Use Bear, Craft, or Ulysses.)
+
+***
+
+## Shipped
 
 - **v0.1.x** — beta: WYSIWYG editor, tabs, session restore, themes, Pandoc export, MSI installer, Windows file associations.
-- **v0.3.0** — editor craft + git-native + live streams. Phases 1 and 2 shipped together: tri-mode, outline, tags, backlinks, properties, smart paste, status pill, gutter marks, blame, autocommit/autopush/autopull, clone dialog, 3-way external-change handling, multi-root workspaces.
-- **v0.4.0** — AI for writing, without the chatbot. Phase 4 shipped as one release: seven AI adapters (Ollama, Anthropic / OpenAI / Gemini APIs, Claude Code / Codex / Gemini CLI agents) behind one interface; OS keychain for keys; inline ghost-text autocomplete with custom prompts; in-place Rewrite / Fix / Translate / Continue with accent glow + streaming caret; Summarize to clipboard; right-click menu; per-provider dynamic model lists + custom model IDs. Off by default, zero telemetry.
-- **Phase 3 (cross-device)** — deferred. TypeX stays Windows-first desktop; users sync via their own git remote.
+- **v0.3.0** — editor craft + git-native: tri-mode (WYSIWYG / raw / split), outline, tags, wikilinks, backlinks, properties, smart paste, status pill, gutter marks, blame, autocommit / autopush / autopull, multi-root workspaces, live-stream external writes, 3-way external-change handling, clone dialog.
+- **v0.4.0** — AI for writing, without the chatbot: seven adapters (Ollama + Anthropic / OpenAI / Gemini APIs + Claude Code / Codex / Gemini CLI agents), OS-keychain secret storage, inline ghost-text autocomplete with custom prompts, in-place Rewrite / Fix / Translate / Continue with accent glow + streaming caret, Summarize to clipboard, right-click menu, per-provider dynamic model lists + user-added model IDs. Off by default, zero telemetry.
 
 ***
 
-## Table of contents
+## v0.5 — "Open and write" · paid tier launch
 
-1. [Positioning](#positioning)
-2. [Feature pillars](#feature-pillars)
-3. [Cross-device + sync architecture](#cross-device--sync-architecture)
-4. [GitHub as a first-class surface](#github-as-a-first-class-surface)
-5. [A day with TypeX — user flow](#a-day-with-typex--user-flow)
-6. [Competitive: TypeX vs Obsidian](#competitive-typex-vs-obsidian)
-7. [Phased delivery plan](#phased-delivery-plan)
-8. [Cross-cutting work](#cross-cutting-work)
-9. [Calendar](#calendar)
-10. [The discipline test](#the-discipline-test)
+**Target: 6–7 weeks.** The release that turns TypeX into a business. Ships the first paid tier, the first server component, and enough polish to stand up honestly against Obsidian for writers.
 
-***
+### The positioning
 
-## Positioning
+- **"Obsidian without the plugins."** Every feature is first-party. No community registry. No "install Obsidian Git," no "install Dataview." If it matters, we build it.
+- **"Typora's successor, actively shipped."** Real WYSIWYG, native speed, same editorial feel, plus git and AI. Not abandoned.
 
-**Obsidian is a second brain. TypeX is a better pen.**
+### What's new for *everyone* (free tier)
 
-Obsidian is a personal-knowledge-management tool that happens to edit markdown. TypeX is a markdown *editor* that happens to organize files. Different users. Different centers of gravity. Trying to out-Obsidian Obsidian is how we die.
+The free version has to be good enough that a Typora refugee or an Obsidian dropout chooses TypeX and tells their friends. These make that true:
 
-The audience we serve:
+- **Zero-ceremony first run.** Open TypeX → blank doc → start writing. No vault-picker dialog, no welcome tour blocking the editor, no plugin-recommendation modal. You write within 5 seconds of launch.
+- **"Folders are vaults."** Drop the word *vault*. You open a folder. You write documents in it. End of ontology.
+- **A onboarding doc, not a tour.** A single pre-loaded `welcome.md` in the demo workspace that's also a live document you can edit. Shows rather than explains.
+- **Export themes** — four built-in print-ready themes (Plain, Academic, Memo, Blog) available via `Ctrl+K → Export as…`. Free users get all four; Pandoc does the work.
+- **Anti-plugin marketing.** The landing + README lead with: "no plugins, no plugin store, no plugin updates, no broken plugins on a new release. Everything ships built-in."
 
-* Developers writing READMEs, design docs, blog posts.
+### What's new for Pro users ($8/mo or $72/yr)
 
-* Academics writing papers with citations and LaTeX exports.
+The value prop in one sentence: **stop setting things up.** A free user wires git / AI / sync / backup / publish themselves. A Pro user signs in once and it all just works.
 
-* Technical writers writing product docs.
+- **Bundled AI** — 2 million MiniMax tokens/month. Ghost text, Rewrite, Fix, Translate, Continue, Summarize — all use your monthly credit bucket. No keys pasted. Status bar shows `PRO · 1.4M left`.
+- **Theme editor** — visual color / accent / font picker. Unlimited custom themes. Synced across your devices automatically.
+- **GitHub OAuth** — one-click sign-in (device flow, no browser redirect loop). Inline `#412` PR references with open / closed / merged status. GitHub Actions status in the status bar.
+- **Cloud backup** — encrypted snapshots on every save, 30-day rolling history. "Restore from 2 days ago" is a palette command.
+- **Cross-device sync** — open TypeX on a second machine, sign in, your vault appears. No manual git remote setup.
+- **Priority email support** and a supporter mark in the About dialog.
 
-* Bloggers writing posts.
+BYOK AI (Ollama, Anthropic, OpenAI, Gemini, Claude Code, Codex, Gemini CLI) stays free forever. Pro users can still plug in their own keys *in addition to* their bundled credits.
 
-* Anyone who left Typora and regretted where they landed.
+### Explicitly deferred to v0.5.1
 
-What they want: WYSIWYG that actually is WYSIWYG, fast native feel, git as a first-class citizen, painless export, free sync. What they don't want: a graph view, a canvas, or a daily-notes workflow. We build the first list and decline the second.
+Not in the v0.5 launch — they'd stretch the timeline to 10+ weeks and delay revenue. Shipped as a fast-follow ~2 weeks after v0.5:
 
-***
+- **Publish** (one-command deploy a vault to `username.typex.site`, custom domain, RSS feed, per-post analytics) — this is the viral hook; it deserves its own launch moment.
 
-## Feature pillars
+### Scope breakdown
 
-### The 5 editor moves
+**Weeks 1–2 — server foundation**
+- New Rust or Node service on the existing VPS (api.amptis.com or similar subdomain)
+- SQLite tables: `users`, `sessions`, `subscriptions`, `github_tokens`
+- Magic-link sign-in via Resend (no passwords, ever)
+- Stripe subscription webhook
+- `GET /me` — returns tier, credits remaining, feature flags
+- `POST /ai/complete` — proxies to MiniMax, deducts credits, streams back
+- `POST /backup/push` — writes an encrypted tarball to Cloudflare R2
+- `POST /github/device` — GitHub device-flow auth
+- R2 bucket for backup blobs
 
-1. **Tri-mode that earns its keep.** WYSIWYG ↔ raw source (CodeMirror 6 over the same buffer) ↔ side-by-side with cursor sync. The gap isn't *having* the modes — it's making a flip feel instant and keeping the caret in the same paragraph across modes. Most editors fumble this.
-2. **Git as context, not a client.** Gutter marks vs HEAD, hover-blame with GitHub avatars, "stage this hunk" from the editor. Skip the full branch/merge UI — that's what `git` is for. Ship a "Changes" panel per folder, not a whole VCS.
-3. **Watch + reload with diff review.** External change → toast with a 3-way diff, not a silent overwrite. Typora and Obsidian both get this wrong.
-4. **Plugin surface before a plugin store.** Capability-scoped manifest (`on-load`, `on-save`, `on-render`, `on-command`), sandboxed JS, filesystem-scoped to the current vault. markdownlint and Prettier ship as first-party plugins so the API is proven before third parties touch it.
-5. **AI as a provider, not a feature.** One interface (`rewrite / continue / critique / summarize`), multiple backends (Ollama local, Anthropic, OpenAI). Users pick. Keeps us out of the "AI editor" trap where the AI *is* the product.
+**Weeks 2–3 — client plumbing**
+- Sign-in UI (email input → "check your inbox" state)
+- Session token in OS keychain (reuses the `keyring` crate)
+- Entitlements cache (30-day offline grace)
+- Paywall modal for gated features ("This is a Pro feature — $8/mo. [Upgrade]")
+- Pricing page on the landing (amptis.com/typex/pricing)
+- "Pro" badge + credit counter in status bar
 
-### Borrowed from Obsidian, without copying the app
+**Weeks 3–4 — the four paid features**
+- `typex-cloud` provider in `src/ai/providers/` (hits our server, runs MiniMax)
+- Theme editor UI + gate the existing `.typex/themes/*.css` loader
+- GitHub OAuth flow + inline `#pr` references + Actions status widget
+- Cloud backup auto-push on save, "Restore" palette command
 
-* `[[Backlinks]]` — useful even in a doc vault. Add them.
+**Weeks 5–6 — polish + onboarding**
+- Zero-ceremony first run (kill the vault dialog, pre-load welcome.md)
+- Terminology pass (remove "vault", land "folder" everywhere)
+- Anti-plugin marketing copy on the landing + README
+- Export themes (four print-ready CSS variants, wired to Pandoc)
+- Migration notice for v0.4 users: "Upgrade to v0.5 → existing settings preserved, Pro optional"
 
-* Frontmatter / properties panel — useful for any markdown workflow.
+**Week 7 — launch**
+- Hacker News post: "Typora's successor, actively shipped, with AI"
+- r/MarkdownEditors, r/writing, r/productivity posts
+- Blog post comparison: "I switched from Obsidian to TypeX after a year with 40 plugins"
+- Email existing v0.4 users (if we have any emails from issues / PRs) with a free-lifetime Pro offer as a thank-you
+- Product Hunt launch prep (queue for week 8)
 
-* Tags with a tag index — cheap to ship.
+### Risks
 
-* Outline / table of contents side panel — every writer wants this.
+- **MiniMax quality for prose.** We've speced MiniMax because it's cheap. If it produces worse ghost text than Claude/GPT, Pro users churn. Mitigation: evaluate output quality in week 3 before shipping; have a fallback path to OpenRouter-cheap models if MiniMax doesn't clear the bar.
+- **MiniMax data policy.** Some users (US government adjacent, EU privacy-strict, legal / medical writers) won't send prose to a Chinese endpoint at any price. Mitigation: BYOK stays available in all tiers, advertised as the privacy-first option.
+- **Stripe + European VAT.** If we take EU payments, Stripe Tax handles it, but we need to confirm our business entity is set up for it. Not optional.
+- **Magic links → inbox issues.** Gmail / Outlook occasionally bin transactional email. Mitigation: SPF / DKIM / DMARC set up on the sending domain before launch.
+- **Abuse vectors.** A free-tier signup shouldn't be able to spam MiniMax; credits only activate post-Stripe checkout. Rate-limit the sign-in endpoint.
 
-### Declined, on purpose
+### Done when
 
-* Graph view.
-
-* Canvas.
-
-* Daily notes / periodic notes workflow.
-
-If a user asks, the answer is: *Obsidian is better at that and it's free for personal use.* Discipline is the feature.
-
-***
-
-## Cross-device + sync architecture
-
-**Local-first files + Git as the sync fabric + GitHub OAuth as the account.** One decision that answers every cross-device requirement at once.
-
-* Vault = a folder. A folder can be plain, or it can be a git repo.
-
-* If it's a git repo, TypeX handles push/pull/merge in the background with visible status.
-
-* Sign-in = "Sign in with GitHub." That's the account. No custom auth surface, no password resets, no billing plumbing, no PII we have to guard.
-
-* Anonymous users keep 100% local, no degradation — just no sync.
-
-* Cross-device = clone the same repo on the next device. Windows, macOS, web, iOS all speak git.
-
-This is the only approach where we don't end up running a CRDT relay, an object store, an auth service, *and* a billing layer before we ship v2.
-
-### Architecture moves
-
-1. **Git-aware sync, not "upload my folder."** Autocommit with configurable cadence (on save / on idle / manual), autopush if online, autopull on focus. Merge conflicts get a real 3-way diff UI — the one thing Obsidian Sync and iCloud both fumble. Doubles as the git/diff feature from the pillars.
-2. **Provider abstraction from day one.** `GitProvider` interface; GitHub first, GitLab / Gitea / self-hosted second. Don't hardcode `api.github.com` anywhere outside that layer or we'll regret it in 6 months.
-3. **Web build = same bundle, no Tauri.** Editor runs in the browser. Vault = a GitHub repo via isomorphic-git in a Worker, or a local folder via File System Access API where supported. This is the *realistic* iOS story for v1 — Safari users get a working editor without a native app shipping.
-4. **Native iOS as a year-2 bet, not a blocker.** SwiftUI shell + WKWebView hosting the same editor bundle + a Swift bridge for filesystem/git (libgit2). Not a rewrite; a port of the shell.
-5. **Real-time co-editing isn't on this roadmap.** Git can't do it. If it becomes a top-ten user request, layer Yjs on top for active-session-only, flush to git on commit. Don't front-load the CRDT.
-
-### Honest tradeoffs
-
-* **Git handles text beautifully, binaries terribly.** Image-heavy vaults need LFS, and LFS on iOS Safari is grim. Ship "sync works best for text-heavy vaults" as an honest caveat in the UI, not a footnote.
-
-* **GitHub lock-in risk.** Routing sync + auth + projects through one provider is leverage they can revoke. The provider abstraction is non-negotiable for that reason.
-
-* **"Anonymous can't sync" is a feature if we signpost it well.** A "Sign in to sync across devices" affordance has to live somewhere the unsigned user sees it without nagging.
-
-* **Conflict UI is the make-or-break.** If merge conflicts dump the user into raw `<<<<<<<` markers the way Obsidian does, we've lost. Budget real engineering weeks for the 3-way diff, not a weekend.
-
-* **Web build means CSP + CORS headaches** around GitHub's API, isomorphic-git's bundle size (\~500KB gz), and the File System Access API's patchy support. Budget that, too.
+- A new user installs TypeX, opens it, starts writing within 5 seconds. No modal blocks them.
+- A Pro user signs in once. From that moment: ghost text works, their themes sync, their vault backs up, their GitHub references light up. They never touch a key or a `git remote` command.
+- At least one Typora refugee publicly says "I switched" on r/MarkdownEditors or Twitter within 2 weeks of launch.
 
 ***
 
-## GitHub as a first-class surface
+## v1.0 — polish + Publish
 
-Not a sync afterthought. A surface.
+**Target: +2–3 weeks after v0.5.** The release that ends active feature work.
 
-* **Repo picker replaces "Open folder" when signed in.**
+- **Publish** — the deferred v0.5.1 feature. One-command deploy to `username.typex.site`, custom domain, per-post analytics, RSS feed, password-protected drafts. Included in a Pro Plus tier ($16/mo) or as a standalone $4/mo add-on.
+- **Onboarding tour** (opt-in — the zero-ceremony first-run stays default, but a "Show me around" option in the welcome doc)
+- **Accessibility audit** — full keyboard-only flow, screen-reader pass, WCAG AA contrast check
+- **Pricing page refinement** — based on 30 days of real conversion data
+- **Windows 10 EOL reminder** — Microsoft drops W10 support in late 2025; update docs to recommend W11
 
-* **Tree view of every markdown file in the repo** — default to README.md on open.
-
-* **Inline** **`#412`** **issue references** with open / closed / merged status and hover preview.
-
-* **"Create PR from branch"** + **"Publish as Gist"** from the command palette.
-
-* **`git blame`** **side-rail** with GitHub avatars on each line.
-
-* **GitHub Actions status** for docs-build workflows in the status bar.
-
-* **Recent projects = recent repos.**
+After v1.0: maintenance only. Bug fixes, vendor updates, security patches, community-requested small features. No scheduled v2.0 until the market tells us to build it.
 
 ***
 
-## A day with TypeX — user flow
+## Pricing
 
-**Morning, at the desktop.** You double-click `design-doc.md` in Explorer. TypeX's branded icon told you which file it was before you clicked. The app opens with the sidebar collapsed — you asked to see one file, you get the file, full width. The titlebar shows a quiet "synced 2m ago" pill.
+| Tier | Price | Who it's for |
+|---|---|---|
+| **Free** | $0 | Local hermit. BYOK AI, manual git, two stock themes. TypeX v0.4 today, plus the zero-ceremony polish. |
+| **Pro** | **$8/mo** · $72/yr | Connected writer. Everything in Free + bundled AI + themes + GitHub + backup + sync + support. |
+| **Pro Plus** *(post-v1.0)* | **$16/mo** · $144/yr | Publisher. Everything in Pro + Publish hosting + custom domain + analytics. |
+| **Lifetime** *(one-time, ~100 copies only)* | **$249** | Early-supporter loyalty tier. Pro forever. Credits still metered. Sold the week of v0.5 launch, then retired. |
 
-**You type.** WYSIWYG by default. A code fence appears as you type ` ```python ` — it highlights inline, colors match the theme. You hit `Ctrl+/` to drop into raw source because you want to tweak a YAML block; same file, same cursor paragraph, instant flip. `Ctrl+\` gives you the split view with synced scroll. You flip back.
-
-**The gutter has opinions.** Three lines have a green bar (added vs HEAD), one has a blue bar (modified). You hover the modified line — avatar of the teammate who last touched it, commit message on a tooltip. No separate git tool. No context switch.
-
-**You paste a log snippet from Slack.** It's Python. TypeX recognizes it's code, not prose, wraps it in a fenced block, highlights it. The earlier "# comment becomes heading" bug is dead.
-
-**An AI call, not an AI takeover.** Select an awkward paragraph → palette → "Rewrite clearer." A side-panel shows the suggestion diffed against your text. Accept or discard. The backend is Ollama on your box by default; switch to Claude for a heavier lift. The editor doesn't suddenly become a chatbot.
-
-**Save.** Autocommit 3 seconds after your last keystroke. Autopush if online. The pill now reads "synced."
-
-**Afternoon, coffee shop, iPad.** Safari → `app.typex.so` → sign in with GitHub → pick the same repo. isomorphic-git clones it in a worker. You fix a typo from the couch. Push. Not as fast as the desktop, but the work is real work, not a separate "mobile notes" app you'll have to reconcile later.
-
-**Back at the desk, a merge.** Your teammate pushed while you were out. Focus returns to TypeX → toast slides in: *"Upstream changes on* *`design-doc.md`. Review?"* A 3-way diff, rendered as two prose columns plus a merged column. You pick hunks. You commit. No `<<<<<<<` markers ever touch your face.
-
-**A reference to** **`#412`** **in a paragraph** has quietly become a link with a "merged" badge. Hover it — PR title, author, date. The GitHub integration isn't a separate panel, it's just *present*.
-
-**Publish time.** Command palette: "Export → PDF → Academic theme." Pandoc ships in the MSI, so it just works. Or: "Create PR from branch," and you skip the terminal entirely.
-
-**Evening, another machine.** Your spouse's laptop, you install TypeX, sign in with GitHub, pick the repo. Everything's there. No "import my vault" step, no "transfer save files," no subscription page.
+**Free v0.4 users get a free-lifetime Pro license** as a thank-you when v0.5 ships. Generates goodwill, turns early adopters into advocates, blunts the "you went paid on us" backlash.
 
 ***
 
-## Competitive: TypeX vs Obsidian
+## Competitive stance — pick your fight
 
-### Where Obsidian beats us today (honest)
+### vs Obsidian
 
-* Backlinks, graph view, tags as a first-class network. Their killer feature.
+**"For writing what you'll publish, not archiving what you've read."**
 
-* 1,000+ community plugins. Four years of network effects. Uncatchable in feature count.
+- Obsidian is a PKM / second-brain platform. Strength: infinite configurability via plugins. Weakness: configuring *is* the work.
+- TypeX refuses plugins and refuses PKM. Graph view, canvas, daily notes, Dataview — none of them, forever. That's not a limitation; it's the product.
+- Where we win: setup time (5 seconds vs. 40 minutes), WYSIWYG quality (real vs. Live Preview asterisks), git (first-party vs. flaky plugin), publish ($4/mo vs. $96/yr), install size (45 MB vs. 350 MB).
+- Where Obsidian wins: community, ecosystem, mobile apps, graph-view marketing screenshot. We don't chase any of these.
 
-* Native iOS and Android apps shipping today.
+### vs Typora
 
-* Canvas — visual whiteboard of notes. Cult feature.
+**"The spiritual successor, actively shipped."**
 
-* Daily notes / periodic notes workflow baked in.
+- Typora nailed the vibe in 2019, went paid in 2021, effectively stopped developing in 2022. Real audience is looking for the next thing.
+- Where we match: WYSIWYG quality, focus mode, export breadth, editorial aesthetic.
+- Where we beat them: active development, git, AI, publish, cross-device, Pro tier that pays for ongoing work.
+- The message for r/typora and r/MarkdownEditors: *"Typora, maintained."*
 
-* Community moat — YouTube tutorials, templates, influencers, $10 courses.
+### vs VS Code
 
-* Four years of polish — bug fixes, edge cases, muscle memory.
+**"For writing, not for code."**
 
-If someone is building a second brain, they should use Obsidian. We aren't going to win that user in year one, and we shouldn't waste a roadmap chasing them.
+Don't compete. Honestly redirect developers who write occasionally. TypeX is for people whose primary output is prose.
 
-### Where TypeX beats Obsidian (specific)
+### vs iA Writer / Ulysses / Bear
 
-* **Actual WYSIWYG.** Obsidian's "Live Preview" still shows raw `**` around bold and raw `|` in tables when the cursor is on that line. It's a compromise. Milkdown isn't.
-
-* **Native speed.** Tauri shell + a tight bundle vs. Electron. Cold start and huge-file responsiveness are measurably better.
-
-* **Git is core, not a plugin.** The "Obsidian Git" community plugin is famously flaky. Ours is first-party, syncs automatically, and has a real 3-way merge UI.
-
-* **Free sync.** Obsidian Sync is $96/year. GitHub is free.
-
-* **Format breadth.** Pandoc is in the installer — docx, epub, LaTeX, 40+ formats. Obsidian is markdown-only natively; anything else is a plugin you configure.
-
-* **AI as a first-class surface.** Not a plugin. Not Claude-only or OpenAI-only. One interface, pick your backend.
-
-* **Open source, MIT, no freemium.** Obsidian is closed-source with paid Sync and paid Publish.
-
-* **Design.** Out-of-box, we are prettier and less dense.
-
-### How we win
-
-1. **Claim the Typora audience first, not the Obsidian audience.** Typora refugees want a polished WYSIWYG editor — a thing Obsidian *isn't*.
-2. **Position as "the editor for people who write things that get published."**
-3. **Steal Obsidian's best ideas without copying the whole app** (backlinks, properties, tags, outline). Skip graph view and canvas.
-4. **Be unambiguously better at what Obsidian is worst at** — WYSIWYG, git, speed, export, default aesthetics, free sync.
-5. **Use open source as a moat** against their closed-source freemium model.
-6. **Accept the mobile gap as a deliberate trade.** TypeX is a desktop editor. If someone needs a native phone app for PKM, Obsidian is better and we stop pretending otherwise.
-7. **Don't engage on PKM.** Don't build a graph view because a reviewer asked for one.
+- **iA Writer** is gorgeous but $29 per platform and no sync unless you bring iCloud. We're $8/mo with sync included; we win on price *and* feature breadth for serious writers.
+- **Ulysses** is $40/yr, Apple-only, subscription-locked. We're Windows-first and cheaper.
+- **Bear** is beautiful but Apple-only. Not overlapping markets.
 
 ***
 
-## Phased delivery plan
+## Never
 
-Four strategic beats, in order, each standing on the previous:
+Explicit non-goals. If a user asks for one of these, the answer is *"another tool is better at that; we won't build it here."*
 
-**Editor craft → Git-native → Cross-device → Extensible.**
-
-Publishing, mobile, and community are polish or scale work on top. Each beat ships as a standalone version that's independently worth using.
-
-### Phase 0 — Beta baseline (v0.1.x, shipped)
-
-WYSIWYG editor, tabs, session restore, two themes, design system, Pandoc export, MSI installer with branded file icons, first-run default-app prompt, progress toasts.
-
-**Position then:** a polished Typora replacement. Good, but not distinct.
-
-### Phase 1 — "Editor craft" (shipped in v0.3.0)
-
-Make the editor itself undeniably better than what Typora or Obsidian ships.
-
-| Ship                                                         | Why it matters                                                            |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| **Tri-mode with cursor sync** (WYSIWYG ↔ raw source ↔ split) | The single feature Obsidian fumbles. Our wedge against them.              |
-| **Outline / TOC side panel**                                 | Every writer wants this. Cheap, high return.                              |
-| **Frontmatter / properties panel**                           | Matches Obsidian's best ergonomic feature.                                |
-| **Tags (`#tag`) with a tag index**                           | Cheap. Closes a common "but does it have…" objection.                     |
-| **`[[Backlinks]]`** **wiki-links**                           | Steals Obsidian's idea without copying the whole app. Vault-scoped index. |
-| **Smarter paste** (extend language detection)                | Quality signal for developer users.                                       |
-
-**The one hard spike:** mapping cursor position between ProseMirror's doc and the raw markdown string. Prototype this first, in isolation. If it doesn't feel instant, ship WYSIWYG + raw as separate modes first and add split later.
-
-**Done when:** a Typora user or a Live Preview Obsidian user opens TypeX and doesn't want to go back.
-
-### Phase 2 — "Git-native" (shipped in v0.3.0)
-
-Git stops being a plugin anywhere in the world. Ours is first-party and invisible.
-
-| Ship                                                                           | Why it matters                                                                  |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| **libgit2 backend** (via `git2-rs`)                                            | Shelling out to `git` won't keep up with live gutter updates.                   |
-| **Gutter marks vs HEAD** (added / modified / removed)                          | VS Code ergonomics for prose writers.                                           |
-| **Blame-on-hover with GitHub avatars**                                         | Context, not a client.                                                          |
-| **Watch + 3-way reload** (external change → diff review, not silent overwrite) | Typora and Obsidian both get this wrong.                                        |
-| **Autocommit / autopush / autopull** with a visible sync pill                  | Foundation for Phase 3.                                                         |
-| **GitHub OAuth (device flow)**                                                 | The account. The only account we ship.                                          |
-| **Repo picker as vault source** (`Open repo…`)                                 | Collapses two features into one UX.                                             |
-| **Provider abstraction at the interface level**                                | Don't hardcode `api.github.com`. Regretting this later is guaranteed otherwise. |
-
-**Risks:** libgit2 bundling across Windows / macOS / Linux; OAuth redirect URL for a desktop app (use device flow, not a local HTTP server).
-
-**Done when:** a user can clone a repo in TypeX, edit, and push — without touching a terminal — and gutter marks feel as native as VS Code.
-
-### Phase 3 — "Cross-device" (deferred)
-
-| Ship                                                              | Why it matters                                                      |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **3-way merge UI** (prose-rendered, hunk-accept)                  | The make-or-break feature. Budget real weeks.                       |
-| **Web build** (same Svelte+Milkdown bundle, no Tauri)             | Stopgap mobile story; on-ramp for curious users without installing. |
-| **isomorphic-git in a Worker** + OPFS storage                     | Vault = a GitHub repo, clonable in the browser.                     |
-| **File System Access API fallback** (Chrome / Edge)               | Non-signed-in web users still get something.                        |
-| **Sync status surface** (pill → detail panel with last-N commits) | Makes the magic visible.                                            |
-| **Auto-update for desktop** (Tauri updater)                       | Required before users depend on us.                                 |
-| **Crash + error telemetry** (opt-in)                              | Required for the same reason.                                       |
-
-**Risks:** bundle size (isomorphic-git + Milkdown is not small), CORS / CSP on GitHub API, OPFS quota surprises on iOS Safari.
-
-**Done when:** one user can bounce between desktop and an iPad browser on the same vault without thinking about it.
-
-### Phase 4 — "AI for writing" (shipped in v0.4.0)
-
-Opt-in AI help in the editor, backed by whatever the user already has on their machine. No plugin API yet — that lands later, if ever. AI is the accent, not the product.
-
-| Ship                                                                                              | Why it matters                                                                |
-| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| **Three backend shapes, one interface**: installed CLIs · Ollama local · direct APIs              | Meets the user where they already are. Zero-config for the common cases.      |
-| **Auto-detection** on PATH + common install dirs for Claude Code, Codex, OpenCode, Pi, paseo      | "Already works with what you have" beats "configure this first."              |
-| **Ollama via HTTP** (`localhost:11434`) with model list from `/api/tags`                          | Local-first default. No cloud, no keys, no round-trip.                        |
-| **Direct APIs** for Anthropic, OpenAI, Gemini — keys stored in OS keychain (never localStorage)  | For users who pay for frontier models directly.                               |
-| **Manual palette commands** — `AI: Rewrite selection`, `Continue from here`, `Summarize`, `Fix grammar`, `Translate` | The demo that convinces people it's useful.                                  |
-| **Inline autocomplete** — ghost text after a pause, `Tab` accepts, `Esc` dismisses                | The feature that makes it feel alive. Off by default.                         |
-| **Streaming everywhere** — adapters yield chunks so the UI types the response in, not waits      | Reuses the Phase-2 streaming caret + flash. Long responses feel instant.      |
-| **Status-bar indicator with pulsing accent** during in-flight requests                            | Acknowledgment on long generations. Cancel with a click.                      |
-| **No telemetry**                                                                                  | Prompts never leave the machine unless the user explicitly chose a cloud API. |
-
-**Waves:**
-
-1. **Backbone.** Provider interface, Ollama adapter, Anthropic adapter, Preferences → AI tab with status dots, `AI: Rewrite selection` end-to-end. Proves the vertical slice.
-2. **CLI adapters.** Detection + invocation for Claude Code, Codex, OpenCode, Pi, paseo. Each CLI is its own investigation — flags, model lists, streaming patterns differ.
-3. **Inline autocomplete.** Ghost-text rendering in Milkdown, debounce, cancellation-on-keystroke, `Tab`-to-accept.
-4. **Remaining commands** (Continue / Summarize / Fix / Translate), remaining backends (OpenAI / Gemini), per-command model overrides.
-
-**Explicitly NOT in this phase:**
-
-- Public plugin API / third-party plugins (deferred indefinitely; re-evaluate after AI ships).
-- Prompt library or template store (defer until usage data).
-- Multimodal / image input.
-
-**Risks:**
-
-- **CLI detection on Windows is fiddly.** Each vendor installs somewhere different (`%LOCALAPPDATA%\Programs\*`, Scoop shims, npm global, etc.). Budget real time for this in Wave 2.
-- **Every CLI has its own streaming shape.** Some write to stdout, some emit SSE, some need a `--json` flag. Each adapter needs its own integration test.
-- **Keychain plumbing.** Tauri 2 needs a Rust-side `keyring` crate binding + two commands. Well-trodden but a dep.
-
-**Done when:** a user installs Ollama, TypeX sees it instantly in Preferences → AI, they pick a local model, and `Ctrl+K → Rewrite selection` streams a better paragraph over the one they highlighted — with a pulsing accent indicator in the status bar during generation. No API key, no sign-in, no configuration step.
-
-### Phase 5 — "Publishing" (v1.0, 6–8 weeks) — the final phase
-
-This is the terminal release. Once it ships, TypeX is feature-complete for its stated scope — a better pen for the screen, on Windows, under MIT. Anything after is maintenance.
-
-| Ship                                                                             | Why it matters                                          |
-| -------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| **Export themes** (Academic, Memo, Engineering, Minimal) for HTML + PDF          | Obsidian Publish is $8/mo; ours is a menu item.         |
-| **"Create PR from branch"** + **"Publish as Gist"** from the command palette     | GitHub as a first-class surface, not a panel.           |
-| **Inline issue/PR references** (`#412` → link with open / closed / merged badge) | The small polish that signals we take GitHub seriously. |
-| **GitHub Actions status** for docs-build workflows in the status bar             | Completes the "git-native" promise.                     |
-| **Static site export** (one command → deployable HTML/CSS bundle)                | Replaces Obsidian Publish for writers who want a site.  |
-| **1.0 polish pass** — onboarding tour, accessibility audit, keyboard-only flow   | The version we put on HN.                               |
-| **Pricing page** — explicit "free, forever, open source" positioning             | The anti-Obsidian stance made legible.                  |
-
-**Prerequisite:** GitHub OAuth device flow for the PR / Gist / Actions work. This was the architectural deposit Phase 3 would have made; we pay it down here, in a much narrower form (auth only, no sync).
-
-**Done when:** a user writes a doc, picks an export theme, exports a clean PDF, opens a PR from the same palette without touching a terminal — and the status bar tells them when the docs-build Action has passed on their PR.
-
-***
-
-## Cross-cutting work
-
-Parallel to every phase:
-
-* **Marketing beats per phase.** Blog post + release video + HN / Reddit / lobste.rs post per version. The Obsidian subreddit is where our users live right now; show up there with actual value (e.g., "git-sync that actually works") not with ads.
-
-* **Changelog discipline.** Release notes in the MSI *and* on the site. Already doing this. Keep it.
-
-* **A reserved "nope, not shipping" list.** Graph view. Canvas. Daily notes workflow. If a user asks, the answer is "Obsidian is better at that and it's free for personal use." Discipline is the feature.
+- Graph view
+- Canvas / whiteboard
+- A plugin marketplace (no plugin API at all — features ship first-party or not at all)
+- Daily notes / periodic notes workflow
+- Dataview-style queries
+- Mobile apps (desktop-first, deliberately; if users want to edit from phone, their git remote + GitHub's web editor is a fine stopgap)
+- A Pro tier that exists to nag free users
+- Telemetry beyond opt-in crash reporting (never, in any tier)
+- Lock-in. Your vault stays plain Markdown on disk. If TypeX vanishes tomorrow, your writing opens in any editor written since 1970.
 
 ***
 
 ## Calendar
 
-* **Q1 2026** — Phase 0/1/2: v0.1.x beta → v0.3.0 (editor craft + git-native). Shipped.
-* **Q2 2026** — Phase 4: v0.4.0 (AI for writing). Shipped.
-* **Q2–Q3 2026** — Phase 5: publishing, GitHub OAuth, export themes, 1.0 polish → **v1.0**.
-* **Post-1.0** — maintenance, bug fixes, user-asked features. No scheduled next big phase.
+- **Q1 2026** — v0.1 → v0.3 (editor craft + git-native). Shipped.
+- **Q2 2026** — v0.4 (AI for writing). Shipped.
+- **Q2–Q3 2026** — v0.5 (paid tier launch, 6–7 weeks). In progress.
+- **Q3 2026** — v1.0 (publish + polish, 2–3 weeks). Ends scheduled feature work.
+- **Post-1.0** — maintenance, security patches, small user-requested features. No scheduled major release.
 
 ***
 
 ## The discipline test
 
-Every feature request, at every phase, gets one question:
+Every feature request, at every stage, gets one question:
 
-> *Does this make the editor feel better for a developer writing a README, an academic writing a paper, or a blogger writing a post?*
+> *Does this make it easier for someone to open a folder and start writing — or harder?*
 
-If no — even if it's a great feature — it's out of scope. That's the knife that keeps us from becoming Obsidian.
-
-***
-
-## Markdown Test
-
-### Headers & Text
-
-# H1 Header
-
-## H2 Header
-
-### H3 Header
-
-This is **bold text** and this is *italic text*. You can also use ~~strikethrough~~ and `inline code`.
-
-### Lists
-
-* Unordered item one
-
-* Unordered item two
-
-  * Nested item
-
-* Unordered item three
-
-1. First ordered item
-2. Second ordered item
-3. Third ordered item
-
-### Code Block
-
-```python
-def greet(name: str) -> str:
-    return f"Hello, {name}!"
-
-print(greet("World"))
-```
-
-### Table
-
-| Feature   | Status     | Priority |
-| --------- | ---------- | -------- |
-| WYSIWYG   | ✅ Done     | High     |
-| Git Sync  | 🚧 WIP     | Medium   |
-| AI Assist | 🔜 Planned | Low      |
-
-### Blockquote
-
-> "The universe is under no obligation to make sense to you." — Neil deGrasse Tyson
-
-### Links & Images
-
-[Visit GitHub](https://github.com)
-
-***
-
-*End of markdown test.*
-
-### Task Lists
-
-* [x] Create project structure
-
-* [x] Setup CI/CD pipeline
-
-* [ ] Write documentation
-
-* [ ] Add unit tests
-
-* [ ] Deploy to production
-
-### Nested Blockquotes
-
-> Level one quote
->
-> > Level two quote
-> >
-> > > Level three quote — going deep!
-
-### Footnotes
-
-Here is a sentence with a footnote reference.[^1] And another one.[^2]
-
-[^1]: This is the first footnote. It can be as long as you want.
-
-[^2]: The second footnote supports **bold** and *italic* too.
-
-### Horizontal Rules
-
-Three different styles:
-
-***
-
-***
-
-***
-
-### Definition List
-
-**TypeScript**
-: A strongly typed superset of JavaScript
-
-**Rust**
-: A systems programming language focused on safety and performance
-
-**Go**
-: A statically typed, compiled language designed at Google
-
-### Math Inline
-
-The mass-energy equivalence is given by $E = mc^2$. The area of a circle is $A = \pi r^2$.
-
-### Emoji & Symbols
-
-* Checkmarks: ✅ ❌ ⚠️
-
-* Arrows: → ← ↑ ↓ ↔ ⇒ ⇔
-
-* Stars: ★ ☆ ✦ ✧
-
-* Misc: 🔥 💡 🚀 🎯 📝
-
-### Keyboard Shortcuts
-
-Press `Ctrl` + `S` to save, `Ctrl` + `Z` to undo, or `Ctrl` + `Shift` + `P` to open the command palette.
-
-### Admonition-Style Blocks
-
-> \[!NOTE]
-> This is a GitHub-style note block.
-
-> \[!WARNING]
-> Be careful with this operation — it cannot be undone.
-
-> \[!TIP]
-> Try using the split view for side-by-side editing.
-
-### YAML Frontmatter
-
-```yaml
----
-title: "Markdown Test Document"
-author: "TypeX"
-date: 2026-04-19
-tags:
-  - test
-  - markdown
-  - highlighting
-draft: false
----
-```
-
-### Diff Block
-
-```diff
-- function oldGreet(name) {
--   return "Hello, " + name;
-- }
-+ function newGreet(name: string): string {
-+   return `Hello, ${name}!`;
-+ }
-```
-
-### JSON Block
-
-```json
-{
-  "name": "typex",
-  "version": "0.1.2",
-  "description": "A markdown editor for people who publish",
-  "license": "MIT",
-  "features": ["wysiwyg", "git-sync", "ai-assist", "themes"]
-}
-```
-
-### HTML in Markdown
-
-<details>
-<summary>Click to expand</summary>
-
-This is hidden content written in **Markdown** inside an HTML `<details>` tag. It demonstrates that HTML and Markdown can mix.
-
-</details>
-
-<center>
-  <em>This text is centered using HTML.</em>
-</center>
-
-***
-
-*That's all for the extended markdown test.*
+If harder, it's out. That's the knife that keeps us from becoming a second Obsidian.
