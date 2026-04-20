@@ -211,9 +211,8 @@ If someone is building a second brain, they should use Obsidian. We aren't going
 3. **Steal Obsidian's best ideas without copying the whole app** (backlinks, properties, tags, outline). Skip graph view and canvas.
 4. **Be unambiguously better at what Obsidian is worst at** — WYSIWYG, git, speed, export, default aesthetics, free sync.
 5. **Use open source as a moat** against their closed-source freemium model.
-6. **Plugin API quality > quantity.**
-7. **Ship native iOS in year two.** Power users won't leave Obsidian without it.
-8. **Don't engage on PKM.** Don't build a graph view because a reviewer asked for one.
+6. **Accept the mobile gap as a deliberate trade.** TypeX is a desktop editor. If someone needs a native phone app for PKM, Obsidian is better and we stop pretending otherwise.
+7. **Don't engage on PKM.** Don't build a graph view because a reviewer asked for one.
 
 ***
 
@@ -320,7 +319,9 @@ Opt-in AI help in the editor, backed by whatever the user already has on their m
 
 **Done when:** a user installs Ollama, TypeX sees it instantly in Preferences → AI, they pick a local model, and `Ctrl+K → Rewrite selection` streams a better paragraph over the one they highlighted — with a pulsing accent indicator in the status bar during generation. No API key, no sign-in, no configuration step.
 
-### Phase 5 — "Publishing" (v0.6.x, 4–6 weeks)
+### Phase 5 — "Publishing" (v1.0, 6–8 weeks) — the final phase
+
+This is the terminal release. Once it ships, TypeX is feature-complete for its stated scope — a better pen for the screen, on Windows, under MIT. Anything after is maintenance.
 
 | Ship                                                                             | Why it matters                                          |
 | -------------------------------------------------------------------------------- | ------------------------------------------------------- |
@@ -329,27 +330,12 @@ Opt-in AI help in the editor, backed by whatever the user already has on their m
 | **Inline issue/PR references** (`#412` → link with open / closed / merged badge) | The small polish that signals we take GitHub seriously. |
 | **GitHub Actions status** for docs-build workflows in the status bar             | Completes the "git-native" promise.                     |
 | **Static site export** (one command → deployable HTML/CSS bundle)                | Replaces Obsidian Publish for writers who want a site.  |
+| **1.0 polish pass** — onboarding tour, accessibility audit, keyboard-only flow   | The version we put on HN.                               |
+| **Pricing page** — explicit "free, forever, open source" positioning             | The anti-Obsidian stance made legible.                  |
 
-### Phase 6 — "Mobile" (v1.0, 12–16 weeks)
+**Prerequisite:** GitHub OAuth device flow for the PR / Gist / Actions work. This was the architectural deposit Phase 3 would have made; we pay it down here, in a much narrower form (auth only, no sync).
 
-| Ship                                                                                                                       | Why it matters                               |
-| -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| **Native iOS app**: SwiftUI shell + WKWebView hosting the same editor bundle + a Swift bridge for filesystem/git (libgit2) | Power users won't leave Obsidian without it. |
-| **macOS code-sign + notarize**                                                                                             | Already possible; must ship before iOS.      |
-| **1.0 polish pass**: onboarding, accessibility audit, keyboard-only flow, dark-mode-first marketing pass                   | The version we put on HN.                    |
-| **Pricing page** — explicit "free, forever, open source" positioning                                                       | The anti-Obsidian stance made legible.       |
-
-### Phase 7 — Post-1.0 (ongoing)
-
-* **GitLab / Gitea providers** (unlocks self-hosted + privacy-conscious users)
-
-* **Android app** (same pattern as iOS, different shell)
-
-* **Community plugin registry** (only once Phase 4's API has survived real third-party usage)
-
-* **Localization** (starts with RTL support + one Asian language as the stress test)
-
-* **CRDT live co-editing** *only if* users demand it — bolt on top of the file + git base, never replace them
+**Done when:** a user writes a doc, picks an export theme, exports a clean PDF, opens a PR from the same palette without touching a terminal — and the status bar tells them when the docs-build Action has passed on their PR.
 
 ***
 
@@ -367,19 +353,10 @@ Parallel to every phase:
 
 ## Calendar
 
-Rough year-one calendar at a brisk indie pace (one focused dev):
-
-* **Q1 2026** — Phase 1 + 2 (editor craft + git-native)
-
-* **Q2 2026** — Phase 3 (cross-device) + telemetry + auto-update
-
-* **Q3 2026** — Phase 4 (plugin API + AI) — the riskiest quarter
-
-* **Q4 2026** — Phase 5 (publishing) + iOS groundwork
-
-* **Q1 2027** — Phase 6, v1.0 ships
-
-With a second contributor, shave roughly a quarter. With marketing attached to each release, v1.0 ships to an audience that's been watching.
+* **Q1 2026** — Phase 0/1/2: v0.1.x beta → v0.3.0 (editor craft + git-native). Shipped.
+* **Q2 2026** — Phase 4: v0.4.0 (AI for writing). Shipped.
+* **Q2–Q3 2026** — Phase 5: publishing, GitHub OAuth, export themes, 1.0 polish → **v1.0**.
+* **Post-1.0** — maintenance, bug fixes, user-asked features. No scheduled next big phase.
 
 ***
 
