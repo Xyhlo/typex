@@ -25,6 +25,10 @@
     "fs:scope-document-recursive",
     "fs:scope-download-recursive",
     "fs:scope-desktop-recursive",
+    {
+      "identifier": "fs:scope",
+      "allow": [{ "path": "**" }]
+    },
     "os:default",
     "os:allow-platform",
     "os:allow-os-type"

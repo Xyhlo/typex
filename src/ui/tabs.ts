@@ -18,6 +18,8 @@ export interface TabsController {
     title: string;
     sourceFormat?: string | null;
     sourceExt?: string | null;
+    documentKind?: DocTab["documentKind"];
+    language?: string | null;
   }) => DocTab;
   closeTab: (id: string) => void;
   activate: (id: string) => void;
@@ -37,6 +39,8 @@ export const createTabsController = (
       savedContent: DEFAULT_UNTITLED_CONTENT,
       sourceFormat: null,
       sourceExt: null,
+      documentKind: "markdown",
+      language: "markdown",
     };
     setState({
       tabs: [...getState().tabs, tab],
@@ -52,12 +56,16 @@ export const createTabsController = (
     title,
     sourceFormat = null,
     sourceExt = null,
+    documentKind = "markdown",
+    language = null,
   }: {
     path: string;
     content: string;
     title: string;
     sourceFormat?: string | null;
     sourceExt?: string | null;
+    documentKind?: DocTab["documentKind"];
+    language?: string | null;
   }): DocTab => {
     const existing = getState().tabs.find((t) => t.path === path);
     if (existing) {
@@ -73,6 +81,8 @@ export const createTabsController = (
       savedContent: content,
       sourceFormat,
       sourceExt,
+      documentKind,
+      language,
     };
     setState({
       tabs: [...getState().tabs, tab],

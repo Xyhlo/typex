@@ -123,6 +123,15 @@
 .editor-panes[data-view-mode="raw"] .raw-host { flex: 1; }
 .editor-panes[data-view-mode="split"] .editor-host,
 .editor-panes[data-view-mode="split"] .raw-host { flex: 1 1 50%; }
+.editor-panes[data-document-kind="code"] #editor,
+.editor-panes[data-document-kind="text"] #editor,
+.editor-panes:not([data-document-kind="code"]):not([data-document-kind="text"]) #code-preview {
+  display: none;
+}
+.editor-panes[data-document-kind="code"] .editor-host,
+.editor-panes[data-document-kind="text"] .editor-host {
+  justify-content: stretch;
+}
 
 /* Buttons — shared atoms */
 .icon-btn {

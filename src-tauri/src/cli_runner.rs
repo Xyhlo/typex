@@ -16,6 +16,9 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, Command};
 use tokio::sync::oneshot;
 
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
 #[derive(Serialize, Clone, Debug)]
 pub struct CliChunk {
     pub id: String,
@@ -63,14 +66,14 @@ pub async fn cli_which(name: String) -> Option<String> {
 #[tauri::command]
 pub async fn cli_version(binary: String, arg: Option<String>) -> Option<String> {
     let flag = arg.unwrap_or_else(|| "--version".to_string());
-    let out = Command::new(&binary)
-        .arg(&flag)
+    let mut cmd = Command::new(&binary);
+    cmd.arg(&flag)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .stdin(Stdio::null())
-        .output()
-        .await
-        .ok()?;
+        .stdin(Stdio::null());
+    #[cfg(windows)]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    let out = cmd.output().await.ok()?;
     let stdout = String::from_utf8_lossy(&out.stdout);
     let first = stdout.lines().next().unwrap_or_default().trim().to_string();
     if first.is_empty() {
@@ -105,15 +108,18 @@ pub async fn cli_exec_stream(
         return Err("null byte in argument".into());
     }
 
-    let mut child = Command::new(&binary)
-        .args(&args)
+    let mut cmd = Command::new(&binary);
+    cmd.args(&args)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .stdin(if stdin.is_some() {
             Stdio::piped()
         } else {
             Stdio::null()
-        })
+        });
+    #[cfg(windows)]
+    cmd.creation_flags(CREATE_NO_WINDOW);
+    let mut child = cmd
         .spawn()
         .map_err(|e| format!("spawn {binary} failed: {e}"))?;
 

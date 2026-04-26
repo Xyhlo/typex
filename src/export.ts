@@ -130,7 +130,13 @@ export const exportAsHtml = async (
   suggestedName = "document.html",
 ): Promise<boolean> => {
   if (!isTauri()) return false;
-  const file = await saveAsDialog(suggestedName.endsWith(".html") ? suggestedName : `${suggestedName}.html`);
+  const file = await saveAsDialog(
+    suggestedName.endsWith(".html") ? suggestedName : `${suggestedName}.html`,
+    [
+      { name: "HTML", extensions: ["html", "htm"] },
+      { name: "All files", extensions: ["*"] },
+    ],
+  );
   if (!file) return false;
   const target = file.endsWith(".html") ? file : `${file}.html`;
   await saveFile(target, buildHtmlDocument(title, innerHTML));

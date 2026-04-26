@@ -1,5 +1,11 @@
 import { open, save, message, confirm } from "@tauri-apps/plugin-dialog";
 import { readTextFile, writeTextFile, readDir, exists } from "@tauri-apps/plugin-fs";
+import {
+  CODE_EXTENSIONS,
+  MARKDOWN_EXTENSIONS,
+  TEXT_EXTENSIONS,
+  resolveFileType,
+} from "./file-types";
 
 export const isTauri = (): boolean =>
   typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -10,11 +16,13 @@ export interface OpenedFile {
   title: string;
 }
 
-const MD_EXT = ["md", "markdown", "mdx", "txt"];
+const MD_EXT = MARKDOWN_EXTENSIONS;
 
-/** All extensions Pandoc (when present) can open directly. */
+/** All extensions Pandoc or the native text/code pipeline can open directly. */
 const ALL_DOC_EXT = [
   ...MD_EXT,
+  ...CODE_EXTENSIONS,
+  ...TEXT_EXTENSIONS,
   "docx", "odt", "rtf",
   "html", "htm",
   "epub", "fb2",
@@ -48,8 +56,10 @@ export const openAnyDocumentFile = async (
 
   const filters = allFormats
     ? [
-        { name: "All supported documents", extensions: ALL_DOC_EXT },
+        { name: "All openable files", extensions: Array.from(new Set(ALL_DOC_EXT)) },
         { name: "Markdown", extensions: MD_EXT },
+        { name: "Code", extensions: CODE_EXTENSIONS },
+        { name: "Plain text and data", extensions: TEXT_EXTENSIONS },
         { name: "Microsoft Word", extensions: ["docx"] },
         { name: "OpenDocument", extensions: ["odt"] },
         { name: "Rich Text", extensions: ["rtf"] },
@@ -103,11 +113,15 @@ export const saveFile = async (path: string, content: string): Promise<void> => 
 
 export const saveAsDialog = async (
   currentPath: string | null,
+  filters = [
+    { name: "Markdown", extensions: MD_EXT },
+    { name: "All files", extensions: ["*"] },
+  ],
 ): Promise<string | null> => {
   if (!isTauri()) return null;
   const chosen = await save({
     defaultPath: currentPath ?? "Untitled.md",
-    filters: [{ name: "Markdown", extensions: MD_EXT }],
+    filters,
   });
   return chosen ?? null;
 };
@@ -178,12 +192,12 @@ const IGNORED_DIRS = new Set([
   ".DS_Store",
 ]);
 
-const isMarkdownFile = (name: string): boolean => {
-  const lower = name.toLowerCase();
-  return MD_EXT.some((ext) => lower.endsWith(`.${ext}`));
+const isVisibleWorkspaceFile = (name: string): boolean => {
+  const resolved = resolveFileType(name);
+  return resolved.canOpenAsText || resolved.kind === "markdown";
 };
 
-/** Read a directory recursively, filtered to folders + markdown files. */
+/** Read a directory recursively, filtered to folders + TypeX-openable text files. */
 export const readWorkspace = async (
   root: string,
   maxDepth = 6,
@@ -211,7 +225,7 @@ export const readWorkspace = async (
             nodes.push({ name: e.name, path: full, isDirectory: true, children: [] });
           }
         }
-      } else if (isMarkdownFile(e.name)) {
+      } else if (isVisibleWorkspaceFile(e.name)) {
         nodes.push({ name: e.name, path: full, isDirectory: false });
       }
     }

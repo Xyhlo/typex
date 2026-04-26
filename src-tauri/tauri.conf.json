@@ -65,6 +65,19 @@
         "mimeType": "text/plain"
       },
       {
+        "ext": [
+          "py", "js", "ts", "jsx", "tsx", "json", "jsonc",
+          "css", "scss", "xml", "yaml", "yml", "toml",
+          "rs", "go", "java", "c", "cc", "cpp", "h", "hpp",
+          "cs", "bat", "cmd", "ps1", "sh", "sql", "lua",
+          "rb", "php", "swift", "kt", "kts"
+        ],
+        "name": "CodeText",
+        "description": "Code or configuration file",
+        "role": "Editor",
+        "mimeType": "text/plain"
+      },
+      {
         "ext": ["docx"],
         "name": "WordDocument",
         "description": "Microsoft Word document",

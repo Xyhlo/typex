@@ -39,7 +39,10 @@ let debounceTimer: number | null = null;
 
 const syncPanesFromState = (): void => {
   if (!panes) return;
-  panes.dataset.viewMode = getState().viewMode;
+  const state = getState();
+  const active = state.tabs.find((t) => t.id === state.activeTabId);
+  panes.dataset.viewMode = state.viewMode;
+  panes.dataset.documentKind = active?.documentKind ?? "markdown";
 };
 
 const populateTextarea = (): void => {

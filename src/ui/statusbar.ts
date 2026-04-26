@@ -1,5 +1,6 @@
 import { getState, subscribe, isDirty, type DocTab } from "../state";
 import { subscribeGit, type GitStatus } from "../git";
+import { isPlainTextDocument, languageLabel } from "../fs/file-types";
 
 const WPM = 238; // typical reading speed
 
@@ -35,6 +36,14 @@ const FRIENDLY: Record<string, string> = {
 
 const modeLabel = (tab: DocTab | undefined): string => {
   if (!tab) return "Markdown";
+  if (isPlainTextDocument(tab.documentKind)) {
+    return tab.documentKind === "code" ? languageLabel(tab.language) : "Plain text";
+  }
+  if (tab.documentKind === "converted") {
+    const ext = tab.sourceExt?.toLowerCase();
+    const label = ext && FRIENDLY[ext] ? FRIENDLY[ext] : "Converted";
+    return `${label} → Markdown`;
+  }
   const ext = tab.sourceExt?.toLowerCase();
   if (ext && FRIENDLY[ext]) return FRIENDLY[ext];
   return "Markdown";

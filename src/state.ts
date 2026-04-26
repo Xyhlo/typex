@@ -20,8 +20,16 @@ export interface DocTab {
   sourceFormat: string | null;
   /** File extension of the originally-opened file, drives Save As default ext. */
   sourceExt: string | null;
+  /**
+   * How TypeX should render and save this tab. `converted` means the visible
+   * buffer is Markdown produced by Pandoc from a non-Markdown source file.
+   */
+  documentKind: DocumentKind;
+  /** Syntax language for code tabs, if known. */
+  language: string | null;
 }
 
+export type DocumentKind = "markdown" | "converted" | "code" | "text";
 export type Theme = "dark" | "light";
 export type EditorFont = "sans" | "serif";
 export type ReadingMode = "vertical" | "horizontal";

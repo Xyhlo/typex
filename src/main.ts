@@ -13,13 +13,17 @@ import {
   dialogConfirm,
 } from "./fs/files";
 import {
+  isMarkdownDocument,
+  isPlainTextDocument,
+  resolveFileType,
+} from "./fs/file-types";
+import {
   pandocVersion,
   pandocImport,
   pandocExport,
   EXPORT_FORMATS,
   getImportFormat,
   getExportFormatByExt,
-  isMarkdownExt,
   extOf,
   type PandocFormat,
 } from "./fs/pandoc";
@@ -48,6 +52,7 @@ import { initTheme, toggleTheme, applyTheme } from "./theme";
 import { createFileTree } from "./ui/file-tree";
 import { createMenubar, type MenuEntry } from "./ui/menubar";
 import { createFindbar } from "./ui/findbar";
+import { initCodePreview } from "./ui/code-preview";
 import { showModal, prompt } from "./ui/modal";
 import { exportAsHtml } from "./export";
 import {
@@ -148,6 +153,9 @@ const bootstrap = async (): Promise<void> => {
   setState({ readingMode: prefs.readingMode, editorFont: prefs.editorFont });
 
   const editorHost = document.getElementById("editor-host")!;
+  const codePreviewEl = document.getElementById("code-preview")!;
+  let editor: EditorController;
+  let refreshCodePreview = (): void => {};
 
   const tabs = createTabsController(stripEl, async (tab) => {
     if (!editor || !tab) {
@@ -161,14 +169,21 @@ const bootstrap = async (): Promise<void> => {
     editor.cancelStream();
     // Micro-fade while content is swapped so the switch doesn't pop.
     editorHost.dataset.swapping = "true";
-    applyingExternalContent = true;
-    await editor.setContent(tab.content);
-    applyingExternalContent = false;
+    if (!isPlainTextDocument(tab.documentKind)) {
+      applyingExternalContent = true;
+      await editor.setContent(tab.content);
+      applyingExternalContent = false;
+    }
     currentTabId = tab.id;
+    refreshCodePreview();
     requestAnimationFrame(() => {
       editorHost.dataset.swapping = "false";
     });
-    editor.focus();
+    if (isPlainTextDocument(tab.documentKind)) {
+      codePreviewEl.querySelector<HTMLElement>(".code-preview__pre")?.focus();
+    } else {
+      editor.focus();
+    }
   });
 
   // Seed with one Untitled tab containing the welcome doc
@@ -179,7 +194,7 @@ const bootstrap = async (): Promise<void> => {
   });
   currentTabId = initialTab.id;
 
-  const editor: EditorController = await createEditor({
+  editor = await createEditor({
     host,
     initialContent: WELCOME_CONTENT,
     onChange: (md) => {
@@ -194,6 +209,7 @@ const bootstrap = async (): Promise<void> => {
     },
   });
   editor.focus();
+  refreshCodePreview = initCodePreview(codePreviewEl).refresh;
 
   // Ghost-text autocomplete lifecycle — a single editor view serves every
   // tab, so we just attach / detach on the shared instance.
@@ -232,6 +248,11 @@ const bootstrap = async (): Promise<void> => {
   const viewModeOpts = {
     editor,
     applyContentToEditor: async (md: string) => {
+      const active = getActiveTab();
+      if (active && isPlainTextDocument(active.documentKind)) {
+        refreshCodePreview();
+        return;
+      }
       applyingExternalContent = true;
       try {
         await editor.setContent(md);
@@ -241,6 +262,13 @@ const bootstrap = async (): Promise<void> => {
     },
   };
   initViewMode(viewModeOpts);
+  codePreviewEl.addEventListener("click", (event) => {
+    const target = event.target as HTMLElement;
+    const action = target.closest<HTMLElement>("[data-code-action]")?.dataset.codeAction;
+    if (action === "write") {
+      void setViewMode("raw", viewModeOpts);
+    }
+  });
 
   // Wave 4: pull-on-focus hook.
   window.addEventListener("focus", () => {
@@ -258,31 +286,36 @@ const bootstrap = async (): Promise<void> => {
       // built is no longer accurate now that local edits were discarded.
       cancelPendingCommitFor(path);
       if (getState().activeTabId === t.id) {
-        applyingExternalContent = true;
-        try {
-          const animate = loadPrefs().animateExternalEdits;
-          if (opts.streaming) {
-            // Mid-stream apply: gradually type the content in over ~400ms
-            // with a blinking caret at the growing edge, preserve scroll,
-            // and flash the changed range when the stream settles. Skip the
-            // toast — the visible typing is the affordance.
-            await editor.applyExternalText(disk, {
-              flashChangedLines: animate,
-              oldMarkdown,
-              stream: animate,
-            });
-          } else {
-            // One-shot external save (git checkout, single editor save).
-            // Preserve scroll but don't flash — a batch-file-update shouldn't
-            // light up every open tab. Flash only happens inside streams.
-            await editor.applyExternalText(disk, {
-              flashChangedLines: false,
-              oldMarkdown,
-            });
-            toast(`Reloaded ${basename(path)}`);
+        if (isPlainTextDocument(t.documentKind)) {
+          refreshCodePreview();
+          if (!opts.streaming) toast(`Reloaded ${basename(path)}`);
+        } else {
+          applyingExternalContent = true;
+          try {
+            const animate = loadPrefs().animateExternalEdits;
+            if (opts.streaming) {
+              // Mid-stream apply: gradually type the content in over ~400ms
+              // with a blinking caret at the growing edge, preserve scroll,
+              // and flash the changed range when the stream settles. Skip the
+              // toast — the visible typing is the affordance.
+              await editor.applyExternalText(disk, {
+                flashChangedLines: animate,
+                oldMarkdown,
+                stream: animate,
+              });
+            } else {
+              // One-shot external save (git checkout, single editor save).
+              // Preserve scroll but don't flash — a batch-file-update shouldn't
+              // light up every open tab. Flash only happens inside streams.
+              await editor.applyExternalText(disk, {
+                flashChangedLines: false,
+                oldMarkdown,
+              });
+              toast(`Reloaded ${basename(path)}`);
+            }
+          } finally {
+            applyingExternalContent = false;
           }
-        } finally {
-          applyingExternalContent = false;
         }
       } else if (!opts.streaming) {
         toast(`Reloaded ${basename(path)}`);
@@ -373,13 +406,34 @@ const bootstrap = async (): Promise<void> => {
       }
 
       const ext = extOf(path);
+      const resolvedType = resolveFileType(path);
       let content: string;
       let sourceFormat: string | null = null;
       let sourceExt: string | null = null;
+      let documentKind: DocTab["documentKind"] = "markdown";
+      let language: string | null = null;
 
-      if (isMarkdownExt(ext) || !ext) {
+      if (resolvedType.kind === "image" || resolvedType.kind === "binary") {
+        toast(`${resolvedType.label} files aren't viewable in TypeX yet`);
+        return;
+      }
+
+      if (resolvedType.kind === "markdown") {
         content = await readFile(path);
         sourceExt = ext || "md";
+        documentKind = "markdown";
+        language = "markdown";
+      } else if (resolvedType.kind === "code" || resolvedType.kind === "text") {
+        try {
+          content = await readFile(path);
+        } catch (err) {
+          console.error("[typex] text open failed:", err);
+          toast(`Couldn't open ${basename(path)} as text`);
+          return;
+        }
+        sourceExt = ext || "txt";
+        documentKind = resolvedType.kind;
+        language = resolvedType.language;
       } else {
         const fmt = getImportFormat(ext);
         if (!fmt) {
@@ -395,6 +449,8 @@ const bootstrap = async (): Promise<void> => {
           content = await pandocImport(path, fmt.pandocName);
           sourceFormat = fmt.pandocName;
           sourceExt = ext;
+          documentKind = "converted";
+          language = "markdown";
           progress.success(`Imported ${basename(path)}`);
         } catch (err) {
           console.error("[typex] pandoc import failed:", err);
@@ -409,12 +465,21 @@ const bootstrap = async (): Promise<void> => {
         title: basename(path),
         sourceFormat,
         sourceExt,
+        documentKind,
+        language,
       });
-      applyingExternalContent = true;
-      await editor.setContent(content);
-      applyingExternalContent = false;
+      if (!isPlainTextDocument(documentKind)) {
+        applyingExternalContent = true;
+        await editor.setContent(content);
+        applyingExternalContent = false;
+      }
       currentTabId = tab.id;
-      editor.focus();
+      refreshCodePreview();
+      if (isPlainTextDocument(documentKind)) {
+        codePreviewEl.querySelector<HTMLElement>(".code-preview__pre")?.focus();
+      } else {
+        editor.focus();
+      }
       pushRecentFile(path);
       fileTree.setActive(path);
     } catch (err) {
@@ -588,7 +653,7 @@ const bootstrap = async (): Promise<void> => {
   const writeTabToDisk = async (tab: DocTab): Promise<void> => {
     if (!tab.path) throw new Error("Tab has no path");
     const ext = extOf(tab.path);
-    if (isMarkdownExt(ext) || !ext) {
+    if (tab.documentKind === "markdown" || isPlainTextDocument(tab.documentKind)) {
       markOwnWrite(tab.path);
       await saveFile(tab.path, tab.content);
       // Re-mark after the write — catches fs events that arrive post-write.
@@ -629,7 +694,7 @@ const bootstrap = async (): Promise<void> => {
       return;
     }
     const ext = extOf(active.path);
-    const isFormatConverted = !isMarkdownExt(ext) && !!ext;
+    const isFormatConverted = active.documentKind === "converted";
     if (isFormatConverted && !pandocReady) {
       showPandocMissingModal();
       return;
@@ -665,7 +730,7 @@ const bootstrap = async (): Promise<void> => {
       toast("Saving is only available in the desktop app");
       return;
     }
-    const defaultExt = active.sourceExt ?? "md";
+    const defaultExt = active.sourceExt ?? (isPlainTextDocument(active.documentKind) ? "txt" : "md");
     const base = active.title.replace(/\.[^.]+$/, "") || "Untitled";
     const primaryRoot = primaryWorkspaceRoot();
     const defaultPath =
@@ -682,12 +747,21 @@ const bootstrap = async (): Promise<void> => {
     const finalExt = extOf(finalPath);
 
     try {
-      if (isMarkdownExt(finalExt) || !finalExt) {
+      const resolvedFinal = resolveFileType(finalPath);
+      const finalExportFormat = getExportFormatByExt(finalExt);
+      const saveRaw =
+        !finalExt ||
+        resolvedFinal.kind === "markdown" ||
+        isPlainTextDocument(active.documentKind) ||
+        (!finalExportFormat &&
+          (resolvedFinal.kind === "code" || resolvedFinal.kind === "text"));
+
+      if (saveRaw) {
         markOwnWrite(finalPath);
         await saveFile(finalPath, active.content);
         markOwnWrite(finalPath);
       } else {
-        const fmt = getExportFormatByExt(finalExt);
+        const fmt = finalExportFormat;
         if (!fmt) {
           toast(`Unsupported format: .${finalExt}`);
           return;
@@ -705,10 +779,25 @@ const bootstrap = async (): Promise<void> => {
         title: pathTitle(finalPath, active.title),
         savedContent: active.content,
         sourceExt: finalExt || defaultExt,
-        sourceFormat: isMarkdownExt(finalExt)
+        sourceFormat: saveRaw
           ? null
-          : getExportFormatByExt(finalExt)?.pandocName ?? null,
+          : finalExportFormat?.pandocName ?? null,
+        documentKind: !saveRaw
+          ? "converted"
+          : resolvedFinal.kind === "code" || resolvedFinal.kind === "text"
+            ? resolvedFinal.kind
+            : resolvedFinal.kind === "markdown"
+              ? "markdown"
+              : active.documentKind,
+        language: !saveRaw
+          ? "markdown"
+          : resolvedFinal.kind === "code"
+            ? resolvedFinal.language
+            : resolvedFinal.kind === "markdown"
+              ? "markdown"
+              : null,
       });
+      refreshCodePreview();
       pushRecentFile(finalPath);
       // If the saved file lands inside any open root, refresh that root's tree.
       if (getState().workspaceRoots.some((r) => finalPath.startsWith(r))) {
@@ -739,7 +828,10 @@ const bootstrap = async (): Promise<void> => {
     const defaultPath = exportRoot
       ? `${exportRoot}/${base}.${format.ext}`
       : `${base}.${format.ext}`;
-    const chosen = await saveAsDialog(defaultPath);
+    const chosen = await saveAsDialog(defaultPath, [
+      { name: format.label, extensions: [format.ext] },
+      { name: "All files", extensions: ["*"] },
+    ]);
     if (!chosen) return;
     const finalPath = chosen.toLowerCase().endsWith(`.${format.ext}`)
       ? chosen
@@ -759,6 +851,36 @@ const bootstrap = async (): Promise<void> => {
     } catch (err) {
       console.error("[typex] export failed:", err);
       progress.error(`Export failed: ${String(err).slice(0, 140)}`);
+    }
+  };
+
+  const exportRawCopy = async (preferredExt?: string): Promise<void> => {
+    const active = getActiveTab();
+    if (!active) return;
+    if (!isTauri()) {
+      toast("Export is only available in the desktop app");
+      return;
+    }
+    const base = active.title.replace(/\.[^.]+$/, "") || "document";
+    const ext = preferredExt ?? active.sourceExt ?? extOf(active.path ?? "") ?? "txt";
+    const defaultPath = primaryWorkspaceRoot()
+      ? `${primaryWorkspaceRoot()}/${base}.${ext || "txt"}`
+      : `${base}.${ext || "txt"}`;
+    const chosen = await saveAsDialog(defaultPath, [
+      { name: "Original/raw text", extensions: [ext || "txt"] },
+      { name: "Plain text", extensions: ["txt"] },
+      { name: "All files", extensions: ["*"] },
+    ]);
+    if (!chosen) return;
+    const finalPath = extOf(chosen) ? chosen : `${chosen}.${ext || "txt"}`;
+    try {
+      markOwnWrite(finalPath);
+      await saveFile(finalPath, active.content);
+      markOwnWrite(finalPath);
+      toast(`Exported to ${basename(finalPath)}`);
+    } catch (err) {
+      console.error("[typex] raw export failed:", err);
+      toast(`Export failed: ${String(err).slice(0, 140)}`);
     }
   };
 
@@ -855,7 +977,7 @@ const bootstrap = async (): Promise<void> => {
     );
     if (!ok) return;
     const ext = extOf(active.path);
-    const isFormatConverted = !isMarkdownExt(ext) && !!ext;
+    const isFormatConverted = active.documentKind === "converted";
     if (isFormatConverted && !pandocReady) {
       showPandocMissingModal();
       return;
@@ -876,9 +998,13 @@ const bootstrap = async (): Promise<void> => {
         content = await pandocImport(active.path, fmt.pandocName);
       }
       updateTab(active.id, { content, savedContent: content });
-      applyingExternalContent = true;
-      await editor.setContent(content);
-      applyingExternalContent = false;
+      if (isPlainTextDocument(active.documentKind)) {
+        refreshCodePreview();
+      } else {
+        applyingExternalContent = true;
+        await editor.setContent(content);
+        applyingExternalContent = false;
+      }
       if (progress) progress.success(`Reverted ${active.title}`);
       else toast(`Reverted ${active.title}`);
     } catch (err) {
@@ -908,6 +1034,10 @@ const bootstrap = async (): Promise<void> => {
   const exportHTMLAction = async (): Promise<void> => {
     const active = getActiveTab();
     if (!active) return;
+    if (!isMarkdownDocument(active.documentKind)) {
+      toast("HTML export is available for Markdown documents");
+      return;
+    }
     const baseName = active.title.replace(/\.(md|markdown|mdx|txt)$/i, "");
     try {
       const html = editor.getHTML();
@@ -1009,11 +1139,8 @@ const bootstrap = async (): Promise<void> => {
       for (const t of dirtyWithPath) {
         void (async () => {
           try {
-            markOwnWrite(t.path!);
-            await saveFile(t.path!, t.content);
-            markOwnWrite(t.path!);
+            await writeTabToDisk(t);
             updateTab(t.id, { savedContent: t.content });
-            onAnySave(t.path!);
           } catch (err) {
             console.error("autosave failed:", err);
           }
@@ -1025,6 +1152,28 @@ const bootstrap = async (): Promise<void> => {
   // ---------- Editor actions ----------
   const editorCmd = (cmd: Parameters<EditorController["run"]>[0]): void =>
     editor.run(cmd);
+
+  const selectAllActive = (): void => {
+    const active = getActiveTab();
+    if (!active || !isPlainTextDocument(active.documentKind)) {
+      editor.selectAll();
+      return;
+    }
+    const rawTextarea = document.getElementById("raw-editor") as HTMLTextAreaElement | null;
+    if (getState().viewMode === "raw" && rawTextarea) {
+      rawTextarea.focus();
+      rawTextarea.select();
+      return;
+    }
+    const pre = codePreviewEl.querySelector<HTMLElement>(".code-preview__pre");
+    if (!pre) return;
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+    pre.focus();
+  };
 
   const insertLinkPrompt = async (): Promise<void> => {
     const url = await prompt("Insert link", "URL", "", "https://example.com");
@@ -1046,14 +1195,30 @@ const bootstrap = async (): Promise<void> => {
 
   // ---------- Findbar ----------
   const findbar = createFindbar({
-    getEditorRoot: () => host.querySelector<HTMLElement>(".ProseMirror"),
-    getContent: () => editor.getContent(),
+    getEditorRoot: () => {
+      const active = getActiveTab();
+      if (active && isPlainTextDocument(active.documentKind)) {
+        return codePreviewEl.querySelector<HTMLElement>(".code-preview__pre");
+      }
+      return host.querySelector<HTMLElement>(".ProseMirror");
+    },
+    getContent: () => {
+      const active = getActiveTab();
+      return active && isPlainTextDocument(active.documentKind)
+        ? active.content
+        : editor.getContent();
+    },
     setContent: async (md) => {
+      const active = getActiveTab();
+      if (!active) return;
+      updateTab(active.id, { content: md });
+      if (isPlainTextDocument(active.documentKind)) {
+        refreshCodePreview();
+        return;
+      }
       applyingExternalContent = true;
       await editor.setContent(md);
       applyingExternalContent = false;
-      const active = getActiveTab();
-      if (active) updateTab(active.id, { content: md });
     },
   });
 
@@ -1798,6 +1963,7 @@ const bootstrap = async (): Promise<void> => {
     { id: "file.saveAs", title: "Save as…", section: "File", shortcut: ["Ctrl", "Shift", "S"], run: saveAs },
     { id: "file.saveAll", title: "Save all", section: "File", shortcut: ["Ctrl", "Alt", "S"], run: saveAll },
     { id: "file.revert", title: "Revert file", section: "File", run: revertFile },
+    { id: "file.exportRaw", title: "Export raw copy…", section: "Export", run: () => exportRawCopy() },
     { id: "file.exportHtml", title: "Export as HTML (styled)…", section: "Export", run: exportHTMLAction },
     ...EXPORT_FORMATS.map((fmt) => ({
       id: `file.export.${fmt.pandocName}.${fmt.ext}`,
@@ -1812,7 +1978,7 @@ const bootstrap = async (): Promise<void> => {
 
     { id: "edit.undo", title: "Undo", section: "Edit", shortcut: ["Ctrl", "Z"], run: () => editorCmd("undo") },
     { id: "edit.redo", title: "Redo", section: "Edit", shortcut: ["Ctrl", "Y"], run: () => editorCmd("redo") },
-    { id: "edit.selectAll", title: "Select all", section: "Edit", shortcut: ["Ctrl", "A"], run: () => editor.selectAll() },
+    { id: "edit.selectAll", title: "Select all", section: "Edit", shortcut: ["Ctrl", "A"], run: selectAllActive },
     { id: "edit.find", title: "Find…", section: "Edit", shortcut: ["Ctrl", "F"], run: openFind },
     { id: "edit.replace", title: "Find and Replace…", section: "Edit", shortcut: ["Ctrl", "H"], run: openReplace },
 
@@ -2128,6 +2294,21 @@ const bootstrap = async (): Promise<void> => {
 
   const buildExportSubmenu = (): MenuEntry[] => {
     const entries: MenuEntry[] = [];
+    const active = getActiveTab();
+    const plainText = !!active && isPlainTextDocument(active.documentKind);
+
+    if (plainText) {
+      entries.push({
+        label: "Original/raw copy…",
+        run: () => void exportRawCopy(active?.sourceExt ?? undefined),
+      });
+      entries.push({
+        label: "Plain text copy…",
+        run: () => void exportRawCopy("txt"),
+      });
+      return entries;
+    }
+
     entries.push({
       label: "HTML (styled)",
       run: () => void exportHTMLAction(),
@@ -2227,7 +2408,7 @@ const bootstrap = async (): Promise<void> => {
         { label: "Cut", shortcut: "Ctrl+X", run: () => document.execCommand?.("cut") },
         { label: "Copy", shortcut: "Ctrl+C", run: () => document.execCommand?.("copy") },
         { label: "Paste", shortcut: "Ctrl+V", run: () => document.execCommand?.("paste") },
-        { label: "Select all", shortcut: "Ctrl+A", run: () => editor.selectAll() },
+        { label: "Select all", shortcut: "Ctrl+A", run: selectAllActive },
         { type: "separator" },
         { label: "Find…", shortcut: "Ctrl+F", run: openFind },
         { label: "Find and Replace…", shortcut: "Ctrl+H", run: openReplace },
@@ -2446,7 +2627,7 @@ const bootstrap = async (): Promise<void> => {
     // Edit
     if (k === "f" && !e.shiftKey) { e.preventDefault(); openFind(); return; }
     if (k === "h" && !e.shiftKey) { e.preventDefault(); openReplace(); return; }
-    if (k === "a" && !e.shiftKey) { e.preventDefault(); editor.selectAll(); return; }
+    if (k === "a" && !e.shiftKey) { e.preventDefault(); selectAllActive(); return; }
 
     // View
     if (k === "l" && e.shiftKey) { e.preventDefault(); toggleTheme(); return; }

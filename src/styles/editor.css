@@ -10,6 +10,91 @@
   transition: max-width var(--dur-md) var(--ease-standard);
 }
 
+.code-preview {
+  width: 100%;
+  min-width: 0;
+  align-self: stretch;
+  color: var(--code-fg);
+  font-family: var(--font-mono);
+}
+
+.code-preview__bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 36px;
+  padding: 0 var(--sp-4);
+  background: color-mix(in srgb, var(--code-bg) 88%, var(--bg-content));
+  border: 1px solid var(--code-border);
+  border-bottom: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  box-shadow: var(--shadow-xs);
+}
+
+.code-preview__title {
+  color: var(--fg-heading);
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+}
+
+.code-preview__hint {
+  color: var(--fg-subtle);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+}
+
+.code-preview__write {
+  margin-left: auto;
+}
+
+.code-preview__pre {
+  margin: 0;
+  min-height: calc(100% - 36px);
+  overflow: auto;
+  padding: var(--sp-3) 0 var(--sp-8);
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border: 1px solid var(--code-border);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  font-family: var(--font-mono);
+  font-size: calc(var(--fs-sm) * var(--editor-scale, 1));
+  line-height: 1.58;
+  tab-size: 2;
+}
+
+.code-preview__pre:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
+}
+
+.code-preview__line {
+  display: grid;
+  grid-template-columns: minmax(3.25rem, auto) 1fr;
+  min-width: max-content;
+}
+
+.code-preview__line:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.code-preview__num {
+  user-select: none;
+  padding: 0 var(--sp-3) 0 var(--sp-4);
+  color: var(--fg-faint);
+  text-align: right;
+  border-right: 1px solid var(--code-border);
+}
+
+.code-preview__code {
+  padding: 0 var(--sp-5) 0 var(--sp-3);
+  white-space: pre;
+}
+
 /* Reading-mode: "horizontal" widens the content column for wide-screen users.
    "vertical" (default) keeps the narrow 72ch rhythm for focused writing. */
 .app[data-reading-mode="horizontal"] .editor {

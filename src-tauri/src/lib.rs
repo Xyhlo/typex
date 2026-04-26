@@ -1,6 +1,11 @@
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager};
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
 mod cli_runner;
 mod git;
 mod pandoc;
@@ -36,7 +41,6 @@ fn launch_paths() -> Vec<String> {
 fn open_default_apps_settings(typed_filter: Option<String>) -> Result<(), String> {
     #[cfg(windows)]
     {
-        use std::process::Command;
         let uri = match typed_filter.as_deref() {
             Some(ext) if !ext.is_empty() => {
                 let clean = ext.trim_start_matches('.');
@@ -47,9 +51,11 @@ fn open_default_apps_settings(typed_filter: Option<String>) -> Result<(), String
         // `start` is a cmd builtin, so we invoke through cmd. The empty
         // string is the window title placeholder `start` expects before
         // the URL argument.
-        Command::new("cmd")
-            .args(["/C", "start", "", &uri])
-            .spawn()
+        let mut cmd = std::process::Command::new("cmd");
+        cmd.args(["/C", "start", "", &uri]);
+        #[cfg(windows)]
+        cmd.creation_flags(CREATE_NO_WINDOW);
+        cmd.spawn()
             .map_err(|e| format!("Failed to open settings: {e}"))?;
         return Ok(());
     }
